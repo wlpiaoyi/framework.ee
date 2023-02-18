@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
 import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceMoon;
 import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceAdapter;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Coder;
 
 import javax.servlet.http.HttpServletRequest;

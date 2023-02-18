@@ -6,7 +6,7 @@ import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.wlpiaoyi.framework.ee.utils.advice.AnnotationPathUtils;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
+import org.wlpiaoyi.framework.ee.utils.ConfigModel;
 
 import java.lang.reflect.Type;
 

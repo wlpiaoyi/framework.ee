@@ -1,6 +1,7 @@
-package org.wlpiaoyi.framework.ee.utils.advice;
+package org.wlpiaoyi.framework.ee.utils;
 
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
  * {@code @date:}           2023/2/15 20:47
  * {@code @version:}:       1.0
  */
-@Data
+@Getter
 @Component
 public class ConfigModel {
 
@@ -25,6 +26,12 @@ public class ConfigModel {
     private String idempotencePatterns;
     @Value("${wlpiaoyi.ee.cors.data.idempotence.duriTime}")
     private Integer idempotenceDuriTime;
+    @Value("${wlpiaoyi.ee.cors.data.idempotence.sectionTime}")
+    private Integer idempotenceSectionTime;
+    @Value("${wlpiaoyi.ee.cors.data.snowflake.workerId}")
+    private Byte workerId;
+    @Value("${wlpiaoyi.ee.cors.data.snowflake.datacenterId}")
+    private Byte datacenterId;
     @Value("${wlpiaoyi.ee.cors.data.charset_name}")
     private String charsetName = "UTF-8";
 

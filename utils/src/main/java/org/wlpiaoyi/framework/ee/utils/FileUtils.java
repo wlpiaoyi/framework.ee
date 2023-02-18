@@ -7,10 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.data.ReaderUtils;
-import org.wlpiaoyi.framework.ee.utils.exception.BusinessException;
-import org.wlpiaoyi.framework.ee.utils.status.File;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Coder;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,7 +41,7 @@ public class FileUtils extends DataUtils{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(ValueUtils.isBlank(basePath) || basePath.equals("./")){
+        if(ValueUtils.isBlank(basePath) || "./".equals(basePath)){
             basePath = DataUtils.USER_DIR;
         }
         if(ValueUtils.isBlank(filePath)){
@@ -65,20 +64,13 @@ public class FileUtils extends DataUtils{
      */
     public static String moveFileMD5(MultipartFile file) throws Exception {
         if (file.isEmpty()) {
-            throw new BusinessException(File.EmptyError);
-        }
-        if(file.isEmpty()){
-            throw new BusinessException(File.EmptyError);
+            throw new BusinessException("没有找到文件");
         }
         String fileName = StringUtils.getUUID32();
         FileUtils.makeDir(FileUtils.TEMP_PATH);
         java.io.File dest = new java.io.File(FileUtils.TEMP_PATH + "/" + fileName);
 
-        try {
-            file.transferTo(dest);
-        } catch (IOException e) {
-            throw new BusinessException(File.CommonError.getIndex(), e.getMessage());
-        }
+        file.transferTo(dest);
         String md5Path = FileUtils.moveFileMD5(dest);
         return md5Path;
 
@@ -110,7 +102,7 @@ public class FileUtils extends DataUtils{
                 return oPath;
             }
             if(!orgFile.renameTo(md5File)){
-                throw new BusinessException(File.MoveError);
+                throw new BusinessException("文件重命名失败");
             }
             return oPath;
         } finally {

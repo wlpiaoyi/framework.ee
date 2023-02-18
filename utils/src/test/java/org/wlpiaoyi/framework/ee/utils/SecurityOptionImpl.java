@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.stereotype.Component;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
 import org.wlpiaoyi.framework.ee.utils.advice.reqresp.SecurityOption;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;

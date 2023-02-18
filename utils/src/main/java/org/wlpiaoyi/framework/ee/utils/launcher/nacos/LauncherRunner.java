@@ -1,11 +1,11 @@
-package org.wlpiaoyi.framework.ee.utils.loader.nacos;
+package org.wlpiaoyi.framework.ee.utils.launcher.nacos;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.*;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.wlpiaoyi.framework.ee.utils.loader.LauncherService;
+import org.wlpiaoyi.framework.ee.utils.launcher.LauncherService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * {@code @date:}           2023/2/13 9:34
  * {@code @version:}:       1.0
  */
-public class ApplicationRunner {
+public class LauncherRunner {
     public static ConfigurableApplicationContext run(String appName, Class source, String... args) {
         SpringApplicationBuilder builder = createSpringApplicationBuilder(appName, source, args);
         return builder.run(args);
@@ -52,7 +52,7 @@ public class ApplicationRunner {
             profile = activeProfileList.get(0);
         }
 
-        String startJarPath = ApplicationRunner.class.getResource("/").getPath().split("!")[0];
+        String startJarPath = LauncherRunner.class.getResource("/").getPath().split("!")[0];
         String activePros = (String)joinFun.apply(activeProfileList.toArray());
         System.out.printf("----启动中，读取到的环境变量:[%s]，jar地址:[%s]----%n", activePros, startJarPath);
         Properties props = System.getProperties();
@@ -64,7 +64,7 @@ public class ApplicationRunner {
         props.setProperty("framework.ee.env", profile);
         props.setProperty("framework.ee.name", appName);
         props.setProperty("framework.ee.is-local", String.valueOf(isLocalDev()));
-        props.setProperty("framework.ee.dev-mode", profile.equals("prod") ? "false" : "true");
+        props.setProperty("framework.ee.dev-mode", "prod".equals(profile) ? "false" : "true");
         props.setProperty("loadbalancer.client.name", appName);
         props.setProperty("spring.cloud.nacos.discovery.server-addr", NacosConstant.NACOS_ADDR);
         props.setProperty("spring.cloud.nacos.config.server-addr", NacosConstant.NACOS_ADDR);

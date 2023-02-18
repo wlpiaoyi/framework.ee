@@ -14,12 +14,12 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
+import org.wlpiaoyi.framework.ee.utils.ConfigModel;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
-import org.wlpiaoyi.framework.utils.ResponseUtils;
 import org.wlpiaoyi.framework.utils.exception.CatchException;
 import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 import org.wlpiaoyi.framework.utils.web.response.R;
+import org.wlpiaoyi.framework.utils.web.response.ResponseUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.utils.loader.nacos;
+package org.wlpiaoyi.framework.ee.utils.launcher.nacos;
 
 /**
  * {@code @author:}         wlpiaoyi

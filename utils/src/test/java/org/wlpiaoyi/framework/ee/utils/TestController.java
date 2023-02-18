@@ -23,7 +23,7 @@ public class TestController {
     /**
      * 详情
      */
-    @PostMapping("testGet1")
+    @GetMapping("testGet1")
     public R<String> get1() {
         return R.success("我返回的无参数Get数据");
     }
@@ -32,7 +32,7 @@ public class TestController {
      * 详情
      */
     @Idempotence
-    @PostMapping("testGet2")
+    @GetMapping("testGet2")
     public R<String> get2(@RequestParam String v1, @RequestHeader String token) {
         System.out.println("token:" + token);
         return R.success("我返回的无参数Get数据,v1=" + v1);

@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.catalina.connector.RequestFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
+import org.wlpiaoyi.framework.ee.utils.ConfigModel;
 import org.wlpiaoyi.framework.ee.utils.advice.reqresp.SecurityOption;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;

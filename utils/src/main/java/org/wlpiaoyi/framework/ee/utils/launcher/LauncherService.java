@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.utils.loader;
+package org.wlpiaoyi.framework.ee.utils.launcher;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.Ordered;

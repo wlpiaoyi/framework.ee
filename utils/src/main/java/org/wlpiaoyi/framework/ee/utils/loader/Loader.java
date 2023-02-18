@@ -1,7 +1,7 @@
-package org.wlpiaoyi.framework.ee.utils;
+package org.wlpiaoyi.framework.ee.utils.loader;
 
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
-import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceAdapter;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -10,8 +10,13 @@ import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceAdapter;
  * {@code @version:}:       1.0
  */
 public class Loader {
+
+    @Setter
+    private static long timerEpoch = 1633017600000L;
+
     public static void LoadData(ApplicationContext applicationContext){
-        IdempotenceAdapter.loader(applicationContext);
+        IdempotenceLoader.load(applicationContext);
+        IdWorkerLoader.load(applicationContext, timerEpoch);
     }
 
 }

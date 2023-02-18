@@ -3,7 +3,6 @@ package org.wlpiaoyi.framework.ee.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.wlpiaoyi.framework.ee.utils.advice.ConfigModel;
 import org.wlpiaoyi.framework.ee.utils.advice.reqresp.ResponseBodyAdvice;
 import org.wlpiaoyi.framework.ee.utils.advice.reqresp.SecurityOption;
 
