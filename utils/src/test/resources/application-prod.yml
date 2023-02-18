@@ -1,0 +1,11 @@
+#服务器端口
+server:
+  port: 8081
+
+#数据源配置
+spring:
+  cloud:
+    nacos:
+      discovery:
+        ip: 127.0.0.1
+        port: 8081
