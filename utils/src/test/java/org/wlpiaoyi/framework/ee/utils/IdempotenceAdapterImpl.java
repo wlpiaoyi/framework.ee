@@ -1,15 +1,19 @@
 package org.wlpiaoyi.framework.ee.utils;
 
 import lombok.SneakyThrows;
+import org.apache.catalina.connector.RequestFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ModelAndView;
-import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceMoon;
-import org.wlpiaoyi.framework.ee.utils.advice.handle.IdempotenceAdapter;
+import org.wlpiaoyi.framework.ee.utils.filter.ConfigModel;
+import org.wlpiaoyi.framework.ee.utils.filter.idempotence.BaseIdempotenceFilter;
+import org.wlpiaoyi.framework.ee.utils.filter.idempotence.IdempotenceMoon;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Coder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -19,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  * {@code @version:}:       1.0
  */
 @Component
-public class IdempotenceAdapterImpl extends IdempotenceAdapter {
+public class IdempotenceAdapterImpl extends BaseIdempotenceFilter {
 
 
     @Autowired
@@ -29,13 +33,34 @@ public class IdempotenceAdapterImpl extends IdempotenceAdapter {
         return configModel;
     }
 
-    public class IdempotenceMoonImpl implements IdempotenceMoon {
+    @Override
+    public String getRequestURI(ServletRequest servletRequest) {
+        if(servletRequest instanceof RequestFacade){
+            return ((RequestFacade) servletRequest).getRequestURI();
+        }else if(servletRequest instanceof HttpServletRequestWrapper){
+            return ((HttpServletRequestWrapper) servletRequest).getRequestURI();
+        }
+        return null;
+    }
 
+    @Override
+    public void doCustomFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
+        System.out.println();
+    }
+
+    public class IdempotenceMoonImpl implements IdempotenceMoon {
         @SneakyThrows
         @Override
-        public String getKey(HttpServletRequest request, HttpServletResponse response, Object handler) {
-            return new String(Coder.encryptMD5(request.getRequestURI().getBytes(StandardCharsets.UTF_8)))
-                    + new String(Coder.encryptMD5(request.getHeader("token").getBytes(StandardCharsets.UTF_8)));
+        public String getKey(ServletRequest servletRequest) {
+
+            if(servletRequest instanceof RequestFacade){
+                return new BigInteger(Coder.encryptMD5(((RequestFacade) servletRequest).getRequestURI().getBytes(StandardCharsets.UTF_8))).toString(16)
+                        + new BigInteger(Coder.encryptMD5(((RequestFacade) servletRequest).getHeader("token").getBytes(StandardCharsets.UTF_8))).toString(16);
+            }else if(servletRequest instanceof HttpServletRequestWrapper){
+                return new BigInteger(Coder.encryptMD5(((HttpServletRequestWrapper) servletRequest).getRequestURI().getBytes(StandardCharsets.UTF_8))).toString(16)
+                        + new BigInteger(Coder.encryptMD5(((HttpServletRequestWrapper) servletRequest).getHeader("token").getBytes(StandardCharsets.UTF_8))).toString(16);
+            }
+            return null;
         }
     }
 
@@ -46,14 +71,4 @@ public class IdempotenceAdapterImpl extends IdempotenceAdapter {
         return this.idempotenceMoon;
     }
 
-
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        super.postHandle(request, response, handler, modelAndView);
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        super.afterCompletion(request, response, handler, ex);
-    }
 }

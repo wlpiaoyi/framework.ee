@@ -1,9 +1,9 @@
-package org.wlpiaoyi.framework.ee.utils;
+package org.wlpiaoyi.framework.ee.utils.filter;
 
-import lombok.Data;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import java.util.regex.Pattern;
 
@@ -18,12 +18,12 @@ import java.util.regex.Pattern;
 @Component
 public class ConfigModel {
 
-    @Value("${wlpiaoyi.ee.cors.data.json.patterns}")
-    private String jsonPatterns;
+//    @Value("${wlpiaoyi.ee.cors.data.gson.patterns}")
+//    private String[] gsonPatterns;
     @Value("${wlpiaoyi.ee.cors.data.security.patterns}")
-    private String securityPatterns;
+    private String[] securityPatterns;
     @Value("${wlpiaoyi.ee.cors.data.idempotence.patterns}")
-    private String idempotencePatterns;
+    private String[] idempotencePatterns;
     @Value("${wlpiaoyi.ee.cors.data.idempotence.duriTime}")
     private Integer idempotenceDuriTime;
     @Value("${wlpiaoyi.ee.cors.data.idempotence.sectionTime}")
@@ -35,15 +35,29 @@ public class ConfigModel {
     @Value("${wlpiaoyi.ee.cors.data.charset_name}")
     private String charsetName = "UTF-8";
 
-    public boolean checkJsonParse(String path){
-        return Pattern.matches(this.getJsonPatterns(), path);
+//    public final boolean checkGsonParse(String path){
+//        return CheckPatterns(path, this.getGsonPatterns());
+//    }
+
+    public final boolean checkSecurityParse(String path){
+        return CheckPatterns(path, this.getSecurityPatterns());
     }
 
-    public boolean checkSecurityParse(String path){
-        return Pattern.matches(this.getSecurityPatterns(), path);
+    public final boolean checkIdempotencePatterns(String path){
+        return CheckPatterns(path, this.getIdempotencePatterns());
     }
 
-    public boolean checkIdempotencePatterns(String path){
-        return Pattern.matches(this.getIdempotencePatterns(), path);
+
+    protected static boolean CheckPatterns(String path, String[] patterns){
+        if(ValueUtils.isBlank(patterns)){
+            return false;
+        }
+        for (String pattern : patterns) {
+            if(!Pattern.matches(pattern, path)){
+                return false;
+            }
+        }
+        return true;
     }
+
 }

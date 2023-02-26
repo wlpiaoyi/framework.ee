@@ -1,9 +1,8 @@
-package org.wlpiaoyi.framework.ee.utils.advice;
+package org.wlpiaoyi.framework.ee.utils.loader;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.*;
-import org.wlpiaoyi.framework.ee.utils.advice.handle.Idempotence;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import java.lang.reflect.Method;
@@ -16,7 +15,7 @@ import java.util.Map;
  * {@code @date:}           2023/2/16 21:09
  * {@code @version:}:       1.0
  */
-public class AnnotationPathUtils {
+class AnnotationPathUtils {
 
 
     public interface IteratorExecPath1{

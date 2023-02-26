@@ -10,11 +10,14 @@
         <module name="utils" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ee.utils" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="framework.ee" options="-parameters" />
-      <module name="utils" options="-parameters" />
+      <module name="framework.ee" options="" />
+      <module name="utils" options="" />
     </option>
   </component>
 </project>

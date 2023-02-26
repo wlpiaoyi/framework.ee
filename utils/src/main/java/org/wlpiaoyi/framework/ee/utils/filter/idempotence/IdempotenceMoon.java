@@ -1,5 +1,6 @@
-package org.wlpiaoyi.framework.ee.utils.advice.handle;
+package org.wlpiaoyi.framework.ee.utils.filter.idempotence;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,6 +12,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface IdempotenceMoon {
 
-    String getKey(HttpServletRequest request, HttpServletResponse response, Object handler);
+    String getKey(ServletRequest servletRequest);
 
 }

@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.utils.advice.filter;
+package org.wlpiaoyi.framework.ee.utils.filter.encrypt;
 
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +63,9 @@ class ResponseWrapper extends HttpServletResponseWrapper {
     public byte[] getResponseData() throws IOException {
         this.flushBuffer();
         return this.bufferStream.toByteArray();
+    }
+    public void writeBuffer(byte[] buffer) throws IOException {
+        this.bufferStream.write(buffer); ;
     }
 
     /**

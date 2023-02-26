@@ -2,10 +2,9 @@ package org.wlpiaoyi.framework.ee.utils;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.wlpiaoyi.framework.ee.utils.advice.handle.Idempotence;
+import org.wlpiaoyi.framework.ee.utils.filter.idempotence.Idempotence;
 import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 import org.wlpiaoyi.framework.utils.web.response.R;
-import org.wlpiaoyi.framework.utils.web.response.ResponseUtils;
 
 import java.util.Map;
 

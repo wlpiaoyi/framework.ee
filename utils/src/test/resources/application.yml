@@ -1,26 +1,3 @@
-#第三方登陆配置
-social:
-  oauth:
-    GITHUB:
-      client-id: 233************
-      client-secret: 233************************************
-      redirect-uri: ${social.domain}/oauth/redirect/github
-    GITEE:
-      client-id: 233************
-      client-secret: 233************************************
-      redirect-uri: ${social.domain}/oauth/redirect/gitee
-    WECHAT_OPEN:
-      client-id: 233************
-      client-secret: 233************************************
-      redirect-uri: ${social.domain}/oauth/redirect/wechat
-    QQ:
-      client-id: 233************
-      client-secret: 233************************************
-      redirect-uri: ${social.domain}/oauth/redirect/qq
-    DINGTALK:
-      client-id: 233************
-      client-secret: 233************************************
-      redirect-uri: ${social.domain}/oauth/redirect/dingtalk
 #服务器配置
 server:
   undertow:
@@ -97,12 +74,12 @@ wlpiaoyi:
         snowflake:
           workerId: 1
           datacenterId: 1
-        json:
-          patterns: '(/.*)'
         security:
-          patterns: '(/.*)'
+          patterns: >
+            (/sys/.*|/test/.*),
+            (^(?!/test/kk/test2).*$)
         idempotence:
-          patterns: '(/.*)'
+          patterns:
           duriTime: 3
           sectionTime: 1200
         charset_name: 'UTF-8'

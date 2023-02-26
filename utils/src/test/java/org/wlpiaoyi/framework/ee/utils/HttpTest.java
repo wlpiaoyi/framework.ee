@@ -51,13 +51,13 @@ public class HttpTest {
             put("d","4");
         }}, Map.class);
         Response<byte[]> response = HttpClient.instance(
-                        Request.initJson("http://127.0.0.1:8081/test/kk/testGet2")
+                        Request.initJson("http://127.0.0.1:8081/test/kk/testPost2")
                                 .setHeader("token", token)
                                 .setParam("v1", "123")
-                                .setMethod(Request.Method.Get).setHeader(
+                                .setMethod(Request.Method.Post).setHeader(
                                         "Content-Type","application/json;UTF-8"
                                 ).setProxy("127.0.0.1", 8888)
-//                                .setBody(aes.encrypt(bodyArg.getBytes(StandardCharsets.UTF_8)))
+                                .setBody(aes.encrypt(bodyArg.getBytes(StandardCharsets.UTF_8)))
                 )
                 .setRpClazz(byte[].class)
                 .response();

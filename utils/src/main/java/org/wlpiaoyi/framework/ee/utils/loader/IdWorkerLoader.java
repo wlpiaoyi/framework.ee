@@ -1,7 +1,7 @@
 package org.wlpiaoyi.framework.ee.utils.loader;
 
 import org.springframework.context.ApplicationContext;
-import org.wlpiaoyi.framework.ee.utils.ConfigModel;
+import org.wlpiaoyi.framework.ee.utils.filter.ConfigModel;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.snowflake.IdWorker;
 

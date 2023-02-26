@@ -1,28 +1,30 @@
-package org.wlpiaoyi.framework.ee.utils.advice.handle;
+package org.wlpiaoyi.framework.ee.utils.filter.idempotence;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.wlpiaoyi.framework.ee.utils.ConfigModel;
+import org.springframework.core.annotation.Order;
+import org.wlpiaoyi.framework.ee.utils.filter.FilterSupport;
 import org.wlpiaoyi.framework.ee.utils.loader.IdempotenceLoader;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.Method;
+import javax.servlet.*;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * 幂等性
  * {@code @author:}         wlpiaoyi
  * {@code @description:}    幂等性
- * {@code @date:}           2023/2/16 11:56
+ * {@code @date:}           2023/2/23 0:06
  * {@code @version:}:       1.0
  */
 @Slf4j
-public abstract class IdempotenceAdapter extends IdempotenceLoader implements HandlerInterceptor {
+@Order(Integer.MIN_VALUE)
+//@Component
+public abstract class BaseIdempotenceFilter extends IdempotenceLoader implements Filter, FilterSupport {
+
+    public abstract IdempotenceMoon getIdempotenceMoon ();
 
     /**
      * 幂等URI的时间记录
@@ -57,9 +59,8 @@ public abstract class IdempotenceAdapter extends IdempotenceLoader implements Ha
         }).start();
     }
 
-
     /**
-     * 判读是否重复请求
+     * 判读是否限制重复请求
      * @param key
      * @return
      */
@@ -70,59 +71,58 @@ public abstract class IdempotenceAdapter extends IdempotenceLoader implements Ha
                 timer = IDEMPOTENCE_TIMER_MAP.get(key);
                 if(timer == null){
                     IDEMPOTENCE_TIMER_MAP.put(key, System.currentTimeMillis());
-                    return true;
+                    return false;
                 }
             }
         }
         if(Math.abs(System.currentTimeMillis() - timer) > DURI_TIMER){
             IDEMPOTENCE_TIMER_MAP.put(key, System.currentTimeMillis());
-            return true;
+            return false;
         }
         IDEMPOTENCE_TIMER_MAP.put(key, System.currentTimeMillis());
-        return false;
+        return true;
     }
 
-    public abstract IdempotenceMoon getIdempotenceMoon ();
-    public abstract ConfigModel getConfigModel();
-
-    /**
-     * This implementation always returns {@code true}.
-     */
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
-        if(this.getConfigModel() != null){
-            if(!this.getConfigModel().checkIdempotencePatterns(request.getRequestURI())){
-                return true;
+    public void init(FilterConfig filterConfig) throws ServletException {
+        Filter.super.init(filterConfig);
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        String uri = this.getRequestURI(servletRequest);
+//        System.out.println("doFilter class:" + this.getClass().getName() + "uri:" + uri);
+        //进入
+        boolean canDoFilter = false;
+        try{
+            if(!this.getConfigModel().checkIdempotencePatterns(uri)
+               && !IDEMPOTENCE_URI_SET.contains(uri)){
+                canDoFilter = true;
+                return;
+            }
+            if(!isIdempotence(this.getIdempotenceMoon().getKey(servletRequest))){
+                canDoFilter = true;
+                return;
+            }
+            canDoFilter = false;
+            servletResponse.getOutputStream().close();
+            servletRequest.getInputStream().close();
+        }catch (Exception e){
+            canDoFilter = false;
+            log.error("IdempotenceFilter.doFilter:", e);
+        }finally {
+            if(canDoFilter){
+                filterChain.doFilter(servletRequest, servletResponse);
+            }else{
+                this.doCustomFilter(servletRequest, servletResponse, filterChain);
             }
         }
 
-        if(!IDEMPOTENCE_URI_SET.contains(request.getRequestURI())){
-            return true;
-        }
-        return IdempotenceAdapter.isIdempotence(this.getIdempotenceMoon().getKey(request, response, handler));
+
     }
 
-//    /**
-//     * This implementation is empty.
-//     */
-//    @Override
-//    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-//                           @Nullable ModelAndView modelAndView) throws Exception {
-//    }
-//
-//    /**
-//     * This implementation is empty.
-//     */
-//    @Override
-//    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-//                                @Nullable Exception ex) throws Exception {
-//    }
-//
-//    /**
-//     * This implementation is empty.
-//     */
-//    @Override
-//    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response,
-//                                               Object handler) throws Exception {
-//    }
+    @Override
+    public void destroy() {
+        Filter.super.destroy();
+    }
 }
