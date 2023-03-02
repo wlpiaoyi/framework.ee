@@ -18,7 +18,6 @@
         <dependency>
             <groupId>org.wlpiaoyi.framework</groupId>
             <artifactId>utils</artifactId>
-            <version>${fw.project.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

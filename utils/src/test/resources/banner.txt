@@ -1,22 +1,11 @@
 
-
-IIIIIIIIII          CCCCCCCCCCCCC     SSSSSSSSSSSSSSS        &&&&&&&&&&         SSSSSSSSSSSSSSS
-I::::::::I       CCC::::::::::::C   SS:::::::::::::::S      &::::::::::&      SS:::::::::::::::S
-I::::::::I     CC:::::::::::::::C  S:::::SSSSSS::::::S     &::::&&&:::::&    S:::::SSSSSS::::::S
-II::::::II    C:::::CCCCCCCC::::C  S:::::S     SSSSSSS    &::::&   &::::&    S:::::S     SSSSSSS
-  I::::I     C:::::C       CCCCCC  S:::::S                &::::&   &::::&    S:::::S
-  I::::I    C:::::C                S:::::S                 &::::&&&::::&     S:::::S
-  I::::I    C:::::C                 S::::SSSS              &::::::::::&       S::::SSSS
-  I::::I    C:::::C                  SS::::::SSSSS          &:::::::&&         SS::::::SSSSS
-  I::::I    C:::::C                    SSS::::::::SS      &::::::::&   &&&&      SSS::::::::SS
-  I::::I    C:::::C                       SSSSSS::::S    &:::::&&::&  &:::&         SSSSSS::::S
-  I::::I    C:::::C                            S:::::S  &:::::&  &::&&:::&&              S:::::S
-  I::::I     C:::::C       CCCCCC              S:::::S  &:::::&   &:::::&                S:::::S
-II::::::II    C:::::CCCCCCCC::::C  SSSSSSS     S:::::S  &:::::&    &::::&    SSSSSSS     S:::::S
-I::::::::I     CC:::::::::::::::C  S::::::SSSSSS:::::S  &::::::&&&&::::::&&  S::::::SSSSSS:::::S
-I::::::::I       CCC::::::::::::C  S:::::::::::::::SS    &&::::::::&&&::::&  S:::::::::::::::SS
-IIIIIIIIII          CCCCCCCCCCCCC   SSSSSSSSSSSSSSS        &&&&&&&&   &&&&&   SSSSSSSSSSSSSSS
-
-
-
-${AnsiColor.BLUE}:: SpringBlade :: ${spring.application.name}:${AnsiColor.RED}${blade.env}${AnsiColor.BLUE} :: Running SpringBoot ${spring-boot.version} :: ${AnsiColor.BRIGHT_BLACK}
+${AnsiColor.BRIGHT_BLUE}
+${AnsiBackground.BRIGHT_YELLOW} ██╗    ██╗██╗     ██████╗ ██╗ █████╗  ██████╗ ██╗   ██╗██╗ ${AnsiBackground.DEFAULT}
+${AnsiBackground.BRIGHT_YELLOW} ██║    ██║██║     ██╔══██╗██║██╔══██╗██╔═══██╗╚██╗ ██╔╝██║ ${AnsiBackground.DEFAULT}
+${AnsiBackground.BRIGHT_YELLOW} ██║ █╗ ██║██║     ██████╔╝██║███████║██║   ██║ ╚████╔╝ ██║ ${AnsiBackground.DEFAULT}
+${AnsiBackground.BRIGHT_YELLOW} ██║███╗██║██║     ██╔═══╝ ██║██╔══██║██║   ██║  ╚██╔╝  ██║ ${AnsiBackground.DEFAULT}
+${AnsiBackground.BRIGHT_YELLOW} ╚███╔███╔╝███████╗██║     ██║██║  ██║╚██████╔╝   ██║   ██║ ${AnsiBackground.DEFAULT}
+${AnsiBackground.BRIGHT_YELLOW}  ╚══╝╚══╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝    ╚═╝   ╚═╝ ${AnsiBackground.DEFAULT}
+${AnsiColor.BRIGHT_YELLOW}
+${AnsiBackground.BRIGHT_RED} org.fromework :: ${AnsiColor.BRIGHT_GREEN}${spring.application.name} ${AnsiColor.BRIGHT_YELLOW}:: ${AnsiColor.BRIGHT_GREEN}${server.port} ${AnsiColor.BRIGHT_YELLOW}:: ${AnsiColor.BRIGHT_GREEN}${framework.ee.env} ${AnsiColor.BRIGHT_YELLOW}:: Running SpringBoot ${spring-boot.version}${AnsiColor.BRIGHT_YELLOW} ${AnsiBackground.DEFAULT}
+${AnsiColor.DEFAULT}

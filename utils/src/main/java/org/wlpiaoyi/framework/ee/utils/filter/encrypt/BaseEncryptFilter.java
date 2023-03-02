@@ -28,26 +28,27 @@ public abstract class BaseEncryptFilter implements Filter, FilterSupport {
 
     public abstract SecurityOption getSecurityOption();
 
-    public final void doCustomFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain){
+    @SneakyThrows
+    protected byte[] handelReqBody(Aes aes, byte[] buffer){
+        return aes.decrypt(buffer);
+    }
+    @SneakyThrows
+    protected byte[] handelRespBody(Aes aes, byte[] buffer){
+        return aes.encrypt(buffer);
     }
 
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        Filter.super.init(filterConfig);
-    }
 
     @SneakyThrows
     @Override
     public final void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
         String uri = this.getRequestURI(servletRequest);
-//        System.out.println("doFilter class:" + this.getClass().getName() + "uri:" + uri);
+        log.debug("doFilter class:" + this.getClass().getName() + "uri:" + uri);
         ConfigModel configModel = this.getConfigModel();
         servletResponse.setCharacterEncoding(configModel.getCharsetName());
         SecurityOption securityOption = this.getSecurityOption();
 
         //没有需要的操作
-        if(configModel.checkSecurityParse(uri)){
+        if(!configModel.checkSecurityParse(uri)){
             chain.doFilter(servletRequest, servletResponse);
             return;
         }
@@ -64,18 +65,18 @@ public abstract class BaseEncryptFilter implements Filter, FilterSupport {
         byte[] reqBody = reqWrapper.getBody();
         if(!ValueUtils.isBlank(reqBody)){
             //解密请求报文
-            reqBody = aes.decrypt(reqBody);
-            reqWrapper.setBody(reqBody);
+            reqBody = this.handelReqBody(aes, reqBody);
         }
+        reqWrapper.setBody(reqBody);
         //执行业务逻辑 交给下一个过滤器或servlet处理
         chain.doFilter(reqWrapper, resWrapper);
-        byte[] resData = resWrapper.getResponseData();
-        if(!ValueUtils.isBlank(resData)){
+        byte[] respData = resWrapper.getResponseData();
+        if(!ValueUtils.isBlank(respData)){
             //加密响应报文
-            resData = aes.encrypt(resData);
+            respData = this.handelRespBody(aes, respData);
         }
         OutputStream out = servletResponse.getOutputStream();
-        out.write(resData);
+        out.write(respData);
         out.flush();
         out.close();
 

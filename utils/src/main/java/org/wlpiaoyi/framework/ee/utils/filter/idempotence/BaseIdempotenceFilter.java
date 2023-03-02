@@ -91,7 +91,7 @@ public abstract class BaseIdempotenceFilter extends IdempotenceLoader implements
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String uri = this.getRequestURI(servletRequest);
-//        System.out.println("doFilter class:" + this.getClass().getName() + "uri:" + uri);
+        log.debug("doFilter class:" + this.getClass().getName() + "uri:" + uri);
         //进入
         boolean canDoFilter = false;
         try{

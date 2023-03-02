@@ -1,7 +1,10 @@
 #服务器端口
 server:
   port: 8081
-
+log:
+  out:
+    level:
+      INFO
 #数据源配置
 spring:
   cloud:

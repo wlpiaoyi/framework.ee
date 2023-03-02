@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.wlpiaoyi.framework.ee.utils.launcher.nacos.LauncherRunner;
 import org.wlpiaoyi.framework.ee.utils.launcher.nacos.CloudApplication;
-import org.wlpiaoyi.framework.ee.utils.loader.Loader;
+import org.wlpiaoyi.framework.ee.utils.loader.FrameworkEELoader;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -23,7 +23,6 @@ public class UtilsApplicationTest implements ApplicationContextAware {
     private static ApplicationContext APPLICATION_CONTEXT;
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        Loader.setTimerEpoch(1633017600000L);
-        Loader.LoadData(applicationContext);
+        FrameworkEELoader.load(applicationContext, 1633017600000L);
     }
 }

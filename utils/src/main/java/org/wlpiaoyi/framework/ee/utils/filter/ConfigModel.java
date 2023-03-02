@@ -18,8 +18,6 @@ import java.util.regex.Pattern;
 @Component
 public class ConfigModel {
 
-//    @Value("${wlpiaoyi.ee.cors.data.gson.patterns}")
-//    private String[] gsonPatterns;
     @Value("${wlpiaoyi.ee.cors.data.security.patterns}")
     private String[] securityPatterns;
     @Value("${wlpiaoyi.ee.cors.data.idempotence.patterns}")
@@ -39,16 +37,16 @@ public class ConfigModel {
 //        return CheckPatterns(path, this.getGsonPatterns());
 //    }
 
-    public final boolean checkSecurityParse(String path){
+    public final boolean checkSecurityParse(final String path){
         return CheckPatterns(path, this.getSecurityPatterns());
     }
 
-    public final boolean checkIdempotencePatterns(String path){
+    public final boolean checkIdempotencePatterns(final String path){
         return CheckPatterns(path, this.getIdempotencePatterns());
     }
 
 
-    protected static boolean CheckPatterns(String path, String[] patterns){
+    protected static boolean CheckPatterns(final String path, final String[] patterns){
         if(ValueUtils.isBlank(patterns)){
             return false;
         }

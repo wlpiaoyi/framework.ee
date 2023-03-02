@@ -1,5 +1,7 @@
 package org.wlpiaoyi.framework.ee.utils.launcher.nacos;
 
+import org.springframework.boot.Banner;
+import org.springframework.boot.ansi.AnsiBackground;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.*;
@@ -82,6 +84,7 @@ public class LauncherRunner {
         defaultProperties.setProperty("spring.cloud.nacos.config.shared-configs[1].group", NacosConstant.NACOS_CONFIG_GROUP);
         defaultProperties.setProperty("spring.cloud.nacos.config.shared-configs[1].refresh", NacosConstant.NACOS_CONFIG_REFRESH);
         builder.properties(defaultProperties);
+        builder.bannerMode(Banner.Mode.LOG);
         List<LauncherService> launcherList = new ArrayList();
         ServiceLoader.load(LauncherService.class).forEach(launcherList::add);
         (launcherList.stream().sorted(Comparator.comparing(LauncherService::getOrder)).collect(Collectors.toList())).forEach((launcherService) -> {
