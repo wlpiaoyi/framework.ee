@@ -1,2 +1,4 @@
 utils/target/**
 *.log
+activiti/target/*
+.idea/*

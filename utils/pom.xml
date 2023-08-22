@@ -6,8 +6,9 @@
     <parent>
         <groupId>org.wlpiaoyi</groupId>
         <artifactId>framework.ee</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
+
 
     <groupId>org.wlpiaoyi.framework.ee</groupId>
     <artifactId>utils</artifactId>
@@ -25,14 +26,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework</groupId>-->
+<!--            <artifactId>spring-web</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-aop</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -41,10 +42,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-openfeign</artifactId>-->
+<!--        </dependency>-->
         <!-- Nacos -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
@@ -54,10 +55,10 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba.nacos</groupId>
-            <artifactId>nacos-client</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.nacos</groupId>-->
+<!--            <artifactId>nacos-client</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

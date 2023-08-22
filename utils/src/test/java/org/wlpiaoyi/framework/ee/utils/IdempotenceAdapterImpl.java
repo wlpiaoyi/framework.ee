@@ -34,18 +34,13 @@ public class IdempotenceAdapterImpl extends BaseIdempotenceFilter {
     }
 
     @Override
-    public String getRequestURI(ServletRequest servletRequest) {
+    public String getRequestURI(Object servletRequest) {
         if(servletRequest instanceof RequestFacade){
             return ((RequestFacade) servletRequest).getRequestURI();
         }else if(servletRequest instanceof HttpServletRequestWrapper){
             return ((HttpServletRequestWrapper) servletRequest).getRequestURI();
         }
         return null;
-    }
-
-    @Override
-    public void doCustomFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
-        System.out.println();
     }
 
     public class IdempotenceMoonImpl implements IdempotenceMoon {

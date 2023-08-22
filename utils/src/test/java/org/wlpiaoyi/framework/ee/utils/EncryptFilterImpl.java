@@ -7,7 +7,9 @@ import org.wlpiaoyi.framework.ee.utils.filter.ConfigModel;
 import org.wlpiaoyi.framework.ee.utils.filter.encrypt.BaseEncryptFilter;
 import org.wlpiaoyi.framework.ee.utils.filter.encrypt.SecurityOption;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -25,14 +27,15 @@ public class EncryptFilterImpl extends BaseEncryptFilter {
     }
 
     @Override
-    public String getRequestURI(ServletRequest servletRequest) {
+    public String getRequestURI(Object servletRequest) {
         return ((RequestFacade) servletRequest).getRequestURI();
     }
 
     private SecurityOption securityOption = new SecurityOptionImpl();
 
-    @Override
+
     public SecurityOption getSecurityOption() {
         return this.securityOption;
     }
+
 }

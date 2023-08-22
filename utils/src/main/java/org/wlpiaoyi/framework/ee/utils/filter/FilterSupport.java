@@ -23,14 +23,8 @@ public interface FilterSupport {
      * @param servletRequest
      * @return
      */
-    String getRequestURI(ServletRequest servletRequest);
+    String getRequestURI(Object servletRequest);
 
-    /**
-     * 执行自定义的Filter逻辑
-     * @param servletRequest
-     * @param servletResponse
-     * @param filterChain
-     */
-    void doCustomFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain);
+
 
 }

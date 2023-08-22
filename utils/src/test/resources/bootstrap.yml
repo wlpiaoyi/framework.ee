@@ -1,3 +1,26 @@
 spring:
   application:
     name: fw.ee
+  cloud:
+    nacos:
+      config:
+        # 是否开启配置中心 默认true
+        enabled: true
+        # 配置文件后缀
+        file-extension: yml
+        # 配置对应的分组
+        group: roncoo
+        # 配置中心地址
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        shared-configs[0]:
+          data-id: ${spring.application.name}.${spring.cloud.nacos.file-extension} # 配置文件名-Data Id
+          group: roncoo   # 默认为DEFAULT_GROUP
+          refresh: true   # 是否动态刷新，默认为false
+        shared-configs[1]:
+          data-id: ${spring.application.name}.${spring.cloud.nacos.file-extension} # 配置文件名-Data Id
+          group: roncoo   # 默认为DEFAULT_GROUP
+          refresh: true   # 是否动态刷新，默认为false
+    discovery:
+      server-addr: ${spring.cloud.nacos.server-addr}

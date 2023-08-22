@@ -113,8 +113,6 @@ public abstract class BaseIdempotenceFilter extends IdempotenceLoader implements
         }finally {
             if(canDoFilter){
                 filterChain.doFilter(servletRequest, servletResponse);
-            }else{
-                this.doCustomFilter(servletRequest, servletResponse, filterChain);
             }
         }
 
