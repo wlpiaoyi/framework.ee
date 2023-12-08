@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--@author wlpia:WLPIAOYI-DELL-->
+<!--@since 2023-12-08 19:02:34-->
+<!--@desc 文件目录-->
+<mapper namespace="org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.FileMenuMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fileMenuResultMap" type="org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu">
+        <id column="id" property="id"/>
+        <!-- 文件名称 -->
+        <result column="name" property="name"/>
+        <!-- 文件大小 -->
+        <result column="size" property="size"/>
+        <!-- 文件指纹 -->
+        <result column="fingerprint" property="fingerprint"/>
+        <!-- token -->
+        <result column="token" property="token"/>
+        <!-- 文件后缀 -->
+        <result column="suffix" property="suffix"/>
+        <!-- 状态 -->
+        <result column="status" property="status"/>
+        <!-- 是否删除 -->
+        <result column="is_deleted" property="isDeleted"/>
+        <!-- 创建人 -->
+        <result column="create_user" property="createUser"/>
+        <!-- 创建时间 -->
+        <result column="create_time" property="createTime"/>
+        <!-- 修改人 -->
+        <result column="update_user" property="updateUser"/>
+        <!-- 修改时间 -->
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+</mapper>
