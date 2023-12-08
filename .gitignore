@@ -2,3 +2,4 @@ utils/target/**
 *.log
 activiti/target/*
 .idea/*
+file.manager/target/**
