@@ -38,10 +38,6 @@ public class FileMenuRo {
 		@NotNull(message = "文件大小不能为空")
 		@JsonSerialize(using = ToStringSerializer.class)
 		private Long size;
-		/** 文件指纹 **/
-		@Schema(description = "文件指纹")
-		@NotBlank(message = "文件指纹不能为空")
-		private String fingerprint;
 		/** 文件后缀 **/
 		@Schema(description = "文件后缀")
 		private String suffix;
@@ -60,17 +56,8 @@ public class FileMenuRo {
 		/** 文件名称 **/
 		@Schema(description = "文件名称")
 		private String name;
-		/** 文件大小 **/
-		@Schema(description = "文件大小")
-		@NotNull(message = "文件大小不能为空")
-		@JsonSerialize(using = ToStringSerializer.class)
-		private Long size;
-		/** 文件指纹 **/
-		@Schema(description = "文件指纹")
-		@NotBlank(message = "文件指纹不能为空")
-		private String fingerprint;
 		/** 文件后缀 **/
 		@Schema(description = "文件后缀")
 		private String suffix;
     }
-}
+}

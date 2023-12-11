@@ -42,7 +42,7 @@ public class FileMenuController {
 	 */
 	@GetMapping("/detail")
 	@ApiOperationSupport(order = 1)
-	@Operation(summary = "FileMenu 详情")
+	@Operation(summary = "文件目录 详情")
 	public R<FileMenuVo> detail(FileMenuRo.Query body) {
 		FileMenuVo fileMenu = ModelWrapper.parseOne(
 				this.fileMenuService.getOne(
@@ -59,7 +59,7 @@ public class FileMenuController {
 	 */
 	@PostMapping("/list")
 	@ApiOperationSupport(order = 2)
-	@Operation(summary = "FileMenu 分页")
+	@Operation(summary = "文件目录 分页")
 	public R<IPage<FileMenuVo>> list(@RequestBody FileMenuRo.Query body) {
 		LambdaQueryWrapper<FileMenu> wrapper = Wrappers.<FileMenu>lambdaQuery();
 		IPage<FileMenu> pages = fileMenuService.page(Condition.getPage(body), wrapper);
@@ -67,33 +67,13 @@ public class FileMenuController {
 	}
 
 	/**
-	 * 文件目录 新增
-	 */
-	@PostMapping("/save")
-	@ApiOperationSupport(order = 4)
-	@Operation(summary = "FileMenu 新增")
-	public R<Boolean> save(@Valid @RequestBody FileMenuRo.Submit body) {
-		return R.success(fileMenuService.save(ModelWrapper.parseOne(body, FileMenu.class)));
-	}
-
-	/**
 	 * 文件目录 修改
 	 */
 	@PostMapping("/update")
 	@ApiOperationSupport(order = 5)
-	@Operation(summary = "FileMenu 修改")
+	@Operation(summary = "文件目录 修改")
 	public R<Boolean> update(@RequestBody FileMenuRo.Submit body) {
 		return R.success(fileMenuService.updateById(ModelWrapper.parseOne(body, FileMenu.class)));
-	}
-
-	/**
-	 * 文件目录 新增或修改
-	 */
-	@PostMapping("/submit")
-	@ApiOperationSupport(order = 6)
-	@Operation(summary = "FileMenu 新增或修改")
-	public R<Boolean> submit(@Valid @RequestBody FileMenuRo.Submit body) {
-		return R.success(fileMenuService.saveOrUpdate(ModelWrapper.parseOne(body, FileMenu.class)));
 	}
 
 	/**
@@ -101,7 +81,7 @@ public class FileMenuController {
 	 */
 	@GetMapping("/remove")
 	@ApiOperationSupport(order = 7)
-	@Operation(summary = "FileMenu 逻辑删除")
+	@Operation(summary = "文件目录 逻辑删除")
 	public R remove(@Parameter(description = "主键集合", required = true) @RequestParam String ids) {
 		return R.success(fileMenuService.deleteLogic(ValueUtils.toLongList(ids)));
 	}
