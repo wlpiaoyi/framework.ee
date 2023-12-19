@@ -4,8 +4,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -17,8 +22,12 @@ public interface IFileService {
 
     Aes getAes();
 
-    boolean upload(FileMenu fileMenu, MultipartFile file) throws IOException;
+    boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException;
 
-    void download(FileMenu fileMenu, HttpServletResponse response) throws IOException;
+    void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+
+
+    int deleteByFingerprints(List<String> deleteByFingerprints);
 
 }

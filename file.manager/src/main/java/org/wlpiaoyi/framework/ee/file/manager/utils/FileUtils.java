@@ -8,7 +8,6 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -22,7 +21,7 @@ public class FileUtils extends DataUtils{
      * Store file base on file fingerprints
      * @return
      */
-    public static String moveToFingerprintPath(MultipartFile file, String tempPath, String savePath) throws IOException {
+    public static String moveToFingerprint(MultipartFile file, String tempPath, String savePath) throws IOException {
         if(file.isEmpty()){
             throw new BusinessException("File.EmptyError");
         }
@@ -32,27 +31,27 @@ public class FileUtils extends DataUtils{
         java.io.File tempFile = new java.io.File(tempPath + "/" + fileName);
         file.transferTo(tempFile);
 
-        String md5Value = FileUtils.moveToFingerprintPath(tempFile, savePath);
-        return md5Value;
+        String fingerprint = FileUtils.moveToFingerprint(tempFile, savePath);
+        return fingerprint;
 
     }
-
-    public static String parseFingerprintToPath(String md5Value){
-        String args[] = md5Value.split(":");
-        final String md5Path = args[0];
-        final String md5Size = args[1];
-        String oPath = parseMd5PathToPath(md5Path);
-        return oPath + "." + md5Size;
+    public static String getMd5ValueByFingerprint(String fingerprint){
+        return fingerprint.substring(0, 32);
     }
-    private static String parseMd5PathToPath(String md5Path){
-        String oPath = "";
-        for (int i = 0; i < md5Path.length(); i+=2) {
-            String fn = md5Path.substring(i, i+2);
-            oPath +=  fn + "/";
+
+    public static String getMd5PathByFingerprint(String fingerprint){
+        String md5Value = getMd5ValueByFingerprint(fingerprint);
+        String md5Path = "";
+        for (int i = 0; i < md5Value.length(); i+=2) {
+            String fn = md5Value.substring(i, i+2);
+            md5Path +=  fn + "/";
         }
-        return oPath;
+        return md5Path;
     }
-
+    public static String getDataSuffixByFingerprint(String fingerprint){
+        final String dataValue = fingerprint.substring(32);
+        return dataValue.substring(0, 32) + "." + dataValue.substring(32);
+    }
 
     /**
      * Store file base on file fingerprints
@@ -60,21 +59,22 @@ public class FileUtils extends DataUtils{
      * @return
      */
     @SneakyThrows
-    public static String moveToFingerprintPath(java.io.File orgFile, String savePath) {
+    public static String moveToFingerprint(java.io.File orgFile, String savePath) {
         try{
-            final String md5Path = DataUtils.MD5(orgFile);
-            final String md5Size = DataUtils.MD5((DataUtils.getSize(orgFile.getAbsolutePath()) + "").getBytes(StandardCharsets.UTF_8));
-            String oPath = FileUtils.parseMd5PathToPath(md5Path);
-            java.io.File md5File = new java.io.File(savePath + "/" + oPath);
+            final String fingerprint = DataUtils.MD5PLUS(orgFile);
+            final String md5Path = getMd5PathByFingerprint(fingerprint);
+            final String dataSuffix = getDataSuffixByFingerprint(fingerprint);
+            String oPath = savePath + "/" + md5Path;
+            java.io.File md5File = new java.io.File(oPath);
             if (!md5File.exists()) {// 判断目录是否存在
                 md5File.mkdirs();
             }
-            md5File = new java.io.File(savePath + "/" + oPath + "." + md5Size);
-            if(md5File.exists()) return md5Path + ":" + md5Size;
+            md5File = new java.io.File(oPath + dataSuffix);
+            if(md5File.exists()) return fingerprint;
             if(!orgFile.renameTo(md5File)){
                 throw new BusinessException("File.MoveError");
             }
-            return md5Path + ":" + md5Size;
+            return fingerprint;
         } finally {
             if(orgFile.exists()) orgFile.delete();
         }

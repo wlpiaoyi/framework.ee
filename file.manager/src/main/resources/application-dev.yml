@@ -40,9 +40,9 @@ spring:
   servlet:
     multipart:
       #设置总上传的数据大小
-      max-request-size: 200MB
+      max-request-size: 1024MB
       #单个文件大小
-      maxFileSize : 40MB
+      maxFileSize : 256MB
       #xx 报错修改的地方
     max-connections: 200000
     max-http-post-size: 9000000

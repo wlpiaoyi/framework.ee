@@ -16,5 +16,6 @@ import java.util.List;
  */
 public interface FileMenuMapper extends BaseMapper<FileMenu> {
 
+    int deleteByFingerprints(List<String> deleteByFingerprints);
 
-}
+}

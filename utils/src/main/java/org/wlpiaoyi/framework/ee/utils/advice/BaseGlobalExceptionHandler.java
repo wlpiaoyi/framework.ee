@@ -7,10 +7,10 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.wlpiaoyi.framework.ee.utils.response.R;
+import org.wlpiaoyi.framework.ee.utils.response.ResponseUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.CatchException;
-import org.wlpiaoyi.framework.utils.web.response.R;
-import org.wlpiaoyi.framework.utils.web.response.ResponseUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,7 +33,7 @@ public abstract class BaseGlobalExceptionHandler {
     public void defaultBusinessHandler(HttpServletRequest req, HttpServletResponse resp, BusinessException exception) throws IOException {
         String message = exception.getMessage();
         R r = R.data(exception.getCode(), null, message);
-        errorHandler(req, resp, exception, r, 200);
+        errorHandler(resp, 200, r);
     }
 
     /**
@@ -47,7 +47,7 @@ public abstract class BaseGlobalExceptionHandler {
     public void defaultCatchHandler(HttpServletRequest req, HttpServletResponse resp, CatchException exception) throws IOException {
         String message = exception.getMessage();
         R r = R.data(exception.getCode(), null, message);
-        errorHandler(req, resp, exception, r, 200);
+        errorHandler(resp, 200, r);
     }
 
 
@@ -63,7 +63,7 @@ public abstract class BaseGlobalExceptionHandler {
         int code = 404;
         String message = "没有找到接口";
         R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        errorHandler(resp, code, r);
     }
 
     /**
@@ -78,7 +78,7 @@ public abstract class BaseGlobalExceptionHandler {
         int code = 405;
         String message = "不支持的方法:" + exception.getMessage();
         R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        errorHandler(resp, code, r);
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class BaseGlobalExceptionHandler {
         int code = 412;
         String message = "参数错误:" + exception.getMessage();
         R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        errorHandler(resp, code, r);
     }
 
     /**
@@ -108,7 +108,7 @@ public abstract class BaseGlobalExceptionHandler {
         int code = 413;
         String message = "参数错误:" + exception.getMessage();
         R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        errorHandler(resp, code, r);
     }
 
 
@@ -125,7 +125,7 @@ public abstract class BaseGlobalExceptionHandler {
         int code = 400;
         String message = "参数序列化异常:" + exception.getMessage();
         R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        errorHandler(resp, code, r);
     }
 
     /**
@@ -137,38 +137,27 @@ public abstract class BaseGlobalExceptionHandler {
      */
     @ExceptionHandler(value = Exception.class)
     public void defaultErrorHandler(HttpServletRequest req, HttpServletResponse resp, Exception exception) throws IOException {
-        int code = 500;
-        String message = "未知错误";
-        R r = R.data(code, null, message);
-        errorHandler(req, resp, exception, r, code);
+        R r = R.error(exception);
+        errorHandler(resp, 500, r);
     }
 
 
     /**
      * 异常处理
-     * @param req
      * @param resp
-     * @param exception
      * @param r
      * @param httpCode
      * @throws IOException
      */
-    private static void errorHandler(HttpServletRequest req,
-                                     HttpServletResponse resp,
-                                     Exception exception,
-                                     R r, int httpCode) throws IOException {
+    private static void errorHandler(HttpServletResponse resp,
+                                     int httpCode, R r) throws IOException {
         try{
-            ResponseUtils.writeResponseJson(r,  r.getCode(), resp);
+            ResponseUtils.writeResponseJson(httpCode, r,  resp);
         } catch (Exception e){
             int code = 500;
-            String message = "未知错误";
+            String message = "Unknown error";
             r = R.data(code, null, message);
-            ResponseUtils.writeResponseJson(r,  httpCode, resp);
-        }finally {
-            if(r != null){
-                log.error("Exception Response api:(" + req.getRequestURI() +
-                        ") res:(" + r +  ")", exception);
-            }
+            ResponseUtils.writeResponseJson(httpCode,r, resp);
         }
     }
 }

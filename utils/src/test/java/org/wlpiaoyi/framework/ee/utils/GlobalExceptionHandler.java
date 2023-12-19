@@ -2,7 +2,7 @@ package org.wlpiaoyi.framework.ee.utils;
 
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.wlpiaoyi.framework.ee.utils.advice.BaseGlobalExceptionHandler;
-import org.wlpiaoyi.framework.utils.web.response.R;
+import org.wlpiaoyi.framework.ee.utils.response.R;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

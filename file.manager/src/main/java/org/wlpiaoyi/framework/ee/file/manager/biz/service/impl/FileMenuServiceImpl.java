@@ -11,6 +11,7 @@ import org.wlpiaoyi.framework.ee.file.manager.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,4 +26,10 @@ import java.util.List;
 @Service
 public class FileMenuServiceImpl extends BaseServiceImpl<FileMenuMapper, FileMenu> implements IFileMenuService {
 
+    @Override
+    public int deleteByFingerprints(List<String> deleteByFingerprints) {
+        List<String> canClears = new ArrayList<>();
+//        List<String> hasFiles = this.baseMapper.selectList(Wrappers.<FileMenu>lambdaQuery().in(FileMenu::getFingerprint, deleteByFingerprints));
+        return this.baseMapper.deleteByFingerprints(deleteByFingerprints);
+    }
 }

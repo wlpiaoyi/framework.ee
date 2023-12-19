@@ -3,6 +3,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.controller;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +25,11 @@ import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.annotation.security.PermitAll;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -54,16 +57,19 @@ public class FileController {
     @ApiOperationSupport(order = 1)
     @Operation(summary = "上传单个文件 请求", description = "上传单个文件")
     @ResponseBody
-    public R<FileMenu> upload(@RequestParam(value = "file") MultipartFile file,
-                              @RequestParam(value = "name", required = false) String name) {
+    public R<FileMenu> upload(@Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
+                              @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
+                              @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
+                              HttpServletResponse response) {
         FileMenu fileMenu = new FileMenu();
+        fileMenu.setIsVerifySign(isVerifySign);
         if(ValueUtils.isNotBlank(name)){
             fileMenu.setName(name);
             if(fileMenu.getName().contains(".")){
                 fileMenu.setSuffix(fileMenu.getName().substring(name.lastIndexOf(".") + 1));
             }
         }
-        this.fileService.upload(fileMenu, file);
+        this.fileService.upload(fileMenu, file, response);
         return R.success(fileMenu);
     }
 
@@ -73,15 +79,13 @@ public class FileController {
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void loading(@PathVariable String token, @PathVariable String fingerprint, HttpServletResponse response) {
-        Long id = new Long(new String(this.fileService.getAes().decrypt(ValueUtils.hexToBytes(token))));
-        FileMenu fileMenu = this.fileMenuService.getById(id);
-        if(fileMenu == null){
-            throw new BusinessException("没有找到文件");
-        }
-        if(!fileMenu.getFingerprint().toUpperCase(Locale.ROOT).equals(fingerprint.toUpperCase(Locale.ROOT))){
-            throw new BusinessException("没有找到文件");
-        }
-        this.fileService.download(fileMenu, response);
+    public void loading(@Parameter(description = "token") @PathVariable String token,
+                        @Parameter(description = "文件指纹") @PathVariable String fingerprint,
+                        @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
+                        HttpServletRequest request,
+                        HttpServletResponse response) {
+        this.fileService.download(token, fingerprint, new HashMap(){{
+            put("readType", readType);
+        }}, request, response);
     }
 }

@@ -5,6 +5,8 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileMenuVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.ro.FileMenuRo;
 import org.wlpiaoyi.framework.ee.file.manager.service.IBaseService;
 
+import java.util.List;
+
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
@@ -14,5 +16,6 @@ import org.wlpiaoyi.framework.ee.file.manager.service.IBaseService;
  */
 public interface IFileMenuService extends IBaseService<FileMenu> {
 
+    int deleteByFingerprints(List<String> deleteByFingerprints);
 
 }

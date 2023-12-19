@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.file.manager.utils.tools.request;
+package org.wlpiaoyi.framework.ee.utils.request;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -8,10 +8,11 @@ package org.wlpiaoyi.framework.ee.file.manager.utils.tools.request;
  */
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 import java.io.Serializable;
 
-
+@Getter
 @Schema(description = "查询条件")
 public class Query implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -23,25 +24,9 @@ public class Query implements Serializable {
 
     @Schema(description = "增序排序字段")
     private String ascs;
-
     @Schema(description = "降序排序字段")
     private String descs;
 
-
-    public Integer getPageNum() {
-        return this.pageNum;
-    }
-    public Integer getPageSize() {
-        return this.pageSize;
-    }
-
-    public String getAscs() {
-        return this.ascs;
-    }
-
-    public String getDescs() {
-        return this.descs;
-    }
 
     public Query setCurrent(final Integer current) {
         this.pageNum = current;

@@ -27,7 +27,6 @@
     <properties>
         <ee.project.version>1.0.2-SNAPSHOT</ee.project.version>
         <fw.project.version>1.0.2-SNAPSHOT</fw.project.version>
-
         <java.version>1.8</java.version>
         <maven.plugin.version>3.8.1</maven.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,7 +108,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -133,17 +131,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Nacos -->
-<!--            <dependency>-->
-<!--                <groupId>com.alibaba.cloud</groupId>-->
-<!--                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>-->
-<!--                <version>${alibaba.cloud.version}</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>com.alibaba.cloud</groupId>-->
-<!--                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>-->
-<!--                <version>${alibaba.cloud.version}</version>-->
-<!--            </dependency>-->
             <dependency>
                 <groupId>com.alibaba.nacos</groupId>
                 <artifactId>nacos-client</artifactId>
@@ -159,13 +146,11 @@
                 <artifactId>mybatis-spring-boot-starter</artifactId>
                 <version>2.3.1</version>
             </dependency>
-
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok-maven-plugin</artifactId>
                 <version>1.18.20.0</version>
             </dependency>
-
             <!-- swagger3工具 -->
             <dependency>
                 <groupId>io.swagger.core.v3</groupId> <!-- 接口文档：使用最新版本的 Swagger 模型 -->
@@ -188,19 +173,13 @@
                 <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
                 <version>${knife4j.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-jpa</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-<!--            <version>1.18.8</version>-->
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -225,7 +204,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-<!--            <version>4.12</version>-->
             <scope>test</scope>
         </dependency>
 
@@ -259,6 +237,5 @@
         </plugins>
         <defaultGoal>compile</defaultGoal>
     </build>
-
 
 </project>

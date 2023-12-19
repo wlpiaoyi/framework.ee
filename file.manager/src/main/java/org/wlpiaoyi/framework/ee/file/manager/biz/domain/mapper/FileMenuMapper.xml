@@ -14,6 +14,8 @@
         <result column="size" property="size"/>
         <!-- 文件指纹 -->
         <result column="fingerprint" property="fingerprint"/>
+        <!-- 是否验证签名 0:否 1:是 -->
+        <result column="is_verify_sign" property="isVerifySign"/>
         <!-- token -->
         <result column="token" property="token"/>
         <!-- 文件后缀 -->
@@ -32,5 +34,12 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
+    <delete id="deleteByFingerprints">
+        DELETE FROM biz_file_menu WHERE `fingerprint` in (
+        <foreach item="item" index="index" collection="fingerprints" separator=",">
+            #{item}
+        </foreach>
+        )
+    </delete>
 
-</mapper>
+</mapper>
