@@ -45,7 +45,6 @@ public class FileMenu extends BaseEntity implements Serializable {
     @NotBlank(message = "token不能为空")
     private String token;
 
-
     /** 是否验证签名 0:否 1:是 **/
     @Schema(description = "是否验证签名 0:否 1:是")
     private byte isVerifySign = 0;

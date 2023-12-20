@@ -60,14 +60,12 @@ public class FileController {
     public R<FileMenu> upload(@Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
+                              @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
                               HttpServletResponse response) {
         FileMenu fileMenu = new FileMenu();
         fileMenu.setIsVerifySign(isVerifySign);
         if(ValueUtils.isNotBlank(name)){
             fileMenu.setName(name);
-            if(fileMenu.getName().contains(".")){
-                fileMenu.setSuffix(fileMenu.getName().substring(name.lastIndexOf(".") + 1));
-            }
         }
         this.fileService.upload(fileMenu, file, response);
         return R.success(fileMenu);

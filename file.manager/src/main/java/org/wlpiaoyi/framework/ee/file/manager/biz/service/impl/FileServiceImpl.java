@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -65,24 +66,23 @@ public class FileServiceImpl implements IFileService {
 
     static {
         try {
-            String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQtcKZfLEQmfxFNhBqvYWeLTaRDw4izgpKS0vD\n" +
-                    "QJj3uXiDb59NQnvFHjdyQ/DPOJNmRCuIrm/uR9RC8PwelYUUiDaR/oOw0CiX602kEShflxGaMbnt\n" +
-                    "qHho50+Ikd954iZCVjihJcYtyHKbxNYn80IDlr7aoQ47LLrqBS61kWCO3wIDAQAB";
-            String privateKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAJC1wpl8sRCZ/EU2EGq9hZ4tNpEP\n" +
-                    "DiLOCkpLS8NAmPe5eINvn01Ce8UeN3JD8M84k2ZEK4iub+5H1ELw/B6VhRSINpH+g7DQKJfrTaQR\n" +
-                    "KF+XEZoxue2oeGjnT4iR33niJkJWOKElxi3IcpvE1ifzQgOWvtqhDjssuuoFLrWRYI7fAgMBAAEC\n" +
-                    "gYEAhpMx1PF77Rd23pqHq+xyXYZoj4AzwjRgp3TckUj6uK4YIAtnVz8zwT33jGEYim1vzpQo9CRc\n" +
-                    "3XiZMmPP41VjeyJ9IElogGerAk25TlZrwY6YGSOfLCj5xxFCutZB/PZJHtuEG6pZx4qvVMfV8mND\n" +
-                    "2By93WkC+LZ6Q8yUgbt446kCQQD3A0ue1De38nwwT43A3tkbELCauuUy6nTpijvJfYZ6buhO2+Bp\n" +
-                    "E2ba8rt2sU5vdqjcGgLo78idwISGaK6oYBlNAkEAlfma0NcSGcwf61lNWiuX9NqX9gQFEaHUPZM/\n" +
-                    "dqK/vl6Y5J3zRRQMuS0QXX0x8+a6BTrhFzwXNg5tR3Y25TGS2wJAS5S5jcbXqbRLpaih8jL98Vch\n" +
-                    "AqdPPE4bKd5/Pr7m6A2JjZ+fwecK4NHG5KGKI3cGYhqfa1D7bLGcm1fqoWCOPQJAEI8SrORSN072\n" +
-                    "Z0Hg7IfLq1lHVf5zoNLBYFsVsr+ddCN1tihKZ+Ii1X9IQ0pDba6X82Pg3nPgDDPjlPRUc1HZ6QJB\n" +
-                    "ALMdY7bOv+oPDfDvEQ5GbxXliZX0UHXz71nv4OxWKlqQi0QWnhyUY4/zp+qpQ96f9ICui4Gc32z2\n" +
-                    "6JIa0fP/UBU=";
+            String publicKey = "MIIBuDCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2USZp\n" +
+                    "RV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4O1fn\n" +
+                    "xqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmCouuE\n" +
+                    "C/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCBgLRJ\n" +
+                    "FnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhRkImo\n" +
+                    "g9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoDgYUAAoGBAMyDBLj55PknyzfXRfzByz3MDmt5FPwMN0HO\n" +
+                    "00v6c3tV0l4E0oZuW/IOdXSF0TdTaa2jHQMarkPP5v8Mc83oZ50splFBJ6F0y+Jk7lvOh8bHTl46\n" +
+                    "on5W0T7w8Qy8/LR8BZNVgcj9Mizcxd1eVKQAXIMgb6u2MZ8ryZEA+lWALOSd";
+            String privateKey = "MIIBSwIBADCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2\n" +
+                    "USZpRV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4\n" +
+                    "O1fnxqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmC\n" +
+                    "ouuEC/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCB\n" +
+                    "gLRJFnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhR\n" +
+                    "kImog9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoEFgIULqGv+4HdEYM5CqUFM48ksAmDFko==";
             rsa = Rsa.create().setPublicKey(publicKey).setPrivateKey(privateKey)
-                    .setSignatureAlgorithm(Rsa.SIGNATURE_ALGORITHM_SHA512_WITH_RSA)
-                    .setKeyAlgorithm(Rsa.KEY_ALGORTHM_RSA)
+                    .setSignatureAlgorithm(Rsa.SIGNATURE_ALGORITHM_SHA1_WITH_DSA)
+                    .setKeyAlgorithm(Rsa.KEY_ALGORTHM_DSA)
                     .loadKey();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -128,8 +128,12 @@ public class FileServiceImpl implements IFileService {
             if(ValueUtils.isBlank(fileMenu.getName())){
                 fileMenu.setName(file.getOriginalFilename());
             }
-            if(ValueUtils.isBlank(fileMenu.getSize()) && file.getOriginalFilename().contains(".")){
-                fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+            if(ValueUtils.isBlank(fileMenu.getSuffix())){
+                if(fileMenu.getName().contains(".")){
+                    fileMenu.setSuffix(fileMenu.getName().substring(fileMenu.getName().lastIndexOf(".") + 1));
+                }else if(file.getOriginalFilename().contains(".")){
+                    fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+                }
             }
             fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprint)));
             fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprint.toUpperCase(Locale.ROOT))));
@@ -249,7 +253,11 @@ public class FileServiceImpl implements IFileService {
             response.setContentType(contentType);
             response.setCharacterEncoding(Charsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
-            response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileMenu.getName(), Charsets.UTF_8.name()));
+            String filename = fileMenu.getName();
+            if(!filename.contains(".")){
+                filename += "." + fileMenu.getSuffix();
+            }
+            response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
 //            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileMenu.getName(), Charsets.UTF_8.name()));
 
             response.setStatus(200);
