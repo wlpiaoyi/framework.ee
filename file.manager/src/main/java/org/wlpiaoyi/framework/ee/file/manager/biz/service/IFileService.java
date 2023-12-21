@@ -20,8 +20,6 @@ import java.util.Map;
  */
 public interface IFileService {
 
-    Aes getAes();
-
     boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException;
 
     void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);

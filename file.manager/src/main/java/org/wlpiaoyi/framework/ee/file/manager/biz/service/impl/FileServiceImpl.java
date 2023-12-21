@@ -22,6 +22,9 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
+import org.wlpiaoyi.framework.utils.security.AesCipher;
+import org.wlpiaoyi.framework.utils.security.RsaCipher;
+import org.wlpiaoyi.framework.utils.security.SignVerify;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -52,17 +55,21 @@ public class FileServiceImpl implements IFileService {
 
 
     @Getter
-    private Aes aes;
+    private AesCipher aesCipher;
     {
         try {
-            aes = Aes.create().setKey("abcd567890ABCDEF12D4567890ABCDEF").setIV("a1cd567E90123456").load();
+            aesCipher = AesCipher.build().setKey(
+                    "104ed7522903443d8b905223907eebbb2fa0978db6dd47d8b7d2c9cbef3b41eb"
+                    ,128)
+                    .setIV("a1cd567E90123456")
+                    .loadConfig();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Getter
-    private static Rsa rsa;
+    private static SignVerify signVerify;
 
     static {
         try {
@@ -80,10 +87,7 @@ public class FileServiceImpl implements IFileService {
                     "ouuEC/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCB\n" +
                     "gLRJFnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhR\n" +
                     "kImog9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoEFgIULqGv+4HdEYM5CqUFM48ksAmDFko==";
-            rsa = Rsa.create().setPublicKey(publicKey).setPrivateKey(privateKey)
-                    .setSignatureAlgorithm(Rsa.SIGNATURE_ALGORITHM_SHA1_WITH_DSA)
-                    .setKeyAlgorithm(Rsa.KEY_ALGORTHM_DSA)
-                    .loadKey();
+            signVerify = SignVerify.build().setPublicKey(publicKey).setPrivateKey(privateKey).loadConfig();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +121,7 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException {
-        InputStream inputStream = null;
+        List<InputStream> inputStreams = new ArrayList<>();
         try{
 
             String fingerprint = FileUtils.moveToFingerprint(file, this.tempPath, this.dataPath);
@@ -137,18 +141,18 @@ public class FileServiceImpl implements IFileService {
             }
             fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprint)));
             fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprint.toUpperCase(Locale.ROOT))));
-            fileMenu.setToken(this.dataEncode(this.aes.encrypt(fileMenu.getId().toString().getBytes())));
+            fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
             if(fileMenu.getIsVerifySign() == 1){
                 FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprint));
-                inputStream = orgFileIo;
+                inputStreams.add(orgFileIo);
                 InputStream tokenByteInput = new ByteArrayInputStream(fileMenu.getToken().getBytes());
-                final String dataSign = this.dataEncode(rsa.sign(orgFileIo));
-                final String tokenSign = this.dataEncode(rsa.sign(tokenByteInput));
+                final String dataSign = this.dataEncode(signVerify.sign(orgFileIo));
+                final String tokenSign = this.dataEncode(signVerify.sign(tokenByteInput));
                 tokenByteInput.close();
                 response.setHeader("file-sign", tokenSign + "," + dataSign);
                 try {
                     orgFileIo.close();
-                    inputStream = null;
+                    inputStreams.remove(orgFileIo);
                 } catch (Exception e) {
                     throw e;
                 }
@@ -159,11 +163,13 @@ public class FileServiceImpl implements IFileService {
                 return this.fileMenuService.save(fileMenu);
             }
         } finally {
-            if(inputStream != null){
-                try{
-                    inputStream.close();
-                }catch (Exception e){
-                    e.printStackTrace();
+            if(ValueUtils.isNotBlank(inputStreams)){
+                for (InputStream inputStream : inputStreams){
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -195,7 +201,7 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-        Long id = new Long(new String(this.getAes().decrypt(this.dataDecode(token))));
+        Long id = new Long(new String(this.aesCipher.decrypt(this.dataDecode(token))));
         FileMenu fileMenu = this.fileMenuService.getById(id);
         if(fileMenu == null){
             throw new BusinessException("没有找到文件");
@@ -210,7 +216,7 @@ public class FileServiceImpl implements IFileService {
     }
     @Override
     public void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-        OutputStream outputStream = null;
+        List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
             String fingerprint = ValueUtils.bytesToHex(this.dataDecode(fileMenu.getFingerprint()));
@@ -226,14 +232,14 @@ public class FileServiceImpl implements IFileService {
                    String dataSign = args[1];
                    ByteArrayInputStream bis = new ByteArrayInputStream(fileMenu.getToken().getBytes());
                    inputStreams.add(bis);
-                   if(!rsa.verify(bis, this.dataDecode(tokenSign))){
+                   if(!signVerify.verify(bis, this.dataDecode(tokenSign))){
                        throw new BusinessException("无权访问文件");
                    }
                    bis.close();
                    inputStreams.remove(bis);
                    FileInputStream fis = new FileInputStream(ogPath);
                    inputStreams.add(fis);
-                   if(!rsa.verify(fis, this.dataDecode(dataSign))){
+                   if(!signVerify.verify(fis, this.dataDecode(dataSign))){
                        throw new BusinessException("无权访问文件");
                    }
                    fis.close();
@@ -262,7 +268,7 @@ public class FileServiceImpl implements IFileService {
 
             response.setStatus(200);
             ServletOutputStream sos = response.getOutputStream();
-            outputStream = sos;
+            outputStreams.add(sos);
             FileInputStream fis = new FileInputStream(ogPath);
             inputStreams.add(fis);
             int nRead;
@@ -271,6 +277,8 @@ public class FileServiceImpl implements IFileService {
                 sos.write(data, 0, nRead);
                 sos.flush();
             }
+            sos.close();
+            outputStreams.remove(sos);
             fis.close();
             inputStreams.remove(fis);
         }catch (Exception e){
@@ -279,11 +287,14 @@ public class FileServiceImpl implements IFileService {
             }
             throw new BusinessException("文件读取异常", e);
         }finally {
-            if(outputStream != null){
-                try {
-                    outputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+
+            if(ValueUtils.isNotBlank(outputStreams)){
+                for (OutputStream outputStream : outputStreams){
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             if(ValueUtils.isNotBlank(inputStreams)){

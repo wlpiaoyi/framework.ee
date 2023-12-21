@@ -67,6 +67,7 @@ public class FileController {
         if(ValueUtils.isNotBlank(name)){
             fileMenu.setName(name);
         }
+
         this.fileService.upload(fileMenu, file, response);
         return R.success(fileMenu);
     }
