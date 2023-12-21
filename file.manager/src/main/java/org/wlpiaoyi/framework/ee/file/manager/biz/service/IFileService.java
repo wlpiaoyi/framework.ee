@@ -20,6 +20,7 @@ import java.util.Map;
  */
 public interface IFileService {
 
+<<<<<<< HEAD
     /**
      * 上传文件
      * @param fileMenu
@@ -28,6 +29,8 @@ public interface IFileService {
      * @return
      * @throws IOException
      */
+=======
+>>>>>>> d2f1f3dbbe59bc761fe5a13e02585178edcf2ba6
     boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException;
 
     /**
