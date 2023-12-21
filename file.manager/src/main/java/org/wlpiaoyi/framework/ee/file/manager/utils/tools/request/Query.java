@@ -20,10 +20,8 @@ public class Query implements Serializable {
     private Integer current = 0;
     @Schema(description = "每页的数量")
     private Integer size = 10;
-
     @Schema(description = "增序排序字段")
     private String ascs;
-
     @Schema(description = "降序排序字段")
     private String descs;
 

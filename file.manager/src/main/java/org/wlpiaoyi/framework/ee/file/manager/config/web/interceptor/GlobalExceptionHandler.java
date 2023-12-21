@@ -13,7 +13,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.wlpiaoyi.framework.ee.file.manager.utils.tools.response.R;
 import org.wlpiaoyi.framework.ee.file.manager.utils.tools.response.ResponseUtils;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
+import org.wlpiaoyi.framework.utils.exception.CatchException;
+import org.wlpiaoyi.framework.utils.exception.SystemException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,7 +42,7 @@ public class GlobalExceptionHandler {
     public void defaultErrorHandler(HttpServletRequest req, HttpServletResponse resp, Exception exception) throws IOException {
 
         String message = null;
-        int code = 200;
+        int code = 0;
         try{
             if (exception instanceof BusinessException) {
                 if(((BusinessException) exception).getCode() == 0){
@@ -51,7 +54,20 @@ public class GlobalExceptionHandler {
                 return;
             }
 
-            if (exception instanceof NoHandlerFoundException) {
+            if (exception instanceof SystemException) {
+                if(((SystemException) exception).getCode() == 0){
+                    code = 401;
+                }else{
+                    code = ((SystemException) exception).getCode();
+                }
+                ResponseUtils.writeResponseJson(R.data(code, exception.getMessage()), code, resp);
+                return;
+            }
+
+            if (exception instanceof CatchException) {
+                code = ((CatchException) exception).getCode();
+                message = exception.getMessage();
+            } else if (exception instanceof NoHandlerFoundException) {
                 code = 404;
                 message = "没有找到接口";
             } else if (exception instanceof HttpRequestMethodNotSupportedException) {
@@ -68,8 +84,8 @@ public class GlobalExceptionHandler {
                 message = "参数序列化异常:" + exception.getMessage();
             } else if (exception instanceof BadSqlGrammarException) {
                 code = 500;
-                message = "服务器错误[001]";
-            }  else if (exception instanceof MethodArgumentNotValidException) {
+                message = "服务器错误[sql error]";
+            } else if (exception instanceof MethodArgumentNotValidException) {
                 BindingResult br = ((MethodArgumentNotValidException)exception).getBindingResult();
                 StringBuilder errorMsg = new StringBuilder();
                 if (br.hasErrors()) {
@@ -85,13 +101,11 @@ public class GlobalExceptionHandler {
             }
             ResponseUtils.writeResponseJson(R.data(code, message), code, resp);
         }finally {
-//            if(ValueUtils.isBlank(message)){
+            if(ValueUtils.isBlank(message)){
+                message = "unknown error";
+            }
             log.error("BusException Response api:(" + req.getRequestURI() +
-                    ") code:(" + code +  ")", exception);
-//            }else{
-//                log.error("SysException Response api:(" + req.getRequestURI() +
-//                        ") code:(" + code +  ") message:(" + message + ")");
-//            }
+                    ") code:(" + code +  ") message:(" + message + ")", exception);
         }
     }
 

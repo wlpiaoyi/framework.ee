@@ -22,6 +22,7 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
+import org.wlpiaoyi.framework.utils.exception.SystemException;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 import org.wlpiaoyi.framework.utils.security.RsaCipher;
 import org.wlpiaoyi.framework.utils.security.SignVerify;
@@ -202,12 +203,12 @@ public class FileServiceImpl implements IFileService {
         Long id = new Long(new String(this.aesCipher.decrypt(this.dataDecode(token))));
         FileMenu fileMenu = this.fileMenuService.getById(id);
         if(fileMenu == null){
-            throw new BusinessException("没有找到文件");
+            throw new SystemException("没有找到文件");
         }
         String fmFingerprint = ValueUtils.bytesToHex(this.dataDecode(fileMenu.getFingerprint()));
         String ogFingerprint = ValueUtils.bytesToHex(this.dataDecode(fingerprint));
         if(!fmFingerprint.equals(ogFingerprint)){
-            throw new BusinessException("文件验证失败");
+            throw new SystemException("文件验证失败");
         }
         this.download(fileMenu, funcMap,request, response);
 
@@ -222,7 +223,7 @@ public class FileServiceImpl implements IFileService {
             if(fileMenu.getIsVerifySign() == 1){
                 String fileSign = request.getHeader("file-sign");
                 if(ValueUtils.isBlank(fileSign)){
-                    throw new BusinessException("无权访问文件");
+                    throw new SystemException("无权访问文件");
                 }
                try{
                    String[] args = fileSign.split(",");
@@ -231,19 +232,19 @@ public class FileServiceImpl implements IFileService {
                    ByteArrayInputStream bis = new ByteArrayInputStream(fileMenu.getToken().getBytes());
                    inputStreams.add(bis);
                    if(!signVerify.verify(bis, this.dataDecode(tokenSign))){
-                       throw new BusinessException("无权访问文件");
+                       throw new SystemException("无权访问文件");
                    }
                    bis.close();
                    inputStreams.remove(bis);
                    FileInputStream fis = new FileInputStream(ogPath);
                    inputStreams.add(fis);
                    if(!signVerify.verify(fis, this.dataDecode(dataSign))){
-                       throw new BusinessException("无权访问文件");
+                       throw new SystemException("无权访问文件");
                    }
                    fis.close();
                    inputStreams.remove(fis);
                }catch (Exception e){
-                   throw new BusinessException("无权访问文件", e);
+                   throw new SystemException("无权访问文件", e);
                }
             }
             String ft = fileMenu.getSuffix();
@@ -280,10 +281,13 @@ public class FileServiceImpl implements IFileService {
             fis.close();
             inputStreams.remove(fis);
         }catch (Exception e){
-            if(e instanceof  BusinessException){
+            if(e instanceof BusinessException){
                 throw (BusinessException)e;
             }
-            throw new BusinessException("文件读取异常", e);
+            if(e instanceof SystemException){
+                throw (SystemException)e;
+            }
+            throw new SystemException("文件读取异常", e);
         }finally {
 
             if(ValueUtils.isNotBlank(outputStreams)){
