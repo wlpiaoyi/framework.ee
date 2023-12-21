@@ -136,21 +136,13 @@ public class FileServiceImpl implements IFileService {
                     fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
                 }
             }
-<<<<<<< HEAD
+
             fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprintHex)));
             fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT))));
-            fileMenu.setToken(this.dataEncode(this.aes.encrypt(fileMenu.getId().toString().getBytes())));
-            if(fileMenu.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprintHex));
-                inputStream = orgFileIo;
-=======
-            fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprint)));
-            fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprint.toUpperCase(Locale.ROOT))));
             fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
             if(fileMenu.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprint));
+                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprintHex));
                 inputStreams.add(orgFileIo);
->>>>>>> d2f1f3dbbe59bc761fe5a13e02585178edcf2ba6
                 InputStream tokenByteInput = new ByteArrayInputStream(fileMenu.getToken().getBytes());
                 final String dataSign = this.dataEncode(signVerify.sign(orgFileIo));
                 final String tokenSign = this.dataEncode(signVerify.sign(tokenByteInput));
@@ -207,11 +199,7 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-<<<<<<< HEAD
-        Long id = new Long(new String(this.aes.decrypt(this.dataDecode(token))));
-=======
         Long id = new Long(new String(this.aesCipher.decrypt(this.dataDecode(token))));
->>>>>>> d2f1f3dbbe59bc761fe5a13e02585178edcf2ba6
         FileMenu fileMenu = this.fileMenuService.getById(id);
         if(fileMenu == null){
             throw new BusinessException("没有找到文件");
