@@ -34,6 +34,15 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
+    <!-- 查询出已经删除的并且没有关联的文件指纹 -->
+    <select id="selectDeletedForFingerprint" resultType="java.lang.String">
+        SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_menu WHERE status = 0 AND is_deleted = 1
+        AND fingerprint NOT IN (
+            SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_menu WHERE is_deleted = 0
+        )
+    </select>
+
+    <!-- 根据文件指纹删除数据 -->
     <delete id="deleteByFingerprints">
         DELETE FROM biz_file_menu WHERE `fingerprint` in (
         <foreach item="item" index="index" collection="fingerprints" separator=",">

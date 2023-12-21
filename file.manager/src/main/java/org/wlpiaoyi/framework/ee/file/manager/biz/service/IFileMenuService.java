@@ -16,6 +16,10 @@ import java.util.List;
  */
 public interface IFileMenuService extends IBaseService<FileMenu> {
 
-    int deleteByFingerprints(List<String> deleteByFingerprints);
+    /**
+     * 清理文件
+     * @return
+     */
+    List<String> cleanFile();
 
 }

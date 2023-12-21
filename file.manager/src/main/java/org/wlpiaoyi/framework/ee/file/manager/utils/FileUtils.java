@@ -21,7 +21,7 @@ public class FileUtils extends DataUtils{
      * Store file base on file fingerprints
      * @return
      */
-    public static String moveToFingerprint(MultipartFile file, String tempPath, String savePath) throws IOException {
+    public static String moveToFingerprintHex(MultipartFile file, String tempPath, String savePath) throws IOException {
         if(file.isEmpty()){
             throw new BusinessException("File.EmptyError");
         }
@@ -31,7 +31,7 @@ public class FileUtils extends DataUtils{
         java.io.File tempFile = new java.io.File(tempPath + "/" + fileName);
         file.transferTo(tempFile);
 
-        String fingerprint = FileUtils.moveToFingerprint(tempFile, savePath);
+        String fingerprint = FileUtils.moveToFingerprintHex(tempFile, savePath);
         return fingerprint;
 
     }
@@ -59,7 +59,7 @@ public class FileUtils extends DataUtils{
      * @return
      */
     @SneakyThrows
-    public static String moveToFingerprint(java.io.File orgFile, String savePath) {
+    public static String moveToFingerprintHex(java.io.File orgFile, String savePath) {
         try{
             final String fingerprint = DataUtils.MD5PLUS(orgFile);
             final String md5Path = getMd5PathByFingerprint(fingerprint);

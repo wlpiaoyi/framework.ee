@@ -1,8 +1,12 @@
 package org.wlpiaoyi.framework.ee.file.manager;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.file.manager.utils.SpringUtils;
 
 

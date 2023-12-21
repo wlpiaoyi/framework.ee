@@ -77,11 +77,11 @@ public class FileController {
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void loading(@Parameter(description = "token") @PathVariable String token,
-                        @Parameter(description = "文件指纹") @PathVariable String fingerprint,
-                        @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
-                        HttpServletRequest request,
-                        HttpServletResponse response) {
+    public void download(@Parameter(description = "token") @PathVariable String token,
+                         @Parameter(description = "文件指纹") @PathVariable String fingerprint,
+                         @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
+                         HttpServletRequest request,
+                         HttpServletResponse response) {
         this.fileService.download(token, fingerprint, new HashMap(){{
             put("readType", readType);
         }}, request, response);

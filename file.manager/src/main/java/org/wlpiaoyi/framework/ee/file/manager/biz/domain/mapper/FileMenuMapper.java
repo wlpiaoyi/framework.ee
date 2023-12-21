@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Param;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.ro.FileMenuRo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileMenuVo;
@@ -16,6 +17,17 @@ import java.util.List;
  */
 public interface FileMenuMapper extends BaseMapper<FileMenu> {
 
-    int deleteByFingerprints(List<String> deleteByFingerprints);
+    /**
+     * 查询出已经删除的并且没有关联的文件指纹
+     * @return
+     */
+    List<String> selectDeletedForFingerprint();
+
+    /**
+     * 根据文件指纹删除数据
+     * @param fingerprints
+     * @return
+     */
+    int deleteByFingerprints(@Param("fingerprints") List<String> fingerprints);
 
 }

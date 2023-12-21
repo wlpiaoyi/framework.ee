@@ -25,19 +25,9 @@ public class FileMenuRo {
 	public static class Query extends org.wlpiaoyi.framework.ee.file.manager.utils.tools.request.Query implements Serializable {
 
         private static final long serialVersionUID = 1L;
-
-		@JsonSerialize(using = ToStringSerializer.class)
-		@Schema(description = "主键id")
-		@TableId(value = "id", type = IdType.ASSIGN_ID)
-		private Long id;
 		/** 文件名称 **/
 		@Schema(description = "文件名称")
 		private String name;
-		/** 文件大小 **/
-		@Schema(description = "文件大小")
-		@NotNull(message = "文件大小不能为空")
-		@JsonSerialize(using = ToStringSerializer.class)
-		private Long size;
 		/** 文件后缀 **/
 		@Schema(description = "文件后缀")
 		private String suffix;

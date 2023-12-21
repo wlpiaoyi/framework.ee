@@ -20,14 +20,32 @@ import java.util.Map;
  */
 public interface IFileService {
 
-    Aes getAes();
-
+    /**
+     * 上传文件
+     * @param fileMenu
+     * @param file
+     * @param response
+     * @return
+     * @throws IOException
+     */
     boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException;
 
+    /**
+     * 下载文件
+     * @param token
+     * @param fingerprint
+     * @param funcMap
+     * @param request
+     * @param response
+     */
     void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
     void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
-    int deleteByFingerprints(List<String> deleteByFingerprints);
+    /**
+     * 清理文件
+     * @return
+     */
+    List<String> cleanFile();
 
 }

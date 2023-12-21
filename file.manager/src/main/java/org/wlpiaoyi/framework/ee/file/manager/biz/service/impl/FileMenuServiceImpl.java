@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.FileMenuMapper;
@@ -10,6 +11,7 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.domain.ro.FileMenuRo;
 import org.wlpiaoyi.framework.ee.file.manager.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +28,15 @@ import java.util.List;
 @Service
 public class FileMenuServiceImpl extends BaseServiceImpl<FileMenuMapper, FileMenu> implements IFileMenuService {
 
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public int deleteByFingerprints(List<String> deleteByFingerprints) {
-        List<String> canClears = new ArrayList<>();
-//        List<String> hasFiles = this.baseMapper.selectList(Wrappers.<FileMenu>lambdaQuery().in(FileMenu::getFingerprint, deleteByFingerprints));
-        return this.baseMapper.deleteByFingerprints(deleteByFingerprints);
+    public List<String> cleanFile() {
+        List<String> fingerprints = this.baseMapper.selectDeletedForFingerprint();
+        if(ValueUtils.isBlank(fingerprints)){
+            return null;
+        }
+        this.baseMapper.deleteByFingerprints(fingerprints);
+        return fingerprints;
     }
 }

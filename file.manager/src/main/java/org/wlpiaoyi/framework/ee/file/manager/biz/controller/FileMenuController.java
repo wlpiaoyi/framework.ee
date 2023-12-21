@@ -62,6 +62,12 @@ public class FileMenuController {
 	@Operation(summary = "文件目录 分页")
 	public R<IPage<FileMenuVo>> list(@RequestBody FileMenuRo.Query body) {
 		LambdaQueryWrapper<FileMenu> wrapper = Wrappers.<FileMenu>lambdaQuery();
+		if(ValueUtils.isNotBlank(body.getName())){
+			wrapper.like(FileMenu::getName, body.getName());
+		}
+		if(ValueUtils.isNotBlank(body.getSuffix())){
+			wrapper.eq(FileMenu::getSuffix, body.getSuffix());
+		}
 		IPage<FileMenu> pages = fileMenuService.page(Condition.getPage(body), wrapper);
 		return R.success(ModelWrapper.parseForPage(pages, FileMenuVo.class));
 	}

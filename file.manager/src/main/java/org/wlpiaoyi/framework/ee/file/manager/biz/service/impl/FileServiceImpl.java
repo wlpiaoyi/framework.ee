@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
@@ -16,7 +17,6 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileService;
 import org.wlpiaoyi.framework.ee.file.manager.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
-import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
@@ -27,7 +27,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -90,8 +89,8 @@ public class FileServiceImpl implements IFileService {
     }
 
 
-    public String getFilePath(String fingerprint){
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprint(fingerprint) + FileUtils.getDataSuffixByFingerprint(fingerprint);
+    public String getFilePath(String fingerprintHex){
+        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprint(fingerprintHex) + FileUtils.getDataSuffixByFingerprint(fingerprintHex);
     }
     @SneakyThrows
     public String dataEncode(byte[] bytes){
@@ -99,12 +98,10 @@ public class FileServiceImpl implements IFileService {
         res = res.replaceAll("\n", "");
         res = res.replaceAll("\r", "");
         res = res.replaceAll("/", "_");
-//        res = URLEncoder.encode(res, "UTF-8");
         return res;
     }
     @SneakyThrows
     public byte[] dataDecode(String str){
-//        str = URLDecoder.decode(str, "UTF-8");
         str = str.replaceAll("_", "/");
         byte[] bytes = DataUtils.base64Decode(str.getBytes());
         return bytes;
@@ -120,7 +117,7 @@ public class FileServiceImpl implements IFileService {
         InputStream inputStream = null;
         try{
 
-            String fingerprint = FileUtils.moveToFingerprint(file, this.tempPath, this.dataPath);
+            String fingerprintHex = FileUtils.moveToFingerprintHex(file, this.tempPath, this.dataPath);
             if(ValueUtils.isBlank(fileMenu.getId())){
                 fileMenu.setId(IdUtils.nextId());
             }
@@ -135,11 +132,11 @@ public class FileServiceImpl implements IFileService {
                     fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
                 }
             }
-            fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprint)));
-            fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprint.toUpperCase(Locale.ROOT))));
+            fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprintHex)));
+            fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT))));
             fileMenu.setToken(this.dataEncode(this.aes.encrypt(fileMenu.getId().toString().getBytes())));
             if(fileMenu.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprint));
+                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprintHex));
                 inputStream = orgFileIo;
                 InputStream tokenByteInput = new ByteArrayInputStream(fileMenu.getToken().getBytes());
                 final String dataSign = this.dataEncode(rsa.sign(orgFileIo));
@@ -195,7 +192,7 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-        Long id = new Long(new String(this.getAes().decrypt(this.dataDecode(token))));
+        Long id = new Long(new String(this.aes.decrypt(this.dataDecode(token))));
         FileMenu fileMenu = this.fileMenuService.getById(id);
         if(fileMenu == null){
             throw new BusinessException("没有找到文件");
@@ -297,12 +294,40 @@ public class FileServiceImpl implements IFileService {
             }
         }
     }
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public int deleteByFingerprints(List<String> deleteByFingerprints) {
-
-//        return this.base deleteByFingerprints(deleteByFingerprints);
-        return 0;
+    public List<String> cleanFile() {
+        List<String> fingerprints = this.fileMenuService.cleanFile();
+        if(ValueUtils.isBlank(fingerprints)){
+            return null;
+        }
+        for (String fingerprint : fingerprints){
+            String fingerprintHex = ValueUtils.bytesToHex(this.dataDecode(fingerprint));
+            String filePath = this.getFilePath(fingerprintHex);
+            File file = new File(filePath);
+            if(file.exists()){
+                if(file.delete()){
+                    log.info("file.clean delete success for file [{}]", file.getAbsolutePath());
+                }else{
+                    log.warn("file.clean delete failed for file [{}]", file.getAbsolutePath());
+                }
+            }
+            String fingerprintPath = FileUtils.getMd5PathByFingerprint(fingerprintHex);
+            while (fingerprintPath.length() > 0 && fingerprintPath.contains("/")){
+                fingerprintPath = fingerprintPath.substring(0, fingerprintPath.lastIndexOf("/"));
+                String absPath = this.dataPath + "/" + fingerprintPath;
+                File removeFile = new File(absPath);
+                if(ValueUtils.isNotBlank(removeFile.list())){
+                    break;
+                }
+                if(removeFile.delete()){
+                    log.info("file.clean delete success for path [{}]", removeFile.getAbsolutePath());
+                }else{
+                    log.warn("file.clean delete failed for path [{}]", removeFile.getAbsolutePath());
+                }
+            }
+        }
+        return fingerprints;
     }
 
 

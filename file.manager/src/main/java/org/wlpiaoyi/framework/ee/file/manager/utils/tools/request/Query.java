@@ -17,9 +17,9 @@ public class Query implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "当前页")
-    private Integer pageNum;
+    private Integer current = 0;
     @Schema(description = "每页的数量")
-    private Integer pageSize;
+    private Integer size = 10;
 
     @Schema(description = "增序排序字段")
     private String ascs;
@@ -28,28 +28,26 @@ public class Query implements Serializable {
     private String descs;
 
 
-    public Integer getPageNum() {
-        return this.pageNum;
+    public Integer getCurrent() {
+        return this.current;
     }
-    public Integer getPageSize() {
-        return this.pageSize;
+    public Integer getSize() {
+        return this.size;
     }
-
     public String getAscs() {
         return this.ascs;
     }
-
     public String getDescs() {
         return this.descs;
     }
 
     public Query setCurrent(final Integer current) {
-        this.pageNum = current;
+        this.current = current;
         return this;
     }
 
-    public Query setPageSize(final Integer pageSize) {
-        this.pageSize = pageSize;
+    public Query setSize(final Integer size) {
+        this.size = size;
         return this;
     }
     public Query setAscs(final String ascs) {
