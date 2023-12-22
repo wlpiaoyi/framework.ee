@@ -1,11 +1,10 @@
-package org.wlpiaoyi.framework.ee.file.manager.utils.tools;
+package org.wlpiaoyi.framework.ee.utils.request;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.lang.Nullable;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.request.Query;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 /**

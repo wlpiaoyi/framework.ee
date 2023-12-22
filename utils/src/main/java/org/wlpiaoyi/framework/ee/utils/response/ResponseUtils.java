@@ -13,30 +13,32 @@ import java.io.Serializable;
  */
 public class ResponseUtils {
 
-    private static final String CONTENT_TYPE_VALUE_JSON = "application/json";
-    private static final String CONTENT_CHARSET_ENCODE = "utf-8";
-    public static void writeResponseJson(int code,
-                                         @Nullable Object json,
+    private static final String CONTENT_TYPE_KEY = "content-type";
+    private static final String CONTENT_TYPE_VALUE_JSON = "application/json;charset=utf-8";
+    public static void writeResponseJson(int code, @Nullable Object json,
                                          @NonNull HttpServletResponse response) throws IOException {
-//        response.setHeader("content-type", "application/json;charset=" + CONTENT_CHARSET_ENCODE);
-        response.setStatus(code);
+        response.setHeader(CONTENT_TYPE_KEY, CONTENT_TYPE_VALUE_JSON);
         response.setContentType(CONTENT_TYPE_VALUE_JSON);
+        ResponseUtils.writeResponseData(code, json, response);
+    }
+
+    public static void writeResponseData(int code, @Nullable Object data,
+                                         @NonNull HttpServletResponse response) throws IOException {
         String repStr;
-        if(json != null){
-            if(json instanceof String){
-                repStr = (String) json;
-            }else if(json instanceof StringBuffer){
-                repStr = ((StringBuffer) json).toString();
-            }else if(json instanceof StringBuilder){
-                repStr = ((StringBuilder) json).toString();
-            }else if(json instanceof byte[]){
-                repStr = new String((byte[]) json, CONTENT_CHARSET_ENCODE);
+        if(data != null){
+            if(data instanceof String){
+                repStr = (String) data;
+            }else if(data instanceof StringBuffer){
+                repStr = ((StringBuffer) data).toString();
+            }else if(data instanceof StringBuilder){
+                repStr = ((StringBuilder) data).toString();
             }else{
-                repStr = GsonBuilder.gsonDefault().toJson(json);
+                repStr = GsonBuilder.gsonDefault().toJson(data);
             }
         }else{
             repStr = "";
         }
+        response.setStatus(code);
         response.getWriter().write(repStr);
     }
 }

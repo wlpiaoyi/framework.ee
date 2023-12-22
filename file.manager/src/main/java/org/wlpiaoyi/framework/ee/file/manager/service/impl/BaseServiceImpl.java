@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> extends ServiceImpl<M, T> implements IBaseService<T> {
 
-    protected Class<T> currentMapperClass() {
+    protected Class<M> currentMapperClass() {
         return (Class)this.getResolvableType().as(BaseServiceImpl.class).getGeneric(new int[]{0}).getType();
     }
 

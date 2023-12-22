@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.file.manager.utils.tools;
+package org.wlpiaoyi.framework.ee.utils.tools;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

@@ -3,6 +3,7 @@ package org.wlpiaoyi.framework.ee.utils.response;
 import lombok.Getter;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.CatchException;
+import org.wlpiaoyi.framework.utils.exception.SystemException;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -17,16 +18,51 @@ import java.util.Map;
 @Getter
 public class R<T> {
 
+
     private int code;
 
     private T data;
 
     private String message;
+
+    public static <T> R<T>  success(T data){
+        return R.data(200, data, "SUCCESS");
+    }
+
+    public static <T> R<T>  success(T data, String message){
+        return R.data(200, data, message);
+    }
+
+    public static <T> R<T>  failed(String message){
+        return R.data(501, message);
+    }
+
+    public static <T> R<T>  failed(T data, String message){
+        return R.data(501, data, message);
+    }
+
+    public static  R<Throwable> error(BusinessException exception){
+        return R.data(200, exception.getCause(), exception.getMessage());
+    }
+
+    public static  R<Throwable> error(SystemException exception){
+        return R.data(exception.getCode(), exception.getCause(), exception.getMessage());
+    }
+
+    public static  R<Throwable> error(CatchException exception){
+        return R.data(exception.getCode(), exception.getCause(), exception.getMessage());
+    }
+
+    public static  R<Throwable> error(int code, Exception exception){
+        return R.data(code, exception.getCause(), exception.getMessage());
+    }
+
     public static <T> R<T> data(int code){
         R<T> r = new R<>();
         r.code = code;
         return r;
     }
+
     public static <T> R<T> data(int code, String message){
         R<T> r = new R<>();
         r.message = message;
@@ -40,45 +76,6 @@ public class R<T> {
         r.message = message;
         r.data = data;
         r.code = code;
-        return r;
-    }
-
-
-    public static <T> R<T>  success(T data){
-        return data(200, data, "SUCCESS");
-    }
-    public static <T> R<T>  success(T data, String message){
-        return data(200, message);
-    }
-
-    public static <T> R<T>  fail(String message){
-        return data(501, message);
-    }
-    public static <T> R<T>  fail(T data, String message){
-        return data(501, data, message);
-    }
-    public static <T> R<T> error(BusinessException e){
-        R<T> r = new R<>();
-        r.code = e.getCode();
-        r.message = e.getMessage();
-        return r;
-    }
-    public static <T> R<T> error(CatchException e){
-        R<T> r = new R<>();
-        r.code = e.getCode();
-        r.message = e.getMessage();
-        return r;
-    }
-    public static <T> R<T> error(RuntimeException e){
-        R<T> r = new R<>();
-        r.code = 501;
-        r.message = e.getMessage();
-        return r;
-    }
-    public static <T> R<T> error(Exception e){
-        R<T> r = new R<>();
-        r.code = 502;
-        r.message = e.getMessage();
         return r;
     }
 }

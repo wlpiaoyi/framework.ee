@@ -14,13 +14,11 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileMenuVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.ro.FileMenuRo;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.Condition;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.ModelWrapper;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.response.R;
 import org.springframework.web.bind.annotation.*;
+import org.wlpiaoyi.framework.ee.utils.request.Condition;
+import org.wlpiaoyi.framework.ee.utils.response.R;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
-
-import javax.validation.Valid;
 
 
 /**

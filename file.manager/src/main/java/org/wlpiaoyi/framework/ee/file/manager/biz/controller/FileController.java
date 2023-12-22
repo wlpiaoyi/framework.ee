@@ -8,29 +8,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
-import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileMenuVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileService;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.ModelWrapper;
-import org.wlpiaoyi.framework.ee.file.manager.utils.tools.response.R;
+import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.utils.ValueUtils;
-import org.wlpiaoyi.framework.utils.data.DataUtils;
-import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
-import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;
-import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Locale;
 
 /**
  * {@code @author:}         wlpiaoyi

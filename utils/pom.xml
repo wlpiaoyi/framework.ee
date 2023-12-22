@@ -12,8 +12,8 @@
 
     <groupId>org.wlpiaoyi.framework.ee</groupId>
     <artifactId>utils</artifactId>
-    <version>${ee.project.version}</version>
-    <packaging>jar</packaging>
+    <version>1.0.2-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
@@ -43,6 +43,20 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId> <!-- 接口文档：使用最新版本的 Swagger 模型 -->
             <artifactId>swagger-models</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-extension</artifactId>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

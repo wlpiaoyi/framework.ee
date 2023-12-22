@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.file.manager.utils.tools;
+package org.wlpiaoyi.framework.ee.utils.tools;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

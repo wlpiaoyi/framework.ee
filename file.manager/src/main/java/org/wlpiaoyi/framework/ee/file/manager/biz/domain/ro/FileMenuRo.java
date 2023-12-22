@@ -7,10 +7,6 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.io.Serializable;
-import javax.validation.constraints.NotNull;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import javax.validation.constraints.NotBlank;
 
 
 /**
@@ -22,7 +18,7 @@ import javax.validation.constraints.NotBlank;
 public class FileMenuRo {
     @Data
     @Schema(description = "文件目录 请求实例")
-	public static class Query extends org.wlpiaoyi.framework.ee.file.manager.utils.tools.request.Query implements Serializable {
+	public static class Query extends org.wlpiaoyi.framework.ee.utils.request.Query implements Serializable {
 
         private static final long serialVersionUID = 1L;
 		/** 文件名称 **/
