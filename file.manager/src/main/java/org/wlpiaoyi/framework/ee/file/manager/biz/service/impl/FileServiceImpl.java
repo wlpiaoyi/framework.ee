@@ -19,12 +19,9 @@ import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
-import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
-import org.wlpiaoyi.framework.utils.encrypt.rsa.Rsa;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
-import org.wlpiaoyi.framework.utils.security.RsaCipher;
 import org.wlpiaoyi.framework.utils.security.SignVerify;
 
 import javax.servlet.ServletOutputStream;
@@ -94,11 +91,15 @@ public class FileServiceImpl implements IFileService {
     }
 
 
-    public String getFilePath(String fingerprintHex){
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprint(fingerprintHex) + FileUtils.getDataSuffixByFingerprint(fingerprintHex);
+    public String getFilePathByFingerprintHex(String fingerprintHex){
+        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
+    }
+    public String getFilePathByFingerprint(String fingerprint){
+        String fingerprintHex = this.parseFingerprintToHex(fingerprint);
+        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
     }
     @SneakyThrows
-    public String dataEncode(byte[] bytes){
+    protected String dataEncode(byte[] bytes){
         String res = new String(DataUtils.base64Encode(bytes));
         res = res.replaceAll("\n", "");
         res = res.replaceAll("\r", "");
@@ -106,27 +107,47 @@ public class FileServiceImpl implements IFileService {
         return res;
     }
     @SneakyThrows
-    public byte[] dataDecode(String str){
+    protected byte[] dataDecode(String str){
         str = str.replaceAll("_", "/");
         byte[] bytes = DataUtils.base64Decode(str.getBytes());
         return bytes;
     }
 
+    protected String parseFingerprintToHex(String fingerprint){
+        return ValueUtils.bytesToHex(this.dataDecode(fingerprint));
+    }
+
+    protected String parseFingerprintHexTo(String fingerprintHex){
+        return this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT)));
+    }
+
     @Autowired
     private IFileMenuService fileMenuService;
 
+    @SneakyThrows
+    public void synFileMenuByFingerprint(FileMenu fileMenu, String fingerprint) {
+        if(ValueUtils.isBlank(fileMenu.getId())){
+            fileMenu.setId(IdUtils.nextId());
+        }
+        fileMenu.setSize(DataUtils.getSize(this.getFilePathByFingerprint(fingerprint)));
+        fileMenu.setFingerprint(fingerprint);
+        fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
+        if(ValueUtils.isNotBlank(fileMenu.getName()) &&ValueUtils.isBlank(fileMenu.getSuffix())){
+            if(fileMenu.getName().contains(".")){
+                fileMenu.setSuffix(fileMenu.getName().substring(fileMenu.getName().lastIndexOf(".") + 1));
+            }
+        }
+    }
 
     @SneakyThrows
     @Override
     public boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException {
         List<InputStream> inputStreams = new ArrayList<>();
         try{
-
             String fingerprintHex = FileUtils.moveToFingerprintHex(file, this.tempPath, this.dataPath);
             if(ValueUtils.isBlank(fileMenu.getId())){
                 fileMenu.setId(IdUtils.nextId());
             }
-
             if(ValueUtils.isBlank(fileMenu.getName())){
                 fileMenu.setName(file.getOriginalFilename());
             }
@@ -137,12 +158,11 @@ public class FileServiceImpl implements IFileService {
                     fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
                 }
             }
-
-            fileMenu.setSize(DataUtils.getSize(this.getFilePath(fingerprintHex)));
-            fileMenu.setFingerprint(this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT))));
+            fileMenu.setFingerprint(this.parseFingerprintHexTo(fingerprintHex));
+            fileMenu.setSize(DataUtils.getSize(this.getFilePathByFingerprintHex(fingerprintHex)));
             fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
             if(fileMenu.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.getFilePath(fingerprintHex));
+                FileInputStream orgFileIo = new FileInputStream(this.getFilePathByFingerprintHex(fingerprintHex));
                 inputStreams.add(orgFileIo);
                 InputStream tokenByteInput = new ByteArrayInputStream(fileMenu.getToken().getBytes());
                 final String dataSign = this.dataEncode(signVerify.sign(orgFileIo));
@@ -213,13 +233,13 @@ public class FileServiceImpl implements IFileService {
         this.download(fileMenu, funcMap,request, response);
 
     }
+
     @Override
     public void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
-            String fingerprint = ValueUtils.bytesToHex(this.dataDecode(fileMenu.getFingerprint()));
-            String ogPath = this.getFilePath(fingerprint);
+            String ogPath = this.getFilePathByFingerprint(fileMenu.getFingerprint());
             if(fileMenu.getIsVerifySign() == 1){
                 String fileSign = request.getHeader("file-sign");
                 if(ValueUtils.isBlank(fileSign)){
@@ -319,7 +339,7 @@ public class FileServiceImpl implements IFileService {
         }
         for (String fingerprint : fingerprints){
             String fingerprintHex = ValueUtils.bytesToHex(this.dataDecode(fingerprint));
-            String filePath = this.getFilePath(fingerprintHex);
+            String filePath = this.getFilePathByFingerprintHex(fingerprintHex);
             File file = new File(filePath);
             if(file.exists()){
                 if(file.delete()){
@@ -328,7 +348,7 @@ public class FileServiceImpl implements IFileService {
                     log.warn("file.clean delete failed for file [{}]", file.getAbsolutePath());
                 }
             }
-            String fingerprintPath = FileUtils.getMd5PathByFingerprint(fingerprintHex);
+            String fingerprintPath = FileUtils.getMd5PathByFingerprintHex(fingerprintHex);
             while (fingerprintPath.length() > 0 && fingerprintPath.contains("/")){
                 fingerprintPath = fingerprintPath.substring(0, fingerprintPath.lastIndexOf("/"));
                 String absPath = this.dataPath + "/" + fingerprintPath;

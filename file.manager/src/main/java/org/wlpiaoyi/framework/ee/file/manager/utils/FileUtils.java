@@ -31,16 +31,16 @@ public class FileUtils extends DataUtils{
         java.io.File tempFile = new java.io.File(tempPath + "/" + fileName);
         file.transferTo(tempFile);
 
-        String fingerprint = FileUtils.moveToFingerprintHex(tempFile, savePath);
-        return fingerprint;
+        String fingerprintHex = FileUtils.moveToFingerprintHex(tempFile, savePath);
+        return fingerprintHex;
 
     }
-    public static String getMd5ValueByFingerprint(String fingerprint){
-        return fingerprint.substring(0, 32);
+    public static String getMd5ValueByFingerprintHex(String fingerprintHex){
+        return fingerprintHex.substring(0, 40);
     }
 
-    public static String getMd5PathByFingerprint(String fingerprint){
-        String md5Value = getMd5ValueByFingerprint(fingerprint);
+    public static String getMd5PathByFingerprintHex(String fingerprintHex){
+        String md5Value = getMd5ValueByFingerprintHex(fingerprintHex);
         String md5Path = "";
         for (int i = 0; i < md5Value.length(); i+=2) {
             String fn = md5Value.substring(i, i+2);
@@ -48,9 +48,9 @@ public class FileUtils extends DataUtils{
         }
         return md5Path;
     }
-    public static String getDataSuffixByFingerprint(String fingerprint){
-        final String dataValue = fingerprint.substring(32);
-        return dataValue.substring(0, 32) + "." + dataValue.substring(32);
+    public static String getDataSuffixByFingerprintHex(String fingerprintHex){
+        final String dataValue = fingerprintHex.substring(40);
+        return dataValue.substring(0, dataValue.length() / 2) + "." + dataValue.substring(dataValue.length() / 2);
     }
 
     /**
@@ -61,20 +61,20 @@ public class FileUtils extends DataUtils{
     @SneakyThrows
     public static String moveToFingerprintHex(java.io.File orgFile, String savePath) {
         try{
-            final String fingerprint = DataUtils.MD5PLUS(orgFile);
-            final String md5Path = getMd5PathByFingerprint(fingerprint);
-            final String dataSuffix = getDataSuffixByFingerprint(fingerprint);
+            final String fingerprintHex =  DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
+            final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);
+            final String dataSuffix = getDataSuffixByFingerprintHex(fingerprintHex);
             String oPath = savePath + "/" + md5Path;
             java.io.File md5File = new java.io.File(oPath);
             if (!md5File.exists()) {// 判断目录是否存在
                 md5File.mkdirs();
             }
             md5File = new java.io.File(oPath + dataSuffix);
-            if(md5File.exists()) return fingerprint;
+            if(md5File.exists()) return fingerprintHex;
             if(!orgFile.renameTo(md5File)){
                 throw new BusinessException("File.MoveError");
             }
-            return fingerprint;
+            return fingerprintHex;
         } finally {
             if(orgFile.exists()) orgFile.delete();
         }

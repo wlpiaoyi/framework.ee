@@ -2,10 +2,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.service;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
-import org.wlpiaoyi.framework.utils.encrypt.aes.Aes;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,6 +16,20 @@ import java.util.Map;
  * {@code @version:}:       1.0
  */
 public interface IFileService {
+    /**
+     * 根据文件指纹获取路径
+     * @param fingerprintHex
+     * @return
+     */
+    String getFilePathByFingerprintHex(String fingerprintHex);
+    String getFilePathByFingerprint(String fingerprint);
+
+    /**
+     *
+     * @param fileMenu
+     * @param fingerprint
+     */
+    void synFileMenuByFingerprint(FileMenu fileMenu, String fingerprint);
 
     /**
      * 上传文件

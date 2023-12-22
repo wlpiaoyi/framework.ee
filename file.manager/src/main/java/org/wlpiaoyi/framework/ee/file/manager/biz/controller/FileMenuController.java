@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileMenuVo;
@@ -76,7 +77,7 @@ public class FileMenuController {
 	@PostMapping("/update")
 	@ApiOperationSupport(order = 5)
 	@Operation(summary = "文件目录 修改")
-	public R<Boolean> update(@RequestBody FileMenuRo.Submit body) {
+	public R<Boolean> update(@Validated @RequestBody FileMenuRo.Submit body) {
 		return R.success(fileMenuService.updateById(ModelWrapper.parseOne(body, FileMenu.class)));
 	}
 

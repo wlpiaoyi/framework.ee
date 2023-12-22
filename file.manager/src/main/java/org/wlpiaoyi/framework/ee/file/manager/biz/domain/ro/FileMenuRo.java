@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 
@@ -40,6 +42,7 @@ public class FileMenuRo {
 		@TableId(value = "id", type = IdType.ASSIGN_ID)
 		private Long id;
 		/** 文件名称 **/
+		@NotNull(message = "文件名称不能为空")
 		@Schema(description = "文件名称")
 		private String name;
 		/** 文件后缀 **/

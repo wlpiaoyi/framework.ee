@@ -19,7 +19,10 @@ import org.wlpiaoyi.framework.utils.exception.SystemException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
+import java.util.Iterator;
 
 @Slf4j
 //@RestControllerAdvice
@@ -44,7 +47,7 @@ public class GlobalExceptionHandler {
      * @throws BusinessException
      */
     @ExceptionHandler(value = BusinessException.class)
-    public void defaultBusinessHandler(HttpServletRequest req, HttpServletResponse resp, BusinessException exception) throws IOException {
+    public void businessHandler(HttpServletRequest req, HttpServletResponse resp, BusinessException exception) throws IOException {
         String message = exception.getMessage();
         R r = R.data(exception.getCode(), null, message);
         doResponse(200, r, req, resp, exception);
@@ -58,7 +61,7 @@ public class GlobalExceptionHandler {
      * @throws CatchException
      */
     @ExceptionHandler(value = SystemException.class)
-    public void defaultCatchHandler(HttpServletRequest req, HttpServletResponse resp, SystemException exception) throws IOException {
+    public void systemHandler(HttpServletRequest req, HttpServletResponse resp, SystemException exception) throws IOException {
         String message = exception.getMessage();
         R r = R.data(exception.getCode(), null, message);
         doResponse(exception.getCode(), r, req, resp, exception);
@@ -72,7 +75,7 @@ public class GlobalExceptionHandler {
      * @throws CatchException
      */
     @ExceptionHandler(value = CatchException.class)
-    public void defaultCatchHandler(HttpServletRequest req, HttpServletResponse resp, CatchException exception) throws IOException {
+    public void catchHandler(HttpServletRequest req, HttpServletResponse resp, CatchException exception) throws IOException {
         String message = exception.getMessage();
         R r = R.data(exception.getCode(), null, message);
         doResponse(exception.getCode(), r, req, resp, exception);
@@ -87,7 +90,7 @@ public class GlobalExceptionHandler {
      * @throws NoHandlerFoundException
      */
     @ExceptionHandler(value = NoHandlerFoundException.class)
-    public void defaultNoHandlerFoundHandler(HttpServletRequest req, HttpServletResponse resp, NoHandlerFoundException exception) throws IOException {
+    public void noHandlerFoundHandler(HttpServletRequest req, HttpServletResponse resp, NoHandlerFoundException exception) throws IOException {
         int code = 404;
         String message = "没有找到接口";
         R r = R.data(code, null, message);
@@ -102,7 +105,7 @@ public class GlobalExceptionHandler {
      * @throws HttpRequestMethodNotSupportedException
      */
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
-    public void defaultHttpRequestMethodNotSupportedHandler(HttpServletRequest req, HttpServletResponse resp, HttpRequestMethodNotSupportedException exception) throws IOException {
+    public void httpRequestMethodNotSupportedHandler(HttpServletRequest req, HttpServletResponse resp, HttpRequestMethodNotSupportedException exception) throws IOException {
         int code = 405;
         String message = "不支持的方法:" + exception.getMessage();
         R r = R.data(code, null, message);
@@ -117,7 +120,7 @@ public class GlobalExceptionHandler {
      * @throws MissingServletRequestParameterException
      */
     @ExceptionHandler(value = MissingServletRequestParameterException.class)
-    public void defaultMissingServletRequestParameterHandler(HttpServletRequest req, HttpServletResponse resp, MissingServletRequestParameterException exception) throws IOException {
+    public void missingServletRequestParameterHandler(HttpServletRequest req, HttpServletResponse resp, MissingServletRequestParameterException exception) throws IOException {
         int code = 412;
         String message = "参数错误:" + exception.getMessage();
         R r = R.data(code, null, message);
@@ -132,7 +135,7 @@ public class GlobalExceptionHandler {
      * @throws MethodArgumentTypeMismatchException
      */
     @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
-    public void defaultMethodArgumentTypeMismatchHandler(HttpServletRequest req, HttpServletResponse resp, MethodArgumentTypeMismatchException exception) throws IOException {
+    public void methodArgumentTypeMismatchHandler(HttpServletRequest req, HttpServletResponse resp, MethodArgumentTypeMismatchException exception) throws IOException {
         int code = 413;
         String message = "参数错误:" + exception.getMessage();
         R r = R.data(code, null, message);
@@ -149,11 +152,32 @@ public class GlobalExceptionHandler {
      * @throws HttpMessageNotReadableException
      */
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
-    public void defaultHttpMessageNotReadableHandler(HttpServletRequest req, HttpServletResponse resp, HttpMessageNotReadableException exception) throws IOException {
+    public void httpMessageNotReadableHandler(HttpServletRequest req, HttpServletResponse resp, HttpMessageNotReadableException exception) throws IOException {
         int code = 400;
         String message = "参数序列化异常:" + exception.getMessage();
         R r = R.data(code, null, message);
         doResponse(code, r, req, resp, exception);
+    }
+
+    /**
+     * 处理 Validator 校验不通过产生的异常
+     * @param req
+     * @param resp
+     * @param exception
+     * @throws IOException
+     */
+    @ExceptionHandler(value = ConstraintViolationException.class)
+    public void constraintViolationExceptionHandler(HttpServletRequest req, HttpServletResponse resp, ConstraintViolationException exception) throws IOException {
+        Iterator<ConstraintViolation<?>> iterator = exception.getConstraintViolations().iterator();
+        String message = "";
+        while (iterator.hasNext()){
+            ConstraintViolation<?> constraintViolation = iterator.next();
+            message += "\r\n" + constraintViolation.getMessage();
+        }
+
+        message = "请求参数不正确:" + message;
+        R r = R.data(413, null, message);
+        doResponse(r.getCode(), r, req, resp, exception);
     }
     /**
      * 系统异常处理
