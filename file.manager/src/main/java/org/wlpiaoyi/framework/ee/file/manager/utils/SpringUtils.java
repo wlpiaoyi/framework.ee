@@ -16,9 +16,11 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
  * @author ruoyi
  */
 public class SpringUtils {
-    /** Spring应用上下文环境 */
+
+    /** Spring Bean工厂 */
     protected static ConfigurableListableBeanFactory beanFactory;
 
+    /** Spring应用上下文环境 */
     protected static ApplicationContext applicationContext;
 
 

@@ -2,12 +2,11 @@ package org.wlpiaoyi.framework.ee.file.manager.utils;
 
 
 import lombok.SneakyThrows;
-import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -21,20 +20,29 @@ public class FileUtils extends DataUtils{
      * Store file base on file fingerprints
      * @return
      */
-    public static String moveToFingerprintHex(MultipartFile file, String tempPath, String savePath) throws IOException {
-        if(file.isEmpty()){
-            throw new BusinessException("File.EmptyError");
-        }
+    public static String mergeToFingerprintHex(InputStream fileInput, String tempPath, String savePath) throws IOException {
+
         String fileName = StringUtils.getUUID32();
-        FileUtils.makeDir(tempPath);
+        File tempFile = new java.io.File(tempPath + "/" + fileName);
+        OutputStream out = null;
+        try {
+            byte[] buffer = new byte[1024];
+            int readIndex = 0;
+            out = new FileOutputStream(tempFile);
+            while ((readIndex = fileInput.read(buffer)) != -1) {
+                out.write(buffer, 0, readIndex);
+            }
+        }finally {
+            if(out != null){
+                out.flush();
+                out.close();
+            }
+        }
 
-        java.io.File tempFile = new java.io.File(tempPath + "/" + fileName);
-        file.transferTo(tempFile);
-
-        String fingerprintHex = FileUtils.moveToFingerprintHex(tempFile, savePath);
+        String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
         return fingerprintHex;
-
     }
+
     public static String getMd5ValueByFingerprintHex(String fingerprintHex){
         return fingerprintHex.substring(0, 40);
     }
@@ -59,7 +67,7 @@ public class FileUtils extends DataUtils{
      * @return
      */
     @SneakyThrows
-    public static String moveToFingerprintHex(java.io.File orgFile, String savePath) {
+    public static String mergeToFingerprintHex(java.io.File orgFile, String savePath) {
         try{
             final String fingerprintHex =  DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
             final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);

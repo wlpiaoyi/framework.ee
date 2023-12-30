@@ -1,19 +1,19 @@
 package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.Charsets;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
-import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.ImageInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileService;
+import org.wlpiaoyi.framework.ee.file.manager.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.file.manager.config.FileConfig;
 import org.wlpiaoyi.framework.ee.file.manager.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
@@ -21,8 +21,6 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
-import org.wlpiaoyi.framework.utils.security.AesCipher;
-import org.wlpiaoyi.framework.utils.security.SignVerify;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +29,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.List;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -41,134 +40,51 @@ import java.util.*;
 @Slf4j
 @Primary
 @Service
-public class FileServiceImpl implements IFileService {
-    @Value("${file.manager.tempPath}")
-    private String tempPath;
-
-    @Value("${file.manager.dataPath}")
-    private String dataPath;
-
-
-
-
-    @Getter
-    private AesCipher aesCipher;
-    {
-        try {
-            aesCipher = AesCipher.build().setKey(
-                    "104ed7522903443d8b905223907eebbb2fa0978db6dd47d8b7d2c9cbef3b41eb"
-                    ,128)
-                    .setIV("a1cd567E90123456")
-                    .loadConfig();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Getter
-    private static SignVerify signVerify;
-
-    static {
-        try {
-            String publicKey = "MIIBuDCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2USZp\n" +
-                    "RV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4O1fn\n" +
-                    "xqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmCouuE\n" +
-                    "C/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCBgLRJ\n" +
-                    "FnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhRkImo\n" +
-                    "g9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoDgYUAAoGBAMyDBLj55PknyzfXRfzByz3MDmt5FPwMN0HO\n" +
-                    "00v6c3tV0l4E0oZuW/IOdXSF0TdTaa2jHQMarkPP5v8Mc83oZ50splFBJ6F0y+Jk7lvOh8bHTl46\n" +
-                    "on5W0T7w8Qy8/LR8BZNVgcj9Mizcxd1eVKQAXIMgb6u2MZ8ryZEA+lWALOSd";
-            String privateKey = "MIIBSwIBADCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2\n" +
-                    "USZpRV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4\n" +
-                    "O1fnxqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmC\n" +
-                    "ouuEC/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCB\n" +
-                    "gLRJFnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhR\n" +
-                    "kImog9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoEFgIULqGv+4HdEYM5CqUFM48ksAmDFko==";
-            signVerify = SignVerify.build().setPublicKey(publicKey).setPrivateKey(privateKey).loadConfig();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    public String getFilePathByFingerprintHex(String fingerprintHex){
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
-    }
-    public String getFilePathByFingerprint(String fingerprint){
-        String fingerprintHex = this.parseFingerprintToHex(fingerprint);
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
-    }
-    @SneakyThrows
-    protected String dataEncode(byte[] bytes){
-        String res = new String(DataUtils.base64Encode(bytes));
-        res = res.replaceAll("\n", "");
-        res = res.replaceAll("\r", "");
-        res = res.replaceAll("/", "_");
-        return res;
-    }
-    @SneakyThrows
-    protected byte[] dataDecode(String str){
-        str = str.replaceAll("_", "/");
-        byte[] bytes = DataUtils.base64Decode(str.getBytes());
-        return bytes;
-    }
-
-    protected String parseFingerprintToHex(String fingerprint){
-        return ValueUtils.bytesToHex(this.dataDecode(fingerprint));
-    }
-
-    protected String parseFingerprintHexTo(String fingerprintHex){
-        return this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT)));
-    }
+public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoSaveInterceptor, IFileInfoService.FileInfoUpdateInterceptor {
 
     @Autowired
-    private IFileMenuService fileMenuService;
+    private FileConfig fileConfig;
 
-    @SneakyThrows
-    public void synFileMenuByFingerprint(FileMenu fileMenu, String fingerprint) {
-        if(ValueUtils.isBlank(fileMenu.getId())){
-            fileMenu.setId(IdUtils.nextId());
-        }
-        fileMenu.setSize(DataUtils.getSize(this.getFilePathByFingerprint(fingerprint)));
-        fileMenu.setFingerprint(fingerprint);
-        fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
-        if(ValueUtils.isNotBlank(fileMenu.getName()) &&ValueUtils.isBlank(fileMenu.getSuffix())){
-            if(fileMenu.getName().contains(".")){
-                fileMenu.setSuffix(fileMenu.getName().substring(fileMenu.getName().lastIndexOf(".") + 1));
-            }
-        }
-    }
+    @Autowired
+    private IFileInfoService fileInfoService;
 
+    @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException {
+    public String save(InputStream fileIo, FileInfo fileInfo){
+        return this.save(fileIo, fileInfo, true);
+    }
+    @Transactional(rollbackFor = Exception.class)
+    @SneakyThrows
+    private String save(InputStream fileIo, FileInfo fileInfo, boolean hasCallback){
         List<InputStream> inputStreams = new ArrayList<>();
         try{
-            String fingerprintHex = FileUtils.moveToFingerprintHex(file, this.tempPath, this.dataPath);
-            if(ValueUtils.isBlank(fileMenu.getId())){
-                fileMenu.setId(IdUtils.nextId());
+            String fingerprintHex = FileUtils.mergeToFingerprintHex(fileIo, this.fileConfig.getTempPath(),
+                    this.fileConfig.getDataPath());
+            if(ValueUtils.isBlank(fileInfo.getId())){
+                fileInfo.setId(IdUtils.nextId());
             }
-            if(ValueUtils.isBlank(fileMenu.getName())){
-                fileMenu.setName(file.getOriginalFilename());
+            if(ValueUtils.isBlank(fileInfo.getName())){
+                throw new BusinessException("文件名称不能为空");
             }
-            if(ValueUtils.isBlank(fileMenu.getSuffix())){
-                if(fileMenu.getName().contains(".")){
-                    fileMenu.setSuffix(fileMenu.getName().substring(fileMenu.getName().lastIndexOf(".") + 1));
-                }else if(file.getOriginalFilename().contains(".")){
-                    fileMenu.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+            if(ValueUtils.isBlank(fileInfo.getSuffix())){
+                if(fileInfo.getName().contains(".")){
+                    fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
                 }
             }
-            fileMenu.setFingerprint(this.parseFingerprintHexTo(fingerprintHex));
-            fileMenu.setSize(DataUtils.getSize(this.getFilePathByFingerprintHex(fingerprintHex)));
-            fileMenu.setToken(this.dataEncode(this.aesCipher.encrypt(fileMenu.getId().toString().getBytes())));
-            if(fileMenu.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.getFilePathByFingerprintHex(fingerprintHex));
+            fileInfo.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
+            String fileLocalPath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
+            fileInfo.setSize(DataUtils.getSize(fileLocalPath));
+            fileInfo.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.getId().toString().getBytes())));
+            String fileSign = null;
+            if(fileInfo.getIsVerifySign() == 1){
+                FileInputStream orgFileIo = new FileInputStream(this.fileConfig.getFilePathByFingerprintHex(fingerprintHex));
                 inputStreams.add(orgFileIo);
-                InputStream tokenByteInput = new ByteArrayInputStream(fileMenu.getToken().getBytes());
-                final String dataSign = this.dataEncode(signVerify.sign(orgFileIo));
-                final String tokenSign = this.dataEncode(signVerify.sign(tokenByteInput));
+                InputStream tokenByteInput = new ByteArrayInputStream(fileInfo.getToken().getBytes());
+                final String dataSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(orgFileIo));
+                final String tokenSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(tokenByteInput));
                 tokenByteInput.close();
-                response.setHeader("file-sign", tokenSign + "," + dataSign);
+                fileSign = tokenSign + "," + dataSign;
                 try {
                     orgFileIo.close();
                     inputStreams.remove(orgFileIo);
@@ -176,11 +92,20 @@ public class FileServiceImpl implements IFileService {
                     throw e;
                 }
             }
-            if(this.fileMenuService.count(Wrappers.<FileMenu>lambdaQuery().eq(FileMenu::getId, fileMenu.getId())) > 0){
-                return this.fileMenuService.updateById(fileMenu);
+            if(this.fileInfoService.count(Wrappers.<FileInfo>lambdaQuery().eq(FileInfo::getId, fileInfo.getId())) > 0){
+                if(hasCallback){
+                    this.fileInfoService.updateById(fileInfo, fileLocalPath, this);
+                }else{
+                    this.fileInfoService.updateById(fileInfo, fileLocalPath, null);
+                }
             }else{
-                return this.fileMenuService.save(fileMenu);
+                if(hasCallback){
+                    this.fileInfoService.save(fileInfo, fileLocalPath, this);
+                }else{
+                    this.fileInfoService.save(fileInfo, fileLocalPath, null);
+                }
             }
+            return fileSign;
         } finally {
             if(ValueUtils.isNotBlank(inputStreams)){
                 for (InputStream inputStream : inputStreams){
@@ -220,27 +145,38 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-        Long id = new Long(new String(this.aesCipher.decrypt(this.dataDecode(token))));
-        FileMenu fileMenu = this.fileMenuService.getById(id);
-        if(fileMenu == null){
+        Long id = new Long(new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(token))));
+        FileInfo fileInfo = this.fileInfoService.getById(id);
+        if(fileInfo == null){
             throw new SystemException("没有找到文件");
         }
-        String fmFingerprint = ValueUtils.bytesToHex(this.dataDecode(fileMenu.getFingerprint()));
-        String ogFingerprint = ValueUtils.bytesToHex(this.dataDecode(fingerprint));
+        String fmFingerprint = ValueUtils.bytesToHex(this.fileConfig.dataDecode(fileInfo.getFingerprint()));
+        String ogFingerprint = ValueUtils.bytesToHex(this.fileConfig.dataDecode(fingerprint));
         if(!fmFingerprint.equals(ogFingerprint)){
             throw new SystemException("文件验证失败");
         }
-        this.download(fileMenu, funcMap,request, response);
+        this.download(fileInfo, funcMap,request, response);
 
     }
 
     @Override
-    public void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
-            String ogPath = this.getFilePathByFingerprint(fileMenu.getFingerprint());
-            if(fileMenu.getIsVerifySign() == 1){
+
+            String dataType = MapUtils.getString(funcMap, "dataType", "org");
+            if(dataType.equals("thumbnail") && this.imageInfoService.isSupport(fileInfo.getSuffix())){
+                ImageInfo thumbnailImageInfo = this.imageInfoService.getThumbnailByFileId(fileInfo.getId());
+                if(thumbnailImageInfo != null){
+                    FileInfo thumbnailFileInfo = this.fileInfoService.getById(thumbnailImageInfo.getFileId());
+                    if(thumbnailFileInfo != null){
+                        fileInfo = thumbnailFileInfo;
+                    }
+                }
+            }
+            String ogPath = this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint());
+            if(fileInfo.getIsVerifySign() == 1){
                 String fileSign = request.getHeader("file-sign");
                 if(ValueUtils.isBlank(fileSign)){
                     throw new SystemException("无权访问文件");
@@ -249,16 +185,16 @@ public class FileServiceImpl implements IFileService {
                    String[] args = fileSign.split(",");
                    String tokenSign = args[0];
                    String dataSign = args[1];
-                   ByteArrayInputStream bis = new ByteArrayInputStream(fileMenu.getToken().getBytes());
+                   ByteArrayInputStream bis = new ByteArrayInputStream(fileInfo.getToken().getBytes());
                    inputStreams.add(bis);
-                   if(!signVerify.verify(bis, this.dataDecode(tokenSign))){
+                   if(!this.fileConfig.getSignVerify().verify(bis, this.fileConfig.dataDecode(tokenSign))){
                        throw new SystemException("无权访问文件");
                    }
                    bis.close();
                    inputStreams.remove(bis);
                    FileInputStream fis = new FileInputStream(ogPath);
                    inputStreams.add(fis);
-                   if(!signVerify.verify(fis, this.dataDecode(dataSign))){
+                   if(!this.fileConfig.getSignVerify().verify(fis, this.fileConfig.dataDecode(dataSign))){
                        throw new SystemException("无权访问文件");
                    }
                    fis.close();
@@ -267,7 +203,7 @@ public class FileServiceImpl implements IFileService {
                    throw new SystemException("无权访问文件", e);
                }
             }
-            String ft = fileMenu.getSuffix();
+            String ft = fileInfo.getSuffix();
             if(ValueUtils.isNotBlank(ft)){
                 ft = ft.toLowerCase(Locale.ROOT);
             }
@@ -278,12 +214,12 @@ public class FileServiceImpl implements IFileService {
             response.setContentType(contentType);
             response.setCharacterEncoding(Charsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
-            String filename = fileMenu.getName();
+            String filename = fileInfo.getName();
             if(!filename.contains(".")){
-                filename += "." + fileMenu.getSuffix();
+                filename += "." + fileInfo.getSuffix();
             }
             response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
-//            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileMenu.getName(), Charsets.UTF_8.name()));
+//            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
 
             response.setStatus(200);
             ServletOutputStream sos = response.getOutputStream();
@@ -333,13 +269,22 @@ public class FileServiceImpl implements IFileService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<String> cleanFile() {
-        List<String> fingerprints = this.fileMenuService.cleanFile();
+        File tempPath = new File(this.fileConfig.getTempPath());
+        if(!tempPath.exists()){
+            tempPath.mkdirs();
+        }
+        File dataPath = new File(this.fileConfig.getDataPath());
+        if(!dataPath.exists()){
+            dataPath.mkdirs();
+        }
+        this.imageInfoService.cleanImage();
+        List<String> fingerprints = this.fileInfoService.cleanFile();
         if(ValueUtils.isBlank(fingerprints)){
             return null;
         }
         for (String fingerprint : fingerprints){
-            String fingerprintHex = ValueUtils.bytesToHex(this.dataDecode(fingerprint));
-            String filePath = this.getFilePathByFingerprintHex(fingerprintHex);
+            String fingerprintHex = ValueUtils.bytesToHex(this.fileConfig.dataDecode(fingerprint));
+            String filePath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
             File file = new File(filePath);
             if(file.exists()){
                 if(file.delete()){
@@ -351,7 +296,7 @@ public class FileServiceImpl implements IFileService {
             String fingerprintPath = FileUtils.getMd5PathByFingerprintHex(fingerprintHex);
             while (fingerprintPath.length() > 0 && fingerprintPath.contains("/")){
                 fingerprintPath = fingerprintPath.substring(0, fingerprintPath.lastIndexOf("/"));
-                String absPath = this.dataPath + "/" + fingerprintPath;
+                String absPath = this.fileConfig.getDataPath() + "/" + fingerprintPath;
                 File removeFile = new File(absPath);
                 if(ValueUtils.isNotBlank(removeFile.list())){
                     break;
@@ -366,5 +311,46 @@ public class FileServiceImpl implements IFileService {
         return fingerprints;
     }
 
+    @Autowired
+    private IImageInfoService imageInfoService;
 
+    @SneakyThrows
+    @Override
+    public void afterSave(boolean saveRes, Object userInfo, FileInfo entity) {
+        if(!saveRes){
+            throw new BusinessException("保存失败");
+        }
+        if(ValueUtils.isBlank(entity.getSuffix())){
+            return;
+        }
+        if(!this.imageInfoService.isSupport(entity.getSuffix())){
+            return;
+        }
+        if(this.imageInfoService.hasThumbnail(entity.getId())){
+            return;
+        }
+        ImageInfo imageInfo =  this.imageInfoService.saveByFileInfo(entity);
+        log.info("image save success, id:{}", imageInfo.getId());
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+        this.imageInfoService.generateSmall(this.fileConfig.parseFingerprintToHex(entity.getFingerprint()),
+                entity.getSuffix(), 0.3, byteOutputStream);
+        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(byteOutputStream.toByteArray());
+        FileInfo smallFileInfo = new FileInfo();
+        smallFileInfo.setName(entity.getName());
+        if(smallFileInfo.getName().contains(".")){
+            smallFileInfo.setName(entity.getName().substring(0, entity.getName().lastIndexOf(".") + 1));
+        }
+        smallFileInfo.setName("thumbnail." + entity.getSuffix());
+        this.save(byteInputStream, smallFileInfo, false);
+        ImageInfo smallImageInfo = this.imageInfoService.saveByFileInfo(smallFileInfo);
+        imageInfo.setThumbnailId(smallImageInfo.getId());
+        this.imageInfoService.updateById(imageInfo);
+    }
+
+    @Override
+    public void afterUpdate(boolean updateRes, Object userInfo, FileInfo entity) {
+        if(!updateRes){
+            throw new BusinessException("更新-失败");
+        }
+    }
 }

@@ -18,7 +18,7 @@ import java.io.Serializable;
 public class ##className##Ro {
     @Data
     @Schema(description = "##tableComment## 请求实例")
-	public static class Query extends ##package##.utils.tools.request.Query implements Serializable {
+	public static class Query extends org.wlpiaoyi.framework.ee.utils.request.Query implements Serializable {
 
         private static final long serialVersionUID = 1L;
 

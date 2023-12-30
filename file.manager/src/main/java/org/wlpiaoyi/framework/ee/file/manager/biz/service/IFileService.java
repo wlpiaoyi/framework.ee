@@ -1,11 +1,12 @@
 package org.wlpiaoyi.framework.ee.file.manager.biz.service;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -16,30 +17,16 @@ import java.util.Map;
  * {@code @version:}:       1.0
  */
 public interface IFileService {
-    /**
-     * 根据文件指纹获取路径
-     * @param fingerprintHex
-     * @return
-     */
-    String getFilePathByFingerprintHex(String fingerprintHex);
-    String getFilePathByFingerprint(String fingerprint);
 
     /**
-     *
-     * @param fileMenu
-     * @param fingerprint
+     * 保存文件
+     * @param fileIo 文件IO
+     * @param fileInfo 文件实体信息
+     * @return: java.lang.String file-sign
+     * @author: wlpia
+     * @date: 2023/12/30 15:51
      */
-    void synFileMenuByFingerprint(FileMenu fileMenu, String fingerprint);
-
-    /**
-     * 上传文件
-     * @param fileMenu
-     * @param file
-     * @param response
-     * @return
-     * @throws IOException
-     */
-    boolean upload(FileMenu fileMenu, MultipartFile file, HttpServletResponse response) throws IOException;
+    String save(InputStream fileIo, FileInfo fileInfo);
 
     /**
      * 下载文件
@@ -50,7 +37,7 @@ public interface IFileService {
      * @param response
      */
     void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
-    void download(FileMenu fileMenu, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
     /**
