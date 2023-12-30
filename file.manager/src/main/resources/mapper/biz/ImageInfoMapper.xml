@@ -44,13 +44,22 @@
         )
     </select>
 
-    <select id="selectDeletedIds" resultType="java.lang.Long">
-        SELECT id FROM biz_image_info WHERE is_deleted != 0
+<!--    <select id="selectDeletedIds" resultType="java.lang.Long">-->
+<!--        SELECT id FROM biz_image_info WHERE is_deleted != 0-->
+<!--    </select>-->
+
+
+    <select id="selectIdsByDeletedFile" resultType="java.lang.Long">
+        SELECT i.id FROM biz_image_info i LEFT JOIN biz_file_info f ON i.file_id = f.id
+        WHERE f.is_deleted != 0;
     </select>
 
-
-    <select id="selectDeletedFileIds" resultType="java.lang.Long">
-        SELECT file_id FROM biz_image_info WHERE is_deleted != 0
+    <select id="selectFileIdByIds" resultType="java.lang.Long">
+        SELECT file_id FROM biz_image_info WHERE id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
     </select>
 
     <delete id="deletedImages">

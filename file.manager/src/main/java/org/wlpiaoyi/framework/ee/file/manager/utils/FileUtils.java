@@ -2,11 +2,15 @@ package org.wlpiaoyi.framework.ee.file.manager.utils;
 
 
 import lombok.SneakyThrows;
+import org.wlpiaoyi.framework.utils.DateUtils;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.io.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -16,29 +20,40 @@ import java.io.*;
  */
 public class FileUtils extends DataUtils{
 
+    private static final Random random = new Random();
+
     /**
      * Store file base on file fingerprints
      * @return
      */
     public static String mergeToFingerprintHex(InputStream fileInput, String tempPath, String savePath) throws IOException {
-
-        String fileName = StringUtils.getUUID32();
-        File tempFile = new java.io.File(tempPath + "/" + fileName);
+        String tempFilePath= tempPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
+        File tempFileIng = new java.io.File(tempFilePath + ".uploading");
         OutputStream out = null;
         try {
             byte[] buffer = new byte[1024];
             int readIndex = 0;
-            out = new FileOutputStream(tempFile);
+            out = new FileOutputStream(tempFileIng);
             while ((readIndex = fileInput.read(buffer)) != -1) {
                 out.write(buffer, 0, readIndex);
             }
+        }catch (Exception e){
+            if(out != null){
+                out.flush();
+                out.close();
+                out = null;
+            }
+            tempFileIng.delete();
+            throw e;
         }finally {
             if(out != null){
                 out.flush();
                 out.close();
+                out = null;
             }
         }
-
+        File tempFile = new java.io.File(tempFilePath);
+        tempFileIng.renameTo(tempFile);
         String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
         return fingerprintHex;
     }

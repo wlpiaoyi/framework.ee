@@ -56,7 +56,7 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
      * @author: wlpia
      * @date: 2023/12/30 17:07
      */
-    ImageInfo getThumbnailByFileId(Long fileId);
+    ImageInfo getThumbnailImageByFileId(Long fileId);
 
     /**
      * 根据文件信息保存图片
@@ -69,7 +69,7 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
 
     /**
      * 清理图片
-     * @return: java.util.List<java.lang.Long> 对应的图片Id
+     * @return: java.util.List<java.lang.Long> 缩略图对应的FileInfo.id
      * @author: wlpia
      * @date: 2023/12/30 18:36
      */

@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
@@ -35,6 +36,7 @@ import java.util.Set;
  * {@code @date:} 			2023-12-28 16:38:04
  * {@code @version:}: 		1.0
  */
+@Slf4j
 @Primary
 @Service
 public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, ImageInfo> implements IImageInfoService {
@@ -59,7 +61,7 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
     }
 
     @Override
-    public ImageInfo getThumbnailByFileId(Long fileId) {
+    public ImageInfo getThumbnailImageByFileId(Long fileId) {
         List<ImageInfo> imageInfos = this.baseMapper.selectList(Wrappers.<ImageInfo>lambdaQuery().eq(
                 ImageInfo::getFileId, fileId
         ));
@@ -123,28 +125,32 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         return imageInfo;
     }
 
-    @Autowired
-    private IFileInfoService fileInfoService;
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<Long> cleanImage() {
-        List<Long> ids = this.baseMapper.selectDeletedIds();
-        if(ValueUtils.isBlank(ids)){
+        List<Long> deleteIds = this.baseMapper.selectIdsByDeletedFile();;
+        if(ValueUtils.isBlank(deleteIds)){
+            log.info("image select deletedIds empty");
             return null;
         }
-        List<Long> thumbnailIds = this.baseMapper.selectThumbnailIdByIds(ids);
+        log.info("image select deletedIds size:{} ids:{}", deleteIds.size(), ValueUtils.toStrings(deleteIds));
+        boolean delRes = this.deleteLogic(deleteIds);
+        log.info("image deleted deletedIds result:{}", delRes);
+        List<Long> thumbnailIds = this.baseMapper.selectThumbnailIdByIds(deleteIds);
+        List<Long> fileIds = null;
         if(ValueUtils.isNotBlank(thumbnailIds)){
+            log.info("image select thumbnailIds size:{} ids:{}", thumbnailIds.size(), ValueUtils.toStrings(thumbnailIds));
             this.deleteLogic(thumbnailIds);
-            ids.removeAll(thumbnailIds);
-            ids.addAll(thumbnailIds);
+            deleteIds.removeAll(thumbnailIds);
+            deleteIds.addAll(thumbnailIds);
+            log.info("image deleted thumbnailIds result:{}", thumbnailIds);
+            fileIds = this.baseMapper.selectFileIdByIds(thumbnailIds);
+        }else{
+            log.info("image select thumbnailIds empty");
         }
-        List<Long> fileIds = this.baseMapper.selectDeletedFileIds();
-        if(ValueUtils.isNotBlank(fileIds)){
-            this.fileInfoService.deleteLogic(fileIds);
-        }
-        this.baseMapper.deletedImages();
-        return ids;
+        int delAll = this.baseMapper.deletedImages();
+        log.info("image deleted allIds size:{}, ids:{}", delAll, ValueUtils.toStrings(deleteIds));
+        return fileIds;
     }
 
     @Override

@@ -22,11 +22,12 @@ public interface IFileService {
      * 保存文件
      * @param fileIo 文件IO
      * @param fileInfo 文件实体信息
+     * @param funcMap 拓展字段
      * @return: java.lang.String file-sign
      * @author: wlpia
      * @date: 2023/12/30 15:51
      */
-    String save(InputStream fileIo, FileInfo fileInfo);
+    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap);
 
     /**
      * 下载文件

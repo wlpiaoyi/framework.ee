@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -71,6 +72,7 @@ public class FileController {
     public R<FileInfo> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
 //                              @Parameter(description = "文件指纹, MD5(path)+SHA(name)") @RequestParam(value = "fingerprint", required = false) String fingerprint,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
+                              @Parameter(description = "文件缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
                               HttpServletResponse response) {
@@ -92,8 +94,10 @@ public class FileController {
                 fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
             }
         }
+        Map funcMap = new HashMap<>();
+        funcMap.put("thumbnailSize", thumbnailSize);
 
-        String fileSign = this.fileService.save(file.getInputStream(), fileInfo);
+        String fileSign = this.fileService.save(file.getInputStream(), fileInfo, funcMap);
 //        boolean existFile = false;
 //        if(ValueUtils.isNotBlank(fingerprint)){
 //            File filePath = new File(this.fileConfig.getFilePathByFingerprint(fingerprint));

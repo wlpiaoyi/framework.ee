@@ -27,21 +27,30 @@ public interface ImageInfoMapper extends BaseMapper<ImageInfo> {
      */
     List<Long> selectThumbnailIdByIds(@Param("ids") Collection<Long> ids);
 
-    /**
-     * 查询出已经删除的图片
-     * @return: java.util.List<java.lang.Long>
-     * @author: wlpia
-     * @date: 2023/12/30 18:27
-     */
-    List<Long> selectDeletedIds();
+//    /**
+//     * 查询出已经删除的图片
+//     * @return: java.util.List<java.lang.Long>
+//     * @author: wlpia
+//     * @date: 2023/12/30 18:27
+//     */
+//    List<Long> selectDeletedIds();
 
     /**
-     * 查询出已经删除的图片对应的文件Id
+     * 查询出已经删除的文件对应的图片
      * @return: java.util.List<java.lang.Long>
      * @author: wlpia
      * @date: 2023/12/30 18:28
      */
-    List<Long> selectDeletedFileIds();
+    List<Long> selectIdsByDeletedFile();
+
+    /**
+     * 根据id查询fileid
+     * @param ids
+     * @return: java.util.List<java.lang.Long>
+     * @author: wlpia
+     * @date: 2023/12/30 21:37
+     */
+    List<Long> selectFileIdByIds(@Param("ids") Collection<Long> ids);
 
     /**
      * 删除图片
