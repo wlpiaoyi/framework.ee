@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl;
+package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.file;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
@@ -43,10 +43,10 @@ import java.util.List;
 public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoSaveInterceptor, IFileInfoService.FileInfoUpdateInterceptor {
 
     @Autowired
-    private FileConfig fileConfig;
+    FileConfig fileConfig;
 
     @Autowired
-    private IFileInfoService fileInfoService;
+    IFileInfoService fileInfoService;
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
@@ -56,7 +56,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
-    private String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, boolean hasCallback){
+    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, boolean hasCallback){
         if(funcMap == null){
             funcMap = new HashMap<>();
         }
@@ -164,11 +164,8 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         List<InputStream> inputStreams = new ArrayList<>();
         try{
             String dataType = MapUtils.getString(funcMap, "dataType", "org");
-            if(this.imageInfoService.isSupport(fileInfo.getSuffix()) && dataType.equals("thumbnail")){
-                FileInfo thumbnailFileInfo = this.fileInfoService.getThumbnailFileByFileInfo(fileInfo);
-                if(thumbnailFileInfo != null){
-                    fileInfo = thumbnailFileInfo;
-                }
+            if(FileImageHandle.canDownloadFileInfoHandle(fileInfo, dataType)){
+                fileInfo = FileImageHandle.downloadFileInfoHandle(this, fileInfo);
             }
             String ogPath = this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint());
             if(fileInfo.getIsVerifySign() == 1){
@@ -309,9 +306,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         }
     }
 
-    @Autowired
-    private IImageInfoService imageInfoService;
-
     @SneakyThrows
     @Override
     public void afterSave(boolean saveRes, Map funcMap, FileInfo entity) {
@@ -321,44 +315,9 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(ValueUtils.isBlank(entity.getSuffix())){
             return;
         }
-        if(this.imageInfoService.isSupport(entity.getSuffix())){
-            this.imageHandle(entity, funcMap);
+        if(FileImageHandle.afterSaveHandle(this, entity, funcMap)){
+           log.info("file handle image");
         }
-    }
-
-    private void imageHandle(FileInfo entity, Map funcMap){
-        if(this.imageInfoService.hasThumbnail(entity.getId())){
-            return;
-        }
-        ImageInfo imageInfo =  this.imageInfoService.saveByFileInfo(entity);
-        log.info("image save success, id:{}", imageInfo.getId());
-        if(!funcMap.containsKey("thumbnailSize")){
-            return;
-        }
-        double thumbnailSize = MapUtils.getDouble(funcMap, "thumbnailSize");
-        if(thumbnailSize < 0){
-            return;
-        }
-        if(thumbnailSize > 0.99){
-            throw new BusinessException("缩略图比例过大");
-        }
-        if(thumbnailSize < 0.01){
-            throw new BusinessException("缩略图比例过小");
-        }
-        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        this.imageInfoService.generateSmall(this.fileConfig.parseFingerprintToHex(entity.getFingerprint()),
-                entity.getSuffix(), thumbnailSize, byteOutputStream);
-        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(byteOutputStream.toByteArray());
-        FileInfo smallFileInfo = new FileInfo();
-        smallFileInfo.setName(entity.getName());
-        if(smallFileInfo.getName().contains(".")){
-            smallFileInfo.setName(entity.getName().substring(0, entity.getName().lastIndexOf(".") + 1));
-        }
-        smallFileInfo.setName("thumbnail." + entity.getSuffix());
-        this.save(byteInputStream, smallFileInfo,  funcMap, false);
-        ImageInfo smallImageInfo = this.imageInfoService.saveByFileInfo(smallFileInfo);
-        imageInfo.setThumbnailId(smallImageInfo.getId());
-        this.imageInfoService.updateById(imageInfo);
     }
 
     @Override
