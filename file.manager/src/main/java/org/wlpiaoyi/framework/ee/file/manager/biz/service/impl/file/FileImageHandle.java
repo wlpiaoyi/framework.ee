@@ -1,8 +1,9 @@
 package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.file;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IImageInfoService;
@@ -10,8 +11,14 @@ import org.wlpiaoyi.framework.ee.file.manager.utils.SpringUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,18 +28,18 @@ import java.util.Map;
  * {@code @version:}:       1.0
  */
 @Slf4j
+@Service
 public class FileImageHandle {
 
 
-    static boolean canDownloadFileInfoHandle(FileInfo entity, String dataType){
-        IImageInfoService imageInfoService = SpringUtils.getBean(IImageInfoService.class);
-        if(imageInfoService.isSupport(entity.getSuffix()) && dataType.equals("thumbnail")){
+    public boolean canDownloadFileInfoHandle(FileInfo entity, String dataType){
+        if(FileImageHandle.isSupportSuffix(entity.getSuffix()) && dataType.equals("thumbnail")){
             return true;
         }
         return false;
     }
 
-    static FileInfo downloadFileInfoHandle(FileServiceImpl fileService, FileInfo entity){
+    public FileInfo downloadFileInfoHandle(FileServiceImpl fileService, FileInfo entity){
         FileInfo fileInfo = fileService.fileInfoService.getThumbnailFileByFileInfo(entity);
         if(fileInfo != null){
             return fileInfo;
@@ -40,9 +47,10 @@ public class FileImageHandle {
         return entity;
     }
 
-    static boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
+    @Transactional(rollbackFor = Exception.class)
+    public boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
         IImageInfoService imageInfoService = SpringUtils.getBean(IImageInfoService.class);
-        if(!imageInfoService.isSupport(entity.getSuffix())){
+        if(!FileImageHandle.isSupportSuffix(entity.getSuffix())){
             return false;
         }
         if(imageInfoService.hasThumbnail(entity.getId())){
@@ -64,7 +72,9 @@ public class FileImageHandle {
             throw new BusinessException("缩略图比例过小");
         }
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        imageInfoService.generateSmall(fileService.fileConfig.parseFingerprintToHex(entity.getFingerprint()),
+
+        String orgImagePath = fileService.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
+        FileImageHandle.generateSmall(orgImagePath,
                 entity.getSuffix(), thumbnailSize, byteOutputStream);
         ByteArrayInputStream byteInputStream = new ByteArrayInputStream(byteOutputStream.toByteArray());
         FileInfo smallFileInfo = new FileInfo();
@@ -78,6 +88,31 @@ public class FileImageHandle {
         imageInfo.setThumbnailId(smallImageInfo.getId());
         imageInfoService.updateById(imageInfo);
         return true;
+    }
+
+    private static final Map<String, Integer> imageSuffixeMap = new HashMap(){{
+        put("jpg", BufferedImage.TYPE_INT_RGB);
+        put("jpeg", BufferedImage.TYPE_INT_RGB);
+        put("png", BufferedImage.TYPE_INT_ARGB);
+    }};
+
+    static boolean isSupportSuffix(String suffix){
+        return imageSuffixeMap.containsKey(suffix);
+    }
+    @SneakyThrows
+    static void generateSmall(String orgImagePath, String suffix, double smallSize, OutputStream outputStream) {
+        File orgImageFile = new File(orgImagePath);
+        Image orgImage = ImageIO.read(orgImageFile);
+        int width = orgImage.getWidth(null);
+        int height = orgImage.getHeight(null);
+        int widthSmall = (int) (width * smallSize);
+        int heightSmall = (int) (height * smallSize);
+        int imageType = imageSuffixeMap.get(suffix);
+        BufferedImage bi = new BufferedImage(widthSmall, heightSmall, imageType);
+        Graphics g = bi.getGraphics();
+        g.drawImage(orgImage, 0, 0, widthSmall, heightSmall, null);
+        g.dispose();
+        ImageIO.write(bi, suffix, outputStream);
     }
 
 }

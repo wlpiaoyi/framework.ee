@@ -16,29 +16,17 @@ import java.util.List;
  */
 public interface IImageInfoService extends IBaseService<ImageInfo> {
 
-    boolean isSupport(String suffix);
-
-    /**
-     * 压缩图片
-     * @param fingerprintHex 文件指纹
-     * @param suffix 文件格式
-     * @param smallSize 文件压缩倍数
-     * @param outputStream 输出流
-     * @return: void
-     * @author: wlpia
-     * @date: 2023/12/30 15:36
-     */
-    void generateSmall(String fingerprintHex, String suffix, double smallSize, OutputStream outputStream);
-    /**
-     * 压缩图片
-     * @param fingerprintHex 文件指纹
-     * @param suffix 文件格式
-     * @param smallSize 文件压缩倍数
-     * @return: java.lang.String 压缩后的文件指纹
-     * @author: wlpia
-     * @date: 2023/12/30 11:43
-     */
-    String generateSmall(String fingerprintHex, String suffix, double smallSize);
+//    boolean isSupport(String suffix);
+//    /**
+//     * 压缩图片
+//     * @param fingerprintHex 文件指纹
+//     * @param suffix 文件格式
+//     * @param smallSize 文件压缩倍数
+//     * @return: java.lang.String 压缩后的文件指纹
+//     * @author: wlpia
+//     * @date: 2023/12/30 11:43
+//     */
+//    String generateSmall(String fingerprintHex, String suffix, double smallSize);
 
     /**
      * 是否有缩略图

@@ -10,6 +10,7 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.ImageInfoMapper;
+import org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.file.FileImageHandle;
 import org.wlpiaoyi.framework.ee.file.manager.config.FileConfig;
 import org.wlpiaoyi.framework.ee.file.manager.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
@@ -41,18 +42,15 @@ import java.util.Set;
 @Service
 public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, ImageInfo> implements IImageInfoService {
 
-    private Set<String> imageSuffixes = new HashSet(){{
-       add("jpg");
-       add("jpeg");
-       add("png");
-    }};
+//    private Set<String> imageSuffixes = new HashSet(){{
+//       add("jpg");
+//       add("jpeg");
+//       add("png");
+//    }};
 
     @Autowired
     private FileConfig fileConfig;
 
-    public boolean isSupport(String suffix){
-        return this.imageSuffixes.contains(suffix);
-    }
 
     public boolean hasThumbnail(Long fileId){
         return this.baseMapper.exists(
@@ -75,38 +73,16 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         return this.baseMapper.selectById(imageInfo.getThumbnailId());
     }
 
-    @SneakyThrows
-    @Override
-    public void generateSmall(String fingerprintHex, String suffix, double smallSize, OutputStream outputStream) {
-        String orgImagePath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-        File orgImageFile = new File(orgImagePath);
-        Image orgImage = ImageIO.read(orgImageFile);
-        int width = orgImage.getWidth(null);
-        int height = orgImage.getHeight(null);
-        int widthSmall = (int) (width * smallSize);
-        int heightSmall = (int) (height * smallSize);
-        int imageType;
-        if(suffix.equals("png")){
-            imageType = BufferedImage.TYPE_INT_ARGB;
-        }else{
-            imageType = BufferedImage.TYPE_INT_RGB;
-        }
-        BufferedImage bi = new BufferedImage(widthSmall, heightSmall, imageType);
-        Graphics g = bi.getGraphics();
-        g.drawImage(orgImage, 0, 0, widthSmall, heightSmall, null);
-        g.dispose();
-        ImageIO.write(bi, suffix, outputStream);
-    }
-
-    @SneakyThrows
-    @Override
-    public String generateSmall(String fingerprintHex, String suffix, double smallSize) {
-        String fileName = StringUtils.getUUID32();
-        FileUtils.makeDir(this.fileConfig.getTempPath());
-        File tempFile = new File(this.fileConfig.getTempPath() + "/" + fileName);
-        this.generateSmall(fingerprintHex, suffix, smallSize, new FileOutputStream(tempFile));
-        return FileUtils.mergeToFingerprintHex(tempFile, this.fileConfig.getDataPath());
-    }
+//    @SneakyThrows
+//    @Override
+//    public String generateSmall(String fingerprintHex, String suffix, double smallSize) {
+//        String fileName = StringUtils.getUUID32();
+//        FileUtils.makeDir(this.fileConfig.getTempPath());
+//        File tempFile = new File(this.fileConfig.getTempPath() + "/" + fileName);
+//        String orgImagePath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
+//        FileImageHandle.generateSmall(orgImagePath, suffix, smallSize, new FileOutputStream(tempFile));
+//        return FileUtils.mergeToFingerprintHex(tempFile, this.fileConfig.getDataPath());
+//    }
 
     @SneakyThrows
     @Override

@@ -158,14 +158,17 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     }
 
+
+    @Autowired
+    private FileImageHandle fileImageHandle;
     @Override
     public void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
             String dataType = MapUtils.getString(funcMap, "dataType", "org");
-            if(FileImageHandle.canDownloadFileInfoHandle(fileInfo, dataType)){
-                fileInfo = FileImageHandle.downloadFileInfoHandle(this, fileInfo);
+            if(this.fileImageHandle.canDownloadFileInfoHandle(fileInfo, dataType)){
+                fileInfo = this.fileImageHandle.downloadFileInfoHandle(this, fileInfo);
             }
             String ogPath = this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint());
             if(fileInfo.getIsVerifySign() == 1){
@@ -315,7 +318,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(ValueUtils.isBlank(entity.getSuffix())){
             return;
         }
-        if(FileImageHandle.afterSaveHandle(this, entity, funcMap)){
+        if(this.fileImageHandle.afterSaveHandle(this, entity, funcMap)){
            log.info("file handle image");
         }
     }
