@@ -15,16 +15,29 @@ import java.util.List;
 public interface FileInfoMapper extends BaseMapper<FileInfo> {
 
     /**
-     * 查询出已经删除的并且没有关联的文件指纹
-     * @return
+     * 查询出已经删除的文件Id
+     * @return: java.util.List<java.lang.Long> 文件Id集合
+     * @author: wlpia
+     * @date: 2023/12/31 21:02
      */
-    List<String> selectDeletedForFingerprint();
+    List<Long> selectDeletedIds();
 
     /**
-     * 根据文件指纹删除数据
-     * @param fingerprints
-     * @return
+     * 查询出已经删除的并且没有关联的文件指纹
+     * @param ids 文件Id集合
+     * @return: java.util.List<java.lang.String> 文件指纹集合
+     * @author: wlpia
+     * @date: 2023/12/31 21:03
      */
-    int deleteByFingerprints(@Param("fingerprints") List<String> fingerprints);
+    List<String> selectCanDeletedFingerprintsByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 根据文件Id删除数据
+     * @param ids 文件Id集合
+     * @return: int
+     * @author: wlpia
+     * @date: 2023/12/31 21:05
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
 
 }

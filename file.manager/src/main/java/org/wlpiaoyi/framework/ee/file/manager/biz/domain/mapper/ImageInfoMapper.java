@@ -19,7 +19,15 @@ import java.util.List;
 public interface ImageInfoMapper extends BaseMapper<ImageInfo> {
 
     /**
-     * 根据图片查询出缩略图
+     * 通过已经参数的数据Id查询出图片Id
+     * @return: java.util.List<java.lang.Long>
+     * @author: wlpia
+     * @date: 2023/12/30 18:28
+     */
+    List<Long> selectIdsFromDeletedFile();
+
+    /**
+     * 根据图片查询出缩略图Id
      * @param ids
      * @return: java.util.List<java.lang.Long>
      * @author: wlpia
@@ -27,24 +35,8 @@ public interface ImageInfoMapper extends BaseMapper<ImageInfo> {
      */
     List<Long> selectThumbnailIdByIds(@Param("ids") Collection<Long> ids);
 
-//    /**
-//     * 查询出已经删除的图片
-//     * @return: java.util.List<java.lang.Long>
-//     * @author: wlpia
-//     * @date: 2023/12/30 18:27
-//     */
-//    List<Long> selectDeletedIds();
-
     /**
-     * 查询出已经删除的文件对应的图片
-     * @return: java.util.List<java.lang.Long>
-     * @author: wlpia
-     * @date: 2023/12/30 18:28
-     */
-    List<Long> selectIdsByDeletedFile();
-
-    /**
-     * 根据id查询fileid
+     * 根据图片Id查询出数据Id
      * @param ids
      * @return: java.util.List<java.lang.Long>
      * @author: wlpia
@@ -53,11 +45,11 @@ public interface ImageInfoMapper extends BaseMapper<ImageInfo> {
     List<Long> selectFileIdByIds(@Param("ids") Collection<Long> ids);
 
     /**
-     * 删除图片
-     * @param
+     * 根据图片Id删除图片数据
+     * @param ids
      * @return: int
      * @author: wlpia
      * @date: 2023/12/30 18:44
      */
-    int deletedImages();
+    int deletedByIds(@Param("ids") Collection<Long> ids);
 }

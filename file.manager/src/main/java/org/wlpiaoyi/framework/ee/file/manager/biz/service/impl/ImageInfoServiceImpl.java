@@ -128,7 +128,7 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<Long> cleanImage() {
-        List<Long> deleteIds = this.baseMapper.selectIdsByDeletedFile();;
+        List<Long> deleteIds = this.baseMapper.selectIdsFromDeletedFile();;
         if(ValueUtils.isBlank(deleteIds)){
             log.info("image select deletedIds empty");
             return null;
@@ -137,18 +137,18 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         boolean delRes = this.deleteLogic(deleteIds);
         log.info("image deleted deletedIds result:{}", delRes);
         List<Long> thumbnailIds = this.baseMapper.selectThumbnailIdByIds(deleteIds);
-        List<Long> fileIds = null;
         if(ValueUtils.isNotBlank(thumbnailIds)){
             log.info("image select thumbnailIds size:{} ids:{}", thumbnailIds.size(), ValueUtils.toStrings(thumbnailIds));
             this.deleteLogic(thumbnailIds);
             deleteIds.removeAll(thumbnailIds);
             deleteIds.addAll(thumbnailIds);
             log.info("image deleted thumbnailIds result:{}", thumbnailIds);
-            fileIds = this.baseMapper.selectFileIdByIds(thumbnailIds);
         }else{
             log.info("image select thumbnailIds empty");
         }
-        int delAll = this.baseMapper.deletedImages();
+        List<Long> fileIds = this.baseMapper.selectFileIdByIds(deleteIds);
+        log.info("image delete by fileIds size:{}, ids:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
+        int delAll = this.baseMapper.deletedByIds(deleteIds);
         log.info("image deleted allIds size:{}, ids:{}", delAll, ValueUtils.toStrings(deleteIds));
         return fileIds;
     }

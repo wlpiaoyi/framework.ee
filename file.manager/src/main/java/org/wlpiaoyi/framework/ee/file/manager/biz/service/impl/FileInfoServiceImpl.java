@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.util.List;
 import java.util.Map;
@@ -32,21 +33,28 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<String> cleanFile() {
-        List<Long> thumbnailFileIds = this.imageInfoService.cleanImage();
-        if(ValueUtils.isNotBlank(thumbnailFileIds)){
-            log.info("file cleanImage thumbnailFileIds size:{} values:{}", thumbnailFileIds.size(), ValueUtils.toStrings(thumbnailFileIds));
-            boolean delRes = this.deleteLogic(thumbnailFileIds);
-            log.info("file deleteLogic thumbnailFileIds delRes:{}", delRes);
+        List<Long> fileIds = this.imageInfoService.cleanImage();
+        if(ValueUtils.isNotBlank(fileIds)){
+            log.info("file cleanImage fileIds size:{} values:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
+            boolean delRes = this.deleteLogic(fileIds);
+            log.info("file deleteLogic fileIds delRes:{}", delRes);
         }else{
-            log.info("file cleanImage thumbnailFileIds empty");
+            log.info("file cleanImage fileIds empty");
         }
-        List<String> fingerprints = this.baseMapper.selectDeletedForFingerprint();
+        fileIds = this.baseMapper.selectDeletedIds();
+        if(ValueUtils.isBlank(fileIds)){
+            log.info("file deleted fileIds empty");
+            return null;
+        }
+        log.info("file deleted fileIds size:{} values:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
+        List<String> fingerprints = this.baseMapper.selectCanDeletedFingerprintsByIds(fileIds);
         if(ValueUtils.isBlank(fingerprints)){
             log.info("file select fingerprints empty");
             return null;
         }
         log.info("file select fingerprints size:{} values:{}", fingerprints.size(), ValueUtils.toStrings(fingerprints));
-        this.baseMapper.deleteByFingerprints(fingerprints);
+        int delRes = this.baseMapper.deleteByIds(fileIds);
+        log.info("file deleted ids size:{} values:{}", delRes, fileIds);
         return fingerprints;
     }
 
@@ -64,7 +72,15 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
 
     @Override
     public boolean updateById(FileInfo entity, Map funcMap, FileInfoUpdateInterceptor interceptor) {
-        boolean updateRes = super.updateById(entity);
+        FileInfo db = this.getById(entity.getId());
+        if(db == null){
+            throw new BusinessException("没有找到对应的数据");
+        }
+        FileInfo updateEntity = new FileInfo();
+        updateEntity.setName(entity.getName());
+        updateEntity.setSuffix(entity.getSuffix());
+        updateEntity.setId(entity.getId());
+        boolean updateRes = super.updateById(updateEntity);
         if(interceptor != null){
             interceptor.afterUpdate(updateRes, funcMap, entity);
         }

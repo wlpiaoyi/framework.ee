@@ -97,18 +97,10 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 }
             }
             funcMap.put("fileLocalPath", fileLocalPath);
-            if(this.fileInfoService.count(Wrappers.<FileInfo>lambdaQuery().eq(FileInfo::getId, fileInfo.getId())) > 0){
-                if(hasCallback){
-                    this.fileInfoService.updateById(fileInfo, funcMap, this);
-                }else{
-                    this.fileInfoService.updateById(fileInfo, funcMap, null);
-                }
+            if(hasCallback){
+                this.fileInfoService.save(fileInfo, funcMap, this);
             }else{
-                if(hasCallback){
-                    this.fileInfoService.save(fileInfo, funcMap, this);
-                }else{
-                    this.fileInfoService.save(fileInfo, funcMap, null);
-                }
+                this.fileInfoService.save(fileInfo, funcMap, null);
             }
             return fileSign;
         } catch (Exception e){

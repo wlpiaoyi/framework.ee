@@ -34,19 +34,28 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
-    <!-- 查询出已经删除的并且没有关联的文件指纹 -->
-    <select id="selectDeletedForFingerprint" resultType="java.lang.String">
-        SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted != 0
-<!--        AND status = 0-->
-        AND fingerprint NOT IN (
-            SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted = 0
-        )
+    <!-- 查询出已经删除的文件Id -->
+    <select id="selectDeletedIds" resultType="java.lang.Long">
+        SELECT id FROM biz_file_info WHERE is_deleted != 0;
     </select>
 
-    <!-- 根据文件指纹删除数据 -->
-    <delete id="deleteByFingerprints">
-        DELETE FROM biz_file_info WHERE `fingerprint` in (
-        <foreach item="item" index="index" collection="fingerprints" separator=",">
+    <!-- 查询出已经删除的并且没有关联的文件指纹 -->
+    <select id="selectCanDeletedFingerprintsByIds" resultType="java.lang.String">
+        SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted != 0
+        AND id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        ) AND fingerprint NOT IN (
+            SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted = 0
+        );
+    </select>
+
+    <!-- 物理删除数据 -->
+    <delete id="deleteByIds">
+        DELETE FROM biz_file_info WHERE is_deleted != 0
+        AND id in (
+        <foreach item="item" index="index" collection="ids" separator=",">
             #{item}
         </foreach>
         )

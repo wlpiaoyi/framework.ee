@@ -34,6 +34,12 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
+    <!-- 通过已经参数的数据Id查询出图片Id -->
+    <select id="selectIdsFromDeletedFile" resultType="java.lang.Long">
+        SELECT i.id FROM biz_image_info i WHERE i.file_id in (
+            SELECT id FROM biz_file_info WHERE is_deleted != 0
+        );
+    </select>
 
     <!-- 根据图片查询出缩略图Id -->
     <select id="selectThumbnailIdByIds" resultType="java.lang.Long">
@@ -44,16 +50,7 @@
         )
     </select>
 
-<!--    <select id="selectDeletedIds" resultType="java.lang.Long">-->
-<!--        SELECT id FROM biz_image_info WHERE is_deleted != 0-->
-<!--    </select>-->
-
-
-    <select id="selectIdsByDeletedFile" resultType="java.lang.Long">
-        SELECT i.id FROM biz_image_info i LEFT JOIN biz_file_info f ON i.file_id = f.id
-        WHERE f.is_deleted != 0;
-    </select>
-
+    <!-- 根据图片Id查询出数据Id -->
     <select id="selectFileIdByIds" resultType="java.lang.Long">
         SELECT file_id FROM biz_image_info WHERE id IN (
         <foreach item="item" index="index" collection="ids" separator=",">
@@ -62,9 +59,13 @@
         )
     </select>
 
-    <delete id="deletedImages">
-        DELETE FROM biz_image_info WHERE is_deleted != 0
-<!--        AND status = 0-->
+    <!-- 根据图片Id删除图片数据 -->
+    <delete id="deletedByIds">
+        DELETE FROM biz_image_info WHERE is_deleted != 0 AND id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
     </delete>
 
 </mapper>
