@@ -42,22 +42,6 @@ public class FileInfoController {
 
 	private final IFileInfoService fileDataService;
 
-	/**
-	 * 文件信息 详情
-	 */
-	@GetMapping("/detail")
-	@ApiOperationSupport(order = 1)
-	@Operation(summary = "文件信息 详情")
-	public R<FileInfoVo> detail(FileInfoRo.Query body) {
-		FileInfoVo fileMenu = ModelWrapper.parseOne(
-				this.fileDataService.getOne(
-						Condition.getQueryWrapper(ModelWrapper.parseOne(body, FileInfo.class))
-				),
-				FileInfoVo.class
-		);
-		return R.success(fileMenu);
-
-	}
 
 	/**
 	 * 文件信息 分页
