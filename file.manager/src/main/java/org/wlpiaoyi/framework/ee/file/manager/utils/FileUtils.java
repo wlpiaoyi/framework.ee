@@ -2,12 +2,15 @@ package org.wlpiaoyi.framework.ee.file.manager.utils;
 
 
 import lombok.SneakyThrows;
-import org.springframework.web.multipart.MultipartFile;
+import org.wlpiaoyi.framework.utils.DateUtils;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -17,24 +20,44 @@ import java.io.IOException;
  */
 public class FileUtils extends DataUtils{
 
+    private static final Random random = new Random();
+
     /**
      * Store file base on file fingerprints
      * @return
      */
-    public static String moveToFingerprintHex(MultipartFile file, String tempPath, String savePath) throws IOException {
-        if(file.isEmpty()){
-            throw new BusinessException("File.EmptyError");
+    public static String mergeToFingerprintHex(InputStream fileInput, String tempPath, String savePath) throws IOException {
+        String tempFilePath= tempPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
+        File tempFileIng = new java.io.File(tempFilePath + ".uploading");
+        OutputStream out = null;
+        try {
+            byte[] buffer = new byte[1024];
+            int readIndex = 0;
+            out = new FileOutputStream(tempFileIng);
+            while ((readIndex = fileInput.read(buffer)) != -1) {
+                out.write(buffer, 0, readIndex);
+            }
+        }catch (Exception e){
+            if(out != null){
+                out.flush();
+                out.close();
+                out = null;
+            }
+            tempFileIng.delete();
+            throw e;
+        }finally {
+            if(out != null){
+                out.flush();
+                out.close();
+                out = null;
+            }
         }
-        String fileName = StringUtils.getUUID32();
-        FileUtils.makeDir(tempPath);
-
-        java.io.File tempFile = new java.io.File(tempPath + "/" + fileName);
-        file.transferTo(tempFile);
-
-        String fingerprintHex = FileUtils.moveToFingerprintHex(tempFile, savePath);
+        File tempFile = new java.io.File(tempFilePath);
+        tempFileIng.renameTo(tempFile);
+        String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
         return fingerprintHex;
-
     }
+
     public static String getMd5ValueByFingerprintHex(String fingerprintHex){
         return fingerprintHex.substring(0, 40);
     }
@@ -59,7 +82,7 @@ public class FileUtils extends DataUtils{
      * @return
      */
     @SneakyThrows
-    public static String moveToFingerprintHex(java.io.File orgFile, String savePath) {
+    public static String mergeToFingerprintHex(java.io.File orgFile, String savePath) {
         try{
             final String fingerprintHex =  DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
             final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);

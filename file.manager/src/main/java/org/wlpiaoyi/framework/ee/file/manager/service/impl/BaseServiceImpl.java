@@ -68,7 +68,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteLogic(List<Long> ids) {
-
         List<T> list = new ArrayList();
         ids.forEach((id) -> {
             T entity;
@@ -115,7 +114,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
             if(ValueUtils.isBlank(entity.getId())){
                 entity.setId(IdUtils.nextId());
             }
-
         } catch (Throwable var8) {
             throw var8;
         }

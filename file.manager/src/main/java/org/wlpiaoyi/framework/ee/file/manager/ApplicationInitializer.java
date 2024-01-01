@@ -13,16 +13,16 @@ import org.wlpiaoyi.framework.ee.file.manager.utils.SpringUtils;
 @Slf4j
 class ApplicationInitializer {
 
-    public static class SpringUtilsBuilder extends SpringUtils{
+    static class SpringUtilsBuilder extends SpringUtils{
         private SpringUtilsBuilder(){}
-        public static SpringUtilsBuilder build(){
+        static SpringUtilsBuilder build(){
             return new SpringUtilsBuilder();
         }
-        public SpringUtilsBuilder setBeanFactory(ConfigurableListableBeanFactory beanFactory){
+        SpringUtilsBuilder setBeanFactory(ConfigurableListableBeanFactory beanFactory){
             SpringUtils.beanFactory = beanFactory;
             return this;
         }
-        public SpringUtilsBuilder setApplicationContext(ApplicationContext applicationContext){
+        SpringUtilsBuilder setApplicationContext(ApplicationContext applicationContext){
             SpringUtils.applicationContext = applicationContext;
             return this;
         }

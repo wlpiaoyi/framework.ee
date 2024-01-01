@@ -13,13 +13,13 @@ import java.io.Serializable;
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
- * {@code @description:} 	文件目录 请求包装类
+ * {@code @description:} 	文件信息 请求包装类
  * {@code @date:} 			2023-12-08 17:30:35
  * {@code @version:}: 		1.0
  */
-public class FileMenuRo {
+public class FileInfoRo {
     @Data
-    @Schema(description = "文件目录 请求实例")
+    @Schema(description = "文件信息 请求实例")
 	public static class Query extends org.wlpiaoyi.framework.ee.utils.request.Query implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -32,7 +32,7 @@ public class FileMenuRo {
     }
 
     @Data
-    @Schema(description = "文件目录 请求实例")
+    @Schema(description = "文件信息 请求实例")
     public static class Submit implements Serializable {
 
         private static final long serialVersionUID = 1L;

@@ -12,8 +12,8 @@
 
     <groupId>org.wlpiaoyi.framework.ee</groupId>
     <artifactId>utils</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <version>${ee.project.version}</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

@@ -12,10 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu;
-import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileMenuService;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileService;
-import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
+import org.wlpiaoyi.framework.ee.file.manager.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * {@code @author:}         wlpiaoyi
@@ -42,7 +43,11 @@ public class FileController {
     private IFileService fileService;
 
     @Autowired
-    private IFileMenuService fileMenuService;
+    private IFileInfoService fileDataService;
+
+
+    @Autowired
+    private FileConfig fileConfig;
 
     @SneakyThrows
     @GetMapping("/exists")
@@ -52,7 +57,7 @@ public class FileController {
     public R<Boolean> exists(@Validated @Parameter(description = "文件指纹, MD5(path)+SHA(name)") @RequestParam(value = "fingerprint") String fingerprint,
                              HttpServletResponse response) {
         boolean existFile = false;
-        File filePath = new File(this.fileService.getFilePathByFingerprint(fingerprint));
+        File filePath = new File(this.fileConfig.getFilePathByFingerprint(fingerprint));
         if(filePath.exists() && filePath.isFile()){
             existFile = true;
         }
@@ -64,34 +69,54 @@ public class FileController {
     @ApiOperationSupport(order = 1)
     @Operation(summary = "上传单个文件 请求", description = "上传单个文件")
     @ResponseBody
-    public R<FileMenu> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
-                              @Parameter(description = "文件指纹, MD5(path)+SHA(name)") @RequestParam(value = "fingerprint", required = false) String fingerprint,
+    public R<FileInfo> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
+//                              @Parameter(description = "文件指纹, MD5(path)+SHA(name)") @RequestParam(value = "fingerprint", required = false) String fingerprint,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
+                              @Parameter(description = "文件缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
                               HttpServletResponse response) {
-        FileMenu fileMenu = new FileMenu();
-        fileMenu.setIsVerifySign(isVerifySign);
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.setIsVerifySign(isVerifySign);
         if(ValueUtils.isNotBlank(name)){
-            fileMenu.setName(name);
+            fileInfo.setName(name);
         }
         if(ValueUtils.isNotBlank(suffix)){
-            fileMenu.setSuffix(suffix);
+            fileInfo.setSuffix(suffix);
         }
-        boolean existFile = false;
-        if(ValueUtils.isNotBlank(fingerprint)){
-            File filePath = new File(this.fileService.getFilePathByFingerprint(fingerprint));
-            if(filePath.exists() && filePath.isFile()){
-                existFile = true;
+        if(ValueUtils.isBlank(fileInfo.getName())){
+            fileInfo.setName(file.getOriginalFilename());
+        }
+        if(ValueUtils.isBlank(fileInfo.getSuffix())){
+            if(fileInfo.getName().contains(".")){
+                fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
+            }else if(file.getOriginalFilename().contains(".")){
+                fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
             }
         }
-        if(existFile){
-            this.fileService.synFileMenuByFingerprint(fileMenu, fingerprint);
-            this.fileMenuService.save(fileMenu);
-        }else{
-            this.fileService.upload(fileMenu, file, response);
+        Map funcMap = new HashMap<>();
+        funcMap.put("thumbnailSize", thumbnailSize);
+
+        String fileSign = this.fileService.save(file.getInputStream(), fileInfo, funcMap);
+//        boolean existFile = false;
+//        if(ValueUtils.isNotBlank(fingerprint)){
+//            File filePath = new File(this.fileConfig.getFilePathByFingerprint(fingerprint));
+//            if(filePath.exists() && filePath.isFile()){
+//                existFile = true;
+//            }
+//        }
+//
+//        String fileSign = null;
+//        if(existFile){
+//            this.fileConfig.synFileMenuByFingerprint(fileInfo, fingerprint);
+//            this.fileDataService.save(fileInfo);
+//        }else{
+//            fileSign = this.fileService.save(file.getInputStream(), fileInfo);
+//        }
+        if(ValueUtils.isNotBlank(fileSign)){
+            response.setHeader("file-sign", fileSign);
         }
-        return R.success(fileMenu);
+        return R.success(fileInfo);
     }
 
     @SneakyThrows
@@ -103,10 +128,12 @@ public class FileController {
     public void download(@Validated @Parameter(description = "token") @PathVariable String token,
                          @Validated @Parameter(description = "文件指纹") @PathVariable String fingerprint,
                          @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
+                         @Parameter(description = "数据类型: org,thumbnail") @RequestParam(required = false, defaultValue = "org") String dataType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
         this.fileService.download(token, fingerprint, new HashMap(){{
             put("readType", readType);
+            put("dataType", dataType);
         }}, request, response);
     }
 }

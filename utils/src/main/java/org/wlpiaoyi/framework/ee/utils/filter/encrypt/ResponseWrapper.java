@@ -22,6 +22,13 @@ class ResponseWrapper extends HttpServletResponseWrapper {
     private final ServletOutputStream outputStream;
     private final PrintWriter writer;
 
+    /**
+     *
+     * @param response
+     * @return:
+     * @author: wlpia
+     * @date: 2023/12/25 14:57
+     */
     public ResponseWrapper(@NonNull HttpServletResponse response) throws IOException {
         super(response);
         this.bufferStream = new ByteArrayOutputStream();

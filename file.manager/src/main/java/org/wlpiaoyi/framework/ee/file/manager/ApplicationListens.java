@@ -5,7 +5,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileService;
-import org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.FileServiceImpl;
 import org.wlpiaoyi.framework.ee.file.manager.utils.SpringUtils;
 
 @Slf4j
@@ -18,7 +17,7 @@ public class ApplicationListens implements CommandLineRunner, DisposableBean {
     @Override
     public void run(String... args) throws Exception {
         log.info("应用启动成功，预相关加载数据");
-        IFileService fileService = SpringUtils.getBean(FileServiceImpl.class);
+        IFileService fileService = SpringUtils.getBean(IFileService.class);
         fileService.cleanFile();
     }
 

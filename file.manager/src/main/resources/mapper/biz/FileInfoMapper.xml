@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!--@author wlpia:WLPIAOYI-DELL-->
 <!--@since 2023-12-08 19:02:34-->
-<!--@desc 文件目录-->
-<mapper namespace="org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.FileMenuMapper">
+<!--@desc 文件信息-->
+<mapper namespace="org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.FileInfoMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="fileMenuResultMap" type="org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileMenu">
+    <resultMap id="fileInfoResultMap" type="org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo">
         <id column="id" property="id"/>
         <!-- 文件名称 -->
         <result column="name" property="name"/>
@@ -34,18 +34,28 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
-    <!-- 查询出已经删除的并且没有关联的文件指纹 -->
-    <select id="selectDeletedForFingerprint" resultType="java.lang.String">
-        SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_menu WHERE status = 0 AND is_deleted = 1
-        AND fingerprint NOT IN (
-            SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_menu WHERE is_deleted = 0
-        )
+    <!-- 查询出已经删除的文件Id -->
+    <select id="selectDeletedIds" resultType="java.lang.Long">
+        SELECT id FROM biz_file_info WHERE is_deleted != 0;
     </select>
 
-    <!-- 根据文件指纹删除数据 -->
-    <delete id="deleteByFingerprints">
-        DELETE FROM biz_file_menu WHERE `fingerprint` in (
-        <foreach item="item" index="index" collection="fingerprints" separator=",">
+    <!-- 查询出已经删除的并且没有关联的文件指纹 -->
+    <select id="selectCanDeletedFingerprintsByIds" resultType="java.lang.String">
+        SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted != 0
+        AND id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        ) AND fingerprint NOT IN (
+            SELECT DISTINCT(fingerprint) fingerprint FROM biz_file_info WHERE is_deleted = 0
+        );
+    </select>
+
+    <!-- 物理删除数据 -->
+    <delete id="deleteByIds">
+        DELETE FROM biz_file_info WHERE is_deleted != 0
+        AND id in (
+        <foreach item="item" index="index" collection="ids" separator=",">
             #{item}
         </foreach>
         )
