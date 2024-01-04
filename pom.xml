@@ -48,7 +48,7 @@
     <modules>
         <module>utils</module>
         <module>activiti</module>
-        <module>file.manager</module>
+        <module>resource</module>
     </modules>
 
     <dependencyManagement>
