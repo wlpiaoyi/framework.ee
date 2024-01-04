@@ -14,5 +14,4 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends org.wlpiaoyi.framework.ee.utils.handler.GlobalExceptionHandler {
-
 }
