@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.ImageInfo;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.file.manager.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
@@ -42,14 +44,9 @@ import java.util.Set;
 @Service
 public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, ImageInfo> implements IImageInfoService {
 
-//    private Set<String> imageSuffixes = new HashSet(){{
-//       add("jpg");
-//       add("jpeg");
-//       add("png");
-//    }};
-
     @Autowired
     private FileConfig fileConfig;
+
 
 
     public boolean hasThumbnail(Long fileId){
@@ -72,17 +69,6 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         }
         return this.baseMapper.selectById(imageInfo.getThumbnailId());
     }
-
-//    @SneakyThrows
-//    @Override
-//    public String generateSmall(String fingerprintHex, String suffix, double smallSize) {
-//        String fileName = StringUtils.getUUID32();
-//        FileUtils.makeDir(this.fileConfig.getTempPath());
-//        File tempFile = new File(this.fileConfig.getTempPath() + "/" + fileName);
-//        String orgImagePath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-//        FileImageHandle.generateSmall(orgImagePath, suffix, smallSize, new FileOutputStream(tempFile));
-//        return FileUtils.mergeToFingerprintHex(tempFile, this.fileConfig.getDataPath());
-//    }
 
     @SneakyThrows
     @Override

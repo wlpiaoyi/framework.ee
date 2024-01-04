@@ -48,15 +48,9 @@ public class FileInfoController {
 	@GetMapping("/detail")
 	@ApiOperationSupport(order = 1)
 	@Operation(summary = "文件信息 详情")
-	public R<FileInfoVo> detail(FileInfoRo.Query body) {
-		FileInfoVo fileMenu = ModelWrapper.parseOne(
-				this.fileDataService.getOne(
-						Condition.getQueryWrapper(ModelWrapper.parseOne(body, FileInfo.class))
-				),
-				FileInfoVo.class
-		);
+	public R<FileInfoVo> detail(@RequestParam Long id) {
+		FileInfoVo fileMenu = this.fileDataService.detail(id);
 		return R.success(fileMenu);
-
 	}
 
 	/**
@@ -73,6 +67,7 @@ public class FileInfoController {
 		if(ValueUtils.isNotBlank(body.getSuffix())){
 			wrapper.eq(FileInfo::getSuffix, body.getSuffix());
 		}
+		wrapper.orderByDesc(FileInfo::getCreateTime);
 		IPage<FileInfo> pages = fileDataService.page(Condition.getPage(body), wrapper);
 		return R.success(ModelWrapper.parseForPage(pages, FileInfoVo.class));
 	}

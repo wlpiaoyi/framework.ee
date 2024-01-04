@@ -22,18 +22,15 @@ public class FileUtils extends DataUtils{
 
     private static final Random random = new Random();
 
-    /**
-     * Store file base on file fingerprints
-     * @return
-     */
-    public static String mergeToFingerprintHex(InputStream fileInput, String tempPath, String savePath) throws IOException {
-        String tempFilePath= tempPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
-        File tempFileIng = new java.io.File(tempFilePath + ".uploading");
+
+    public static String writeFileToTargetPath(InputStream fileInput, String targetPath) throws IOException {
+        String filePath= targetPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
+        File tempFileWriting = new java.io.File(filePath + ".writing");
         OutputStream out = null;
         try {
             byte[] buffer = new byte[1024];
             int readIndex = 0;
-            out = new FileOutputStream(tempFileIng);
+            out = new FileOutputStream(tempFileWriting);
             while ((readIndex = fileInput.read(buffer)) != -1) {
                 out.write(buffer, 0, readIndex);
             }
@@ -43,7 +40,7 @@ public class FileUtils extends DataUtils{
                 out.close();
                 out = null;
             }
-            tempFileIng.delete();
+            tempFileWriting.delete();
             throw e;
         }finally {
             if(out != null){
@@ -52,11 +49,14 @@ public class FileUtils extends DataUtils{
                 out = null;
             }
         }
+        String tempFilePath = filePath + ".done.temp";
         File tempFile = new java.io.File(tempFilePath);
-        tempFileIng.renameTo(tempFile);
-        String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
-        return fingerprintHex;
+        tempFileWriting.renameTo(tempFile);
+        return tempFilePath;
+//        String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
+//        return fingerprintHex;
     }
+
 
     public static String getMd5ValueByFingerprintHex(String fingerprintHex){
         return fingerprintHex.substring(0, 40);
@@ -76,28 +76,35 @@ public class FileUtils extends DataUtils{
         return dataValue.substring(0, dataValue.length() / 2) + "." + dataValue.substring(dataValue.length() / 2);
     }
 
+    @SneakyThrows
+    public static String getFingerprintHex(java.io.File orgFile){
+        return DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
+    }
+
     /**
      * Store file base on file fingerprints
      * @param orgFile
      * @return
      */
     @SneakyThrows
-    public static String mergeToFingerprintHex(java.io.File orgFile, String savePath) {
+    public static String mergeByFingerprintHex(java.io.File orgFile, final String fingerprintHex, String savePath) {
         try{
-            final String fingerprintHex =  DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
             final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);
             final String dataSuffix = getDataSuffixByFingerprintHex(fingerprintHex);
-            String oPath = savePath + "/" + md5Path;
-            java.io.File md5File = new java.io.File(oPath);
+            //文件夹路径
+            String dirPath = savePath + "/" + md5Path;
+            java.io.File md5File = new java.io.File(dirPath);
             if (!md5File.exists()) {// 判断目录是否存在
                 md5File.mkdirs();
             }
-            md5File = new java.io.File(oPath + dataSuffix);
-            if(md5File.exists()) return fingerprintHex;
+            //文件路径
+            String filePath = dirPath + dataSuffix;
+            md5File = new java.io.File(filePath);
+            if(md5File.exists()) return filePath;
             if(!orgFile.renameTo(md5File)){
                 throw new BusinessException("File.MoveError");
             }
-            return fingerprintHex;
+            return filePath;
         } finally {
             if(orgFile.exists()) orgFile.delete();
         }

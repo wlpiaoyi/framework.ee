@@ -3,6 +3,7 @@ package org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo;
 import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.file.manager.domain.entity.BaseEntity;
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
@@ -15,5 +16,6 @@ import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
 public class FileInfoVo extends FileInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Object expandObj;
 
 }

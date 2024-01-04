@@ -61,10 +61,11 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             funcMap = new HashMap<>();
         }
         List<InputStream> inputStreams = new ArrayList<>();
-        String fingerprintHex = null;
+        String tempFilePath = null;
+        String fileLocalPath = null;
         try{
-            fingerprintHex = FileUtils.mergeToFingerprintHex(fileIo, this.fileConfig.getTempPath(),
-                    this.fileConfig.getDataPath());
+            tempFilePath = FileUtils.writeFileToTargetPath(fileIo, this.fileConfig.getTempPath());
+            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
             if(ValueUtils.isBlank(fileInfo.getId())){
                 fileInfo.setId(IdUtils.nextId());
             }
@@ -77,8 +78,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 }
             }
             fileInfo.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
-            String fileLocalPath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-            fileInfo.setSize(DataUtils.getSize(fileLocalPath));
+            fileInfo.setSize(DataUtils.getSize(tempFilePath));
             fileInfo.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.getId().toString().getBytes())));
             String fileSign = null;
             if(fileInfo.getIsVerifySign() == 1){
@@ -96,26 +96,33 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                     throw e;
                 }
             }
+            fileLocalPath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
+            funcMap.put("tempFilePath", tempFilePath);
             funcMap.put("fileLocalPath", fileLocalPath);
             if(hasCallback){
                 this.fileInfoService.save(fileInfo, funcMap, this);
             }else{
                 this.fileInfoService.save(fileInfo, funcMap, null);
             }
+            fileLocalPath = FileUtils.mergeByFingerprintHex(new File(tempFilePath), fingerprintHex, this.fileConfig.getDataPath());
+            log.info("file upload localPath: {}", fileLocalPath);
             return fileSign;
         } catch (Exception e){
-            String fingerprintPath = FileUtils.getMd5PathByFingerprintHex(fingerprintHex);
-            this.deleteFile(fingerprintPath);
+            this.deleteFile(tempFilePath);
             throw e;
         }finally {
-            if(ValueUtils.isNotBlank(inputStreams)){
-                for (InputStream inputStream : inputStreams){
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            try{
+                if(ValueUtils.isNotBlank(inputStreams)){
+                    for (InputStream inputStream : inputStreams){
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
@@ -155,7 +162,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             throw new SystemException("文件验证失败");
         }
         this.download(fileInfo, funcMap,request, response);
-
     }
 
 

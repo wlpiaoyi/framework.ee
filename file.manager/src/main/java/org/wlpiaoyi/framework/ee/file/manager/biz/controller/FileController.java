@@ -98,21 +98,6 @@ public class FileController {
         funcMap.put("thumbnailSize", thumbnailSize);
 
         String fileSign = this.fileService.save(file.getInputStream(), fileInfo, funcMap);
-//        boolean existFile = false;
-//        if(ValueUtils.isNotBlank(fingerprint)){
-//            File filePath = new File(this.fileConfig.getFilePathByFingerprint(fingerprint));
-//            if(filePath.exists() && filePath.isFile()){
-//                existFile = true;
-//            }
-//        }
-//
-//        String fileSign = null;
-//        if(existFile){
-//            this.fileConfig.synFileMenuByFingerprint(fileInfo, fingerprint);
-//            this.fileDataService.save(fileInfo);
-//        }else{
-//            fileSign = this.fileService.save(file.getInputStream(), fileInfo);
-//        }
         if(ValueUtils.isNotBlank(fileSign)){
             response.setHeader("file-sign", fileSign);
         }

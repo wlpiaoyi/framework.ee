@@ -96,7 +96,7 @@ public class FileImageHandle {
         put("png", BufferedImage.TYPE_INT_ARGB);
     }};
 
-    static boolean isSupportSuffix(String suffix){
+    public static boolean isSupportSuffix(String suffix){
         return imageSuffixeMap.containsKey(suffix);
     }
     @SneakyThrows

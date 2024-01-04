@@ -51,8 +51,8 @@ public class ImageInfo extends BaseEntity implements Serializable {
     @NotNull(message = "height不能为空")
     private Integer height;
 
-    /** 缩略图 **/
-    @Schema(description = "缩略图")
+    /** 缩略图Id **/
+    @Schema(description = "缩略图Id")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long thumbnailId;
 

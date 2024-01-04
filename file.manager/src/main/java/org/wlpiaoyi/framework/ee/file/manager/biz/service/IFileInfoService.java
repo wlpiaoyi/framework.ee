@@ -1,6 +1,7 @@
 package org.wlpiaoyi.framework.ee.file.manager.biz.service;
 
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.FileInfoServiceImpl;
 import org.wlpiaoyi.framework.ee.file.manager.service.IBaseService;
 
@@ -25,6 +26,15 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
     }
 
 
+
+    /**
+     * 获取详情
+     * @param id 文件Id
+     * @return: org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileInfoVo
+     * @author: wlpia
+     * @date: 2024/1/3 12:31
+     */
+    FileInfoVo detail(Long id);
 
     /**
      * 获取缩略图对应的文件

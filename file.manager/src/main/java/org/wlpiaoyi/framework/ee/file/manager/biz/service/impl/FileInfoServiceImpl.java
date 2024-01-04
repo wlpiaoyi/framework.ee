@@ -1,17 +1,23 @@
 package org.wlpiaoyi.framework.ee.file.manager.biz.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.ImageInfo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.ImageInfoMapper;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.FileInfoVo;
+import org.wlpiaoyi.framework.ee.file.manager.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.file.manager.biz.domain.mapper.FileInfoMapper;
 import org.wlpiaoyi.framework.ee.file.manager.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.file.manager.biz.service.impl.file.FileImageHandle;
 import org.wlpiaoyi.framework.ee.file.manager.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.file.manager.utils.IdUtils;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
@@ -29,6 +35,42 @@ import java.util.Map;
 @Primary
 @Service
 public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInfo> implements IFileInfoService {
+
+    @Autowired
+    private ImageInfoMapper imageInfoMapper;
+
+    public FileInfoVo detail(Long id){
+        FileInfo fileInfo = this.getById(id);
+        if(fileInfo == null){
+            return null;
+        }
+        FileInfoVo fileInfoVo = ModelWrapper.parseOne(fileInfo, FileInfoVo.class);
+        if(FileImageHandle.isSupportSuffix(fileInfoVo.getSuffix())){
+            ImageInfo imageInfo = this.imageInfoMapper.selectOne(
+                    Wrappers.<ImageInfo>lambdaQuery().eq(ImageInfo::getFileId, fileInfoVo.getId())
+            );
+            if(imageInfo == null){
+                return fileInfoVo;
+            }
+            ImageInfoVo imageInfoVo = ModelWrapper.parseOne(imageInfo, ImageInfoVo.class);
+            fileInfoVo.setExpandObj(imageInfoVo);
+            if(ValueUtils.isBlank(imageInfoVo.getThumbnailId())){
+                return fileInfoVo;
+            }
+            ImageInfo thumbnailImageInfo = this.imageInfoMapper.selectById(imageInfoVo.getThumbnailId());
+            if(thumbnailImageInfo == null){
+                return fileInfoVo;
+            }
+            FileInfo thumbnailFileInfo = this.getById(thumbnailImageInfo.getFileId());
+            if(thumbnailFileInfo == null){
+                return fileInfoVo;
+            }
+            FileInfoVo thumbnailFileInfoVo = ModelWrapper.parseOne(thumbnailFileInfo, FileInfoVo.class);
+            thumbnailFileInfoVo.setExpandObj(thumbnailImageInfo);
+            imageInfoVo.setThumbnailInfo(thumbnailFileInfoVo);
+        }
+        return fileInfoVo;
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
