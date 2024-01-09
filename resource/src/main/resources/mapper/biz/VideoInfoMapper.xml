@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--@author wlpia:WLPIAOYI-DELL-->
+<!--@since 2024-01-08 14:07:23-->
+<!--@desc 视频信息-->
+<mapper namespace="org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.VideoInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="videoInfoResultMap" type="org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo">
+        <id column="id" property="id"/>
+        <!-- 视频宽度 -->
+        <result column="width" property="width"/>
+        <!-- 视频高度 -->
+        <result column="height" property="height"/>
+        <!-- 文件id -->
+        <result column="file_id" property="fileId"/>
+        <!-- 文件后缀 -->
+        <result column="suffix" property="suffix"/>
+        <!-- 视频时长(ms) -->
+        <result column="duration" property="duration"/>
+        <!-- 视频截图Id -->
+        <result column="screenshot_id" property="screenshotId"/>
+        <!-- 状态 -->
+        <result column="status" property="status"/>
+        <!-- 是否删除 -->
+        <result column="is_deleted" property="isDeleted"/>
+        <!-- 创建人 -->
+        <result column="create_user" property="createUser"/>
+        <!-- 创建时间 -->
+        <result column="create_time" property="createTime"/>
+        <!-- 创建部门 -->
+        <result column="create_dept" property="createDept"/>
+        <!-- 修改人 -->
+        <result column="update_user" property="updateUser"/>
+        <!-- 修改时间 -->
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+</mapper>

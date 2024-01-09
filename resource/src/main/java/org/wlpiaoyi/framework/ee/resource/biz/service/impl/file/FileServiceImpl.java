@@ -10,12 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
-import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
-import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
-import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 
@@ -44,89 +43,17 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @Autowired
     IFileInfoService fileInfoService;
+    @Autowired
+    IImageInfoService imageInfoService;
+
+    @Autowired
+    IVideoInfoService videoInfoService;
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
     public String save(InputStream fileIo, FileInfo fileInfo, Map funcMap){
-        return this.save(fileIo, fileInfo, funcMap, true);
-    }
-    @Transactional(rollbackFor = Exception.class)
-    @SneakyThrows
-    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, boolean hasCallback){
-        if(funcMap == null) funcMap = new HashMap<>();
-        List<InputStream> inputStreams = new ArrayList<>();
-        List<String> removePaths = MapUtils.get(funcMap, "removePaths", new ArrayList<>());
-        boolean fileExists = false;
-        try{
-            String tempFilePath = FileUtils.writeFileToTargetPath(fileIo, this.fileConfig.getTempPath());
-            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
-            if(ValueUtils.isBlank(fileInfo.getId())){
-                fileInfo.setId(IdUtils.nextId());
-            }
-            if(ValueUtils.isBlank(fileInfo.getName())){
-                throw new BusinessException("文件名称不能为空");
-            }
-            if(ValueUtils.isBlank(fileInfo.getSuffix())){
-                if(fileInfo.getName().contains(".")){
-                    fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
-                }
-            }
-            fileInfo.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
-            fileInfo.setSize(DataUtils.getSize(tempFilePath));
-            fileInfo.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.getId().toString().getBytes())));
-            String fileSign = null;
-            if(fileInfo.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.fileConfig.getFilePathByFingerprintHex(fingerprintHex));
-                inputStreams.add(orgFileIo);
-                InputStream tokenByteInput = new ByteArrayInputStream(fileInfo.getToken().getBytes());
-                final String dataSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(orgFileIo));
-                final String tokenSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(tokenByteInput));
-                tokenByteInput.close();
-                fileSign = tokenSign + "," + dataSign;
-                try {
-                    orgFileIo.close();
-                    inputStreams.remove(orgFileIo);
-                } catch (Exception e) {
-                    throw e;
-                }
-            }
-            String fileLocalPath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-            fileExists = FileUtils.mergeByFingerprintHex(new File(tempFilePath), fingerprintHex, this.fileConfig.getDataPath());
-            funcMap.put("tempFilePath", tempFilePath);
-            funcMap.put("fileLocalPath", fileLocalPath);
-            removePaths.add(tempFilePath);
-            if(!fileExists){
-                removePaths.add(fileLocalPath);
-            }
-            funcMap.put("removePaths", removePaths);
-            if(hasCallback){
-                this.fileInfoService.save(fileInfo, funcMap, this);
-            }else{
-                this.fileInfoService.save(fileInfo, funcMap, null);
-            }
-            log.info("file upload localPath: {}", fileLocalPath);
-            return fileSign;
-        } catch (Exception e){
-            for(String filePath : removePaths){
-                this.deleteFile(filePath);
-            }
-            throw e;
-        }finally {
-            try{
-                if(ValueUtils.isNotBlank(inputStreams)){
-                    for (InputStream inputStream : inputStreams){
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+        return this.fileInfoService.save(fileIo, fileInfo, funcMap, this);
     }
 
     private static Map<String, String> contentTypeMap = new HashMap(){{
@@ -169,14 +96,19 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @Autowired
     private FileImageHandle fileImageHandle;
+    @Autowired
+    private FileVideoHandle fileVideoHandle;
+
     @Override
     public void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
             String dataType = MapUtils.getString(funcMap, "dataType", "org");
-            if(this.fileImageHandle.canDownloadFileInfoHandle(fileInfo, dataType)){
-                fileInfo = this.fileImageHandle.downloadFileInfoHandle(this, fileInfo);
+            if(this.fileImageHandle.canDownloadByThumbnail(fileInfo.getSuffix(), dataType)){
+                fileInfo = this.fileImageHandle.getThumbnailFileInfo(this, fileInfo);
+            }else if(this.fileVideoHandle.canDownloadByScreenshot(fileInfo.getSuffix(), dataType)){
+                fileInfo = this.fileVideoHandle.getScreenshotFileInfo(this, fileInfo);
             }
             String ogPath = this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint());
             if(fileInfo.getIsVerifySign() == 1){
@@ -269,6 +201,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             }
         }
     }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<String> cleanFile() {
@@ -280,43 +213,20 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(!dataPath.exists()){
             dataPath.mkdirs();
         }
+        List<Long> fileIds = this.imageInfoService.cleanImage();
+        if(ValueUtils.isNotBlank(fileIds)){
+            log.info("file cleanImage fileIds size:{} values:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
+            boolean delRes = this.fileInfoService.deleteLogic(fileIds);
+            log.info("file deleteLogic fileIds delRes:{}", delRes);
+        }else{
+            log.info("file cleanImage fileIds empty");
+        }
         List<String> fingerprints = this.fileInfoService.cleanFile();
-        if(ValueUtils.isBlank(fingerprints)){
-            return null;
-        }
-        for (String fingerprint : fingerprints){
-            String fingerprintHex = ValueUtils.bytesToHex(this.fileConfig.dataDecode(fingerprint));
-            String filePath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-            File file = new File(filePath);
-            if(file.exists()){
-                if(file.delete()){
-                    log.info("file.clean delete success for file [{}]", file.getAbsolutePath());
-                }else{
-                    log.warn("file.clean delete failed for file [{}]", file.getAbsolutePath());
-                }
-            }
-            String fingerprintPath = FileUtils.getMd5PathByFingerprintHex(fingerprintHex);
-            this.deleteFile(fingerprintPath);
-        }
         return fingerprints;
     }
 
-    private void deleteFile(String fingerprintPath){
-        while (fingerprintPath.length() > 0 && fingerprintPath.contains("/")){
-            fingerprintPath = fingerprintPath.substring(0, fingerprintPath.lastIndexOf("/"));
-            String absPath = this.fileConfig.getDataPath() + "/" + fingerprintPath;
-            File removeFile = new File(absPath);
-            if(ValueUtils.isNotBlank(removeFile.list())){
-                break;
-            }
-            if(removeFile.delete()){
-                log.info("file.clean delete success for path [{}]", removeFile.getAbsolutePath());
-            }else{
-                log.warn("file.clean delete failed for path [{}]", removeFile.getAbsolutePath());
-            }
-        }
-    }
 
+    @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
     public void afterSave(boolean saveRes, Map funcMap, FileInfo entity) {
@@ -328,6 +238,11 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         }
         if(this.fileImageHandle.afterSaveHandle(this, entity, funcMap)){
            log.info("file handle image");
+           return;
+        }
+        if(this.fileVideoHandle.afterSaveHandle(this, entity, funcMap)){
+            log.info("file handle video");
+            return;
         }
     }
 

@@ -1,9 +1,13 @@
 package org.wlpiaoyi.framework.ee.resource.biz.service;
 
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
 import org.wlpiaoyi.framework.ee.resource.service.IBaseService;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -24,35 +28,32 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
         void afterUpdate(boolean updateRes, Map funcMap, FileInfo entity);
     }
 
+    /**
+     * 存储文件
+     * @param fileIo 文件IO
+     * @param fileInfo 文件实体信息
+     * @param funcMap 拓展字段
+     * @param interceptor 存储回调
+     * @return: java.lang.String
+     * @author: wlpia
+     * @date: 2024/1/8 17:26
+     */
+    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, FileInfoSaveInterceptor interceptor);
 
 
     /**
-     * 获取详情
-     * @param id 文件Id
-     * @return: vo.domain.biz.org.wlpiaoyi.framework.ee.resource.FileInfoVo
+     * 删除单个资源文件
+     * @param filePath 文字路径
+     * @return: void
      * @author: wlpia
-     * @date: 2024/1/3 12:31
+     * @date: 2024/1/9 10:25
      */
-    FileInfoVo detail(Long id);
-
-    /**
-     * 获取缩略图对应的文件
-     * @param fileInfo
-     * @return: entity.domain.biz.org.wlpiaoyi.framework.ee.resource.FileInfo
-     * @author: wlpia
-     * @date: 2023/12/30 19:39
-     */
-    FileInfo getThumbnailFileByFileInfo(FileInfo fileInfo);
+    void deleteFile(String filePath);
 
     /**
      * 清理文件
      * @return
      */
     List<String> cleanFile();
-
-
-    boolean save(FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor);
-
-    boolean updateById(FileInfo entity, Map funcMap, FileInfoUpdateInterceptor interceptor);
 
 }

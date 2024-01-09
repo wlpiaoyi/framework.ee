@@ -22,9 +22,14 @@ public class FileUtils extends DataUtils{
 
     private static final Random random = new Random();
 
+    public static String createTempFilePath(String targetPath){
+        String filePath= targetPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
+        return filePath;
+
+    }
 
     public static String writeFileToTargetPath(InputStream fileInput, String targetPath) throws IOException {
-        String filePath= targetPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
+        String filePath = createTempFilePath(targetPath);
         File tempFileWriting = new java.io.File(filePath + ".writing");
         OutputStream out = null;
         try {
@@ -71,6 +76,18 @@ public class FileUtils extends DataUtils{
         }
         return md5Path;
     }
+
+    public static String concatAbsolutePath(String basePath, String relativePath){
+        String absolutePath = basePath;
+        if(!absolutePath.endsWith("/")){
+            absolutePath = absolutePath + "/";
+        }
+        if(relativePath.startsWith("/")){
+            relativePath = relativePath.substring(1);
+        }
+        return absolutePath + relativePath;
+    }
+
     public static String getDataSuffixByFingerprintHex(String fingerprintHex){
         final String dataValue = fingerprintHex.substring(40);
         return dataValue.substring(0, dataValue.length() / 2) + "." + dataValue.substring(dataValue.length() / 2);
@@ -96,7 +113,7 @@ public class FileUtils extends DataUtils{
             final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);
             final String dataSuffix = getDataSuffixByFingerprintHex(fingerprintHex);
             //文件夹路径
-            String dirPath = savePath + "/" + md5Path;
+            String dirPath = FileUtils.concatAbsolutePath(savePath, md5Path);
             java.io.File md5File = new java.io.File(dirPath);
             if (!md5File.exists()) {// 判断目录是否存在
                 md5File.mkdirs();

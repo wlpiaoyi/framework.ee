@@ -45,7 +45,6 @@ public class FileController {
     @Autowired
     private IFileInfoService fileDataService;
 
-
     @Autowired
     private FileConfig fileConfig;
 
@@ -70,7 +69,6 @@ public class FileController {
     @Operation(summary = "上传单个文件 请求", description = "上传单个文件")
     @ResponseBody
     public R<FileInfo> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
-//                              @Parameter(description = "文件指纹, MD5(path)+SHA(name)") @RequestParam(value = "fingerprint", required = false) String fingerprint,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
                               @Parameter(description = "文件缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
@@ -101,6 +99,7 @@ public class FileController {
         if(ValueUtils.isNotBlank(fileSign)){
             response.setHeader("file-sign", fileSign);
         }
+        fileInfo.setId(null);
         return R.success(fileInfo);
     }
 
@@ -113,7 +112,7 @@ public class FileController {
     public void download(@Validated @Parameter(description = "token") @PathVariable String token,
                          @Validated @Parameter(description = "文件指纹") @PathVariable String fingerprint,
                          @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
-                         @Parameter(description = "数据类型: org,thumbnail") @RequestParam(required = false, defaultValue = "org") String dataType,
+                         @Parameter(description = "数据类型: org,thumbnail,screenshot") @RequestParam(required = false, defaultValue = "org") String dataType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
         this.fileService.download(token, fingerprint, new HashMap(){{

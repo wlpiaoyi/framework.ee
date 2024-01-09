@@ -7,25 +7,25 @@ import java.io.Serializable;
 
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
- * {@code @description:} 	图片信息 视图实体类
- * {@code @date:} 			2023-12-28 16:38:04
+ * {@code @description:} 	视频信息 视图实体类
+ * {@code @date:} 			2024-01-08 14:07:23
  * {@code @version:}: 		1.0
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ImageInfoVo extends ImageInfo implements Serializable {
-
+public class VideoInfoVo extends VideoInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** 文件 **/
 	@Schema(description = "文件")
 	private FileInfo fileInfo;
 
-	/** 缩略图信息 **/
-	@Schema(description = "缩略图信息")
-	private ImageInfo thumbnailInfo;
+	/** 视频截图 **/
+	@Schema(description = "视频截图")
+	private ImageInfo screenshot;
 
 }

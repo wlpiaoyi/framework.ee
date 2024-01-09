@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.resource.biz.service;
 
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.resource.service.IBaseService;
 
 import java.util.List;
@@ -28,6 +29,23 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
 //    String generateSmall(String fingerprintHex, String suffix, double smallSize);
 
     /**
+     * 图片详情
+     * @param id
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo
+     * @author: wlpia
+     * @date: 2024/1/9 12:42
+     */
+    ImageInfoVo detail(Long id);
+    /**
+     * 图片详情
+     * @param fileId 文件Id
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo
+     * @author: wlpia
+     * @date: 2024/1/8 14:17
+     */
+    ImageInfoVo detailByFileId(Long fileId);
+
+    /**
      * 是否有缩略图
      * @param fileId
      * @return: boolean
@@ -36,6 +54,16 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
      */
     boolean hasThumbnail(Long fileId);
 
+
+    /**
+     * 获取图片
+     * @param fileId
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo
+     * @author: wlpia
+     * @date: 2024/1/9 12:38
+     */
+    ImageInfo getImageByFileId(Long fileId);
+
     /**
      * 获取缩略图
      * @param fileId
@@ -43,7 +71,7 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
      * @author: wlpia
      * @date: 2023/12/30 17:07
      */
-    ImageInfo getThumbnailImageByFileId(Long fileId);
+    ImageInfo getThumbnailByFileId(Long fileId);
 
     /**
      * 根据文件信息保存图片

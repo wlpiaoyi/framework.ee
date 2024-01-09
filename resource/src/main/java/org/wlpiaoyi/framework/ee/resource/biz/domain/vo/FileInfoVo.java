@@ -1,8 +1,10 @@
 package org.wlpiaoyi.framework.ee.resource.biz.domain.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import java.io.Serializable;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
@@ -13,8 +15,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 @lombok.Data
 @EqualsAndHashCode(callSuper = true)
 public class FileInfoVo extends FileInfo implements Serializable {
-	private static final long serialVersionUID = 1L;
 
-	private Object expandObj;
+	private static final long serialVersionUID = 1L;
 
 }

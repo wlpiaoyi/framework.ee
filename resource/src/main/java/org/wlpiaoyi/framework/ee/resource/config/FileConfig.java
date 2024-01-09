@@ -77,11 +77,12 @@ public class FileConfig {
 
 
     public String getFilePathByFingerprintHex(String fingerprintHex){
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
+        String relativePath = FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
+        return FileUtils.concatAbsolutePath(this.getDataPath(), relativePath) ;
     }
     public String getFilePathByFingerprint(String fingerprint){
         String fingerprintHex = this.parseFingerprintToHex(fingerprint);
-        return this.dataPath + "/" + FileUtils.getMd5PathByFingerprintHex(fingerprintHex) + FileUtils.getDataSuffixByFingerprintHex(fingerprintHex);
+        return this.getFilePathByFingerprintHex(fingerprintHex);
     }
     @SneakyThrows
     public String dataEncode(byte[] bytes){

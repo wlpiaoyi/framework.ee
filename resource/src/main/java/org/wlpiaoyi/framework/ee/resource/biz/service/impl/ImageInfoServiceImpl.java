@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.ImageInfoMapper;
@@ -14,7 +17,9 @@ import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -36,7 +41,38 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
     @Autowired
     private FileConfig fileConfig;
 
+    @Autowired
+    private FileInfoMapper fileInfoMapper;
 
+    public ImageInfoVo detail(Long id) {
+        ImageInfo entity = this.getById(id);
+        if(entity == null){
+            return null;
+        }
+        ImageInfoVo entityVo = ModelWrapper.parseOne(entity, ImageInfoVo.class);
+        if(ValueUtils.isNotBlank(entityVo.getFileId())){
+            entityVo.setFileInfo(this.fileInfoMapper.selectById(entityVo.getFileId()));
+        }
+        return entityVo;
+    }
+
+    @Override
+    public ImageInfoVo detailByFileId(Long fileId) {
+        ImageInfo entity = this.baseMapper.selectOne(Wrappers.<ImageInfo>lambdaQuery()
+                .eq(ImageInfo::getFileId, fileId)
+        );
+        if(entity == null){
+            return null;
+        }
+        ImageInfoVo entityVo = ModelWrapper.parseOne(entity, ImageInfoVo.class);
+        if(ValueUtils.isNotBlank(entityVo.getFileId())){
+            entityVo.setFileInfo(this.fileInfoMapper.selectById(entityVo.getFileId()));
+        }
+        if(ValueUtils.isNotBlank(entityVo.getThumbnailId())){
+            entityVo.setThumbnailInfo(this.detail(entityVo.getThumbnailId()));
+        }
+        return entityVo;
+    }
 
     public boolean hasThumbnail(Long fileId){
         return this.baseMapper.exists(
@@ -44,15 +80,19 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         );
     }
 
-    @Override
-    public ImageInfo getThumbnailImageByFileId(Long fileId) {
+    public ImageInfo getImageByFileId(Long fileId){
         List<ImageInfo> imageInfos = this.baseMapper.selectList(Wrappers.<ImageInfo>lambdaQuery().eq(
                 ImageInfo::getFileId, fileId
         ));
         if(ValueUtils.isBlank(imageInfos)){
             return null;
         }
-        ImageInfo imageInfo = imageInfos.get(0);
+        return imageInfos.get(0);
+    }
+
+    @Override
+    public ImageInfo getThumbnailByFileId(Long fileId) {
+        ImageInfo imageInfo = this.getImageByFileId(fileId);
         if(ValueUtils.isBlank(imageInfo.getThumbnailId())){
             return null;
         }
@@ -72,7 +112,9 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         int height = orgImage.getHeight(null);
         imageInfo.setWidth(width);
         imageInfo.setHeight(height);
-        super.save(imageInfo);
+        if(!this.save(imageInfo)){
+            throw new BusinessException("图片信息保存失败");
+        }
         return imageInfo;
     }
 
@@ -113,4 +155,6 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         }
         return super.deleteLogic(ids);
     }
+
+
 }

@@ -36,3 +36,22 @@ CREATE TABLE `biz_image_info` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `file_id_index` (`file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='图片信息';
+
+CREATE TABLE `biz_video_info` (
+  `id` bigint NOT NULL,
+  `file_id` bigint NOT NULL COMMENT '文件id',
+  `suffix` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '文件后缀',
+  `duration` bigint NOT NULL DEFAULT '0' COMMENT '视频时长(ms)',
+  `screenshot_id` bigint DEFAULT NULL COMMENT '视频截图Id',
+  `status` int DEFAULT '1' COMMENT '状态',
+  `is_deleted` int DEFAULT '0' COMMENT '是否删除',
+  `create_user` bigint DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
+  `update_user` bigint DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='视频信息';
+ALTER TABLE `biz_video_info`
+ADD INDEX `file_id_index` (`file_id` ASC) VISIBLE;

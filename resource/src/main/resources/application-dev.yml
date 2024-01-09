@@ -1,9 +1,9 @@
 #dev环境  mysql7.0
 resource:
   dataPath:
-    D:/upload/data
+    D:/upload/data/
   tempPath:
-    D:/upload/temp
+    D:/upload/temp/
 
 # mongodb 日志级别
 logging:

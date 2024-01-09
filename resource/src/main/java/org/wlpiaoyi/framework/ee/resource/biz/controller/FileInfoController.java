@@ -16,8 +16,13 @@ import org.springframework.validation.annotation.Validated;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.ro.FileInfoRo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.springframework.web.bind.annotation.*;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileImageHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.request.Condition;
 import org.wlpiaoyi.framework.ee.utils.response.R;
@@ -42,22 +47,60 @@ public class FileInfoController {
 
 	private final IFileInfoService fileDataService;
 
+	private final IImageInfoService imageInfoService;
+
+	private final IVideoInfoService videoInfoService;
+
+	/**
+	 * 文件信息 修改
+	 */
+	@PostMapping("/update")
+	@ApiOperationSupport(order = 10)
+	@Operation(summary = "文件信息 修改")
+	public R<Boolean> update(@Validated @RequestBody FileInfoRo.Submit body) {
+		return R.success(fileDataService.updateById(ModelWrapper.parseOne(body, FileInfo.class)));
+	}
+
+
 	/**
 	 * 文件信息 详情
 	 */
 	@GetMapping("/detail")
-	@ApiOperationSupport(order = 1)
+	@ApiOperationSupport(order = 20)
 	@Operation(summary = "文件信息 详情")
-	public R<FileInfoVo> detail(@RequestParam Long id) {
-		FileInfoVo fileMenu = this.fileDataService.detail(id);
+	public R<FileInfo> detail(@RequestParam Long id) {
+		FileInfo fileMenu = this.fileDataService.getById(id);
 		return R.success(fileMenu);
+	}
+
+	/**
+	 * 视频信息 详情
+	 */
+	@GetMapping("/video_detail")
+	@ApiOperationSupport(order = 21)
+	@Operation(summary = "视频信息 详情")
+	public R<VideoInfoVo> videoDetail(@RequestParam Long fileId) {
+		VideoInfoVo videoInfoVo = this.videoInfoService.detailByFileId(fileId);
+		return R.success(videoInfoVo);
+	}
+
+
+	/**
+	 * 图片信息 详情
+	 */
+	@GetMapping("/image_detail")
+	@ApiOperationSupport(order = 21)
+	@Operation(summary = "图片信息 详情")
+	public R<ImageInfoVo> imageDetail(@RequestParam Long fileId) {
+		ImageInfoVo imageInfoVo = this.imageInfoService.detailByFileId(fileId);
+		return R.success(imageInfoVo);
 	}
 
 	/**
 	 * 文件信息 分页
 	 */
 	@PostMapping("/list")
-	@ApiOperationSupport(order = 2)
+	@ApiOperationSupport(order = 30)
 	@Operation(summary = "文件信息 分页")
 	public R<IPage<FileInfoVo>> list(@RequestBody FileInfoRo.Query body) {
 		LambdaQueryWrapper<FileInfo> wrapper = Wrappers.<FileInfo>lambdaQuery();
@@ -72,16 +115,6 @@ public class FileInfoController {
 		return R.success(ModelWrapper.parseForPage(pages, FileInfoVo.class));
 	}
 
-	/**
-	 * 文件信息 修改
-	 */
-	@PostMapping("/update")
-	@ApiOperationSupport(order = 5)
-	@Operation(summary = "文件信息 修改")
-	public R<Boolean> update(@Validated @RequestBody FileInfoRo.Submit body) {
-		return R.success(fileDataService.updateById(ModelWrapper.parseOne(body, FileInfo.class)));
-	}
-
 	@Autowired
 	private FileConfig fileConfig;
 	/**
@@ -89,7 +122,7 @@ public class FileInfoController {
 	 */
 	@SneakyThrows
 	@GetMapping("/remove")
-	@ApiOperationSupport(order = 7)
+	@ApiOperationSupport(order = 40)
 	@Operation(summary = "文件信息 逻辑删除")
 	public R remove(@Parameter(description = "token集合", required = true) @RequestParam String tokens) {
 		List<String> tokenList = ValueUtils.toStringList(tokens);

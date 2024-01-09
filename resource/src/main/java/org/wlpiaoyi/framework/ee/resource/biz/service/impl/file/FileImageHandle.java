@@ -2,12 +2,12 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
-import org.wlpiaoyi.framework.ee.resource.utils.SpringUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
@@ -31,32 +31,53 @@ import java.util.Map;
 @Service
 public class FileImageHandle {
 
-
-    public boolean canDownloadFileInfoHandle(FileInfo entity, String dataType){
-        if(FileImageHandle.isSupportSuffix(entity.getSuffix()) && dataType.equals("thumbnail")){
+    /**
+     * 是否执行缩略图下载
+     * @param suffix
+     * @param dataType
+     * @return: boolean
+     * @author: wlpia
+     * @date: 2024/1/9 10:48
+     */
+    boolean canDownloadByThumbnail(String suffix, String dataType){
+        if(dataType.equals("thumbnail") && FileImageHandle.isSupportSuffix(suffix)){
             return true;
         }
         return false;
     }
 
-    public FileInfo downloadFileInfoHandle(FileServiceImpl fileService, FileInfo entity){
-        FileInfo fileInfo = fileService.fileInfoService.getThumbnailFileByFileInfo(entity);
-        if(fileInfo != null){
-            return fileInfo;
+    /**
+     * 获取缩略图文件实体如果没有就返回当前文件实体
+     * @param fileService
+     * @param entity
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo
+     * @author: wlpia
+     * @date: 2024/1/9 10:53
+     */
+    FileInfo getThumbnailFileInfo(FileServiceImpl fileService, FileInfo entity){
+        ImageInfo imageInfo = fileService.imageInfoService.getThumbnailByFileId(entity.getId());
+        if(imageInfo == null){
+            return entity;
         }
-        return entity;
+        FileInfo fileInfo = fileService.fileInfoService.getById(imageInfo.getFileId());
+        if(fileInfo == null){
+            return entity;
+        }
+        return fileInfo;
     }
 
+    @Autowired
+    private IImageInfoService imageInfoService;
+
     @Transactional(rollbackFor = Exception.class)
-    public boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
-        IImageInfoService imageInfoService = SpringUtils.getBean(IImageInfoService.class);
+    boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
         if(!FileImageHandle.isSupportSuffix(entity.getSuffix())){
             return false;
         }
-        if(imageInfoService.hasThumbnail(entity.getId())){
+        if(this.imageInfoService.hasThumbnail(entity.getId())){
             return true;
         }
-        ImageInfo imageInfo =  imageInfoService.saveByFileInfo(entity);
+        ImageInfo imageInfo =  this.imageInfoService.saveByFileInfo(entity);
         log.info("image save success, id:{}", imageInfo.getId());
         if(!funcMap.containsKey("thumbnailSize")){
             return true;
@@ -83,8 +104,8 @@ public class FileImageHandle {
             smallFileInfo.setName(entity.getName().substring(0, entity.getName().lastIndexOf(".") + 1));
         }
         smallFileInfo.setName("thumbnail." + entity.getSuffix());
-        fileService.save(byteInputStream, smallFileInfo,  funcMap, false);
-        ImageInfo smallImageInfo = imageInfoService.saveByFileInfo(smallFileInfo);
+        fileService.fileInfoService.save(byteInputStream, smallFileInfo,  funcMap, null);
+        ImageInfo smallImageInfo = this.imageInfoService.saveByFileInfo(smallFileInfo);
         imageInfo.setThumbnailId(smallImageInfo.getId());
         imageInfoService.updateById(imageInfo);
         return true;
