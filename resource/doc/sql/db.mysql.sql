@@ -55,3 +55,5 @@ CREATE TABLE `biz_video_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='视频信息';
 ALTER TABLE `biz_video_info`
 ADD INDEX `file_id_index` (`file_id` ASC) VISIBLE;
+ALTER TABLE `biz_video_info`
+ADD INDEX `screenshot_id_index` (`screenshot_id` ASC) VISIBLE;

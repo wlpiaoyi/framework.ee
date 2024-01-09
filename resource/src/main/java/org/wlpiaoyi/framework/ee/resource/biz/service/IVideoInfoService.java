@@ -5,6 +5,8 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
 import org.wlpiaoyi.framework.ee.resource.service.IBaseService;
 
+import java.util.List;
+
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL
@@ -41,5 +43,13 @@ public interface IVideoInfoService extends IBaseService<VideoInfo> {
      * @date: 2024/1/8 15:07
      */
     VideoInfo saveByFileInfo(FileInfo fileInfo);
+
+    /**
+     * @param
+     * @return: java.util.List<java.lang.Long>
+     * @author: wlpia
+     * @date: 2024/1/9 14:41
+     */
+    List<Long> cleanVideo();
 
 }

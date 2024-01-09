@@ -213,7 +213,15 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(!dataPath.exists()){
             dataPath.mkdirs();
         }
-        List<Long> fileIds = this.imageInfoService.cleanImage();
+        List<Long> fileIds = this.videoInfoService.cleanVideo();
+        if(ValueUtils.isNotBlank(fileIds)){
+            log.info("file cleanVideo fileIds size:{} values:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
+            boolean delRes = this.fileInfoService.deleteLogic(fileIds);
+            log.info("file deleteLogic fileIds delRes:{}", delRes);
+        }else{
+            log.info("file cleanVideo fileIds empty");
+        }
+        fileIds = this.imageInfoService.cleanImage();
         if(ValueUtils.isNotBlank(fileIds)){
             log.info("file cleanImage fileIds size:{} values:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
             boolean delRes = this.fileInfoService.deleteLogic(fileIds);

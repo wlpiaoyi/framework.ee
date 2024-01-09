@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
@@ -38,6 +39,7 @@ import java.util.Map;
  * {@code @date:} 			2024-01-08 14:07:23
  * {@code @version:}: 		1.0
  */
+@Slf4j
 @Primary
 @Service
 public class VideoInfoServiceImpl extends BaseServiceImpl<VideoInfoMapper, VideoInfo> implements IVideoInfoService {
@@ -87,5 +89,40 @@ public class VideoInfoServiceImpl extends BaseServiceImpl<VideoInfoMapper, Video
             return null;
         }
         return entity;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public List<Long> cleanVideo(){
+        List<Long> deletedIds = this.baseMapper.selectIdsFromDeletedFile();
+        if(ValueUtils.isBlank(deletedIds)){
+            log.info("video select deletedIds empty");
+            return null;
+        }
+        log.info("video select deletedIds size:{} ids:{}", deletedIds.size(), ValueUtils.toStrings(deletedIds));
+        boolean delRes = this.deleteLogic(deletedIds);
+        log.info("video deleted deletedIds result:{}", delRes);
+        List<Long> screenshotImageIds = this.baseMapper.selectScreenshotImageIdByIds(deletedIds);
+        if(ValueUtils.isNotBlank(screenshotImageIds)){
+            log.info("video select screenshotImageIds size:{} ids:{}", screenshotImageIds.size(), ValueUtils.toStrings(screenshotImageIds));
+            this.imageInfoService.deleteLogic(screenshotImageIds);
+            log.info("video deleted screenshotImageIds result:{}", screenshotImageIds);
+        }else{
+            log.info("video select screenshotImageIds empty");
+        }
+        List<Long> screenshotFileIds = this.baseMapper.selectScreenshotFileIdByIds(deletedIds);
+        log.info("video delete by screenshotFileIds size:{}, ids:{}", screenshotFileIds.size(), ValueUtils.toStrings(screenshotFileIds));
+        int delAll = this.baseMapper.deletedByIds(deletedIds);
+        log.info("video deleted allIds size:{}, ids:{}", delAll, ValueUtils.toStrings(deletedIds));
+        return screenshotFileIds;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteLogic(List<Long> ids) {
+        List<Long> imageIds = this.baseMapper.selectScreenshotImageIdByIds(ids);
+        if(ValueUtils.isNotBlank(imageIds)){
+            this.imageInfoService.deleteLogic(imageIds);
+        }
+        return super.deleteLogic(ids);
     }
 }

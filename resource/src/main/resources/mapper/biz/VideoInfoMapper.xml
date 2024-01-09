@@ -36,5 +36,46 @@
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
+    <!-- 通过已经删除的数据Id查询出视频Id -->
+    <select id="selectIdsFromDeletedFile" resultType="java.lang.Long">
+        SELECT v.id FROM biz_video_info v WHERE v.file_id in (
+            SELECT id FROM biz_file_info WHERE is_deleted != 0
+        );
+    </select>
+
+    <!-- 根据视频查询出图片Id -->
+    <select id="selectScreenshotImageIdByIds" resultType="java.lang.Long">
+        SELECT i.id FROM biz_image_info i WHERE i.id IN (
+            SELECT v.screenshot_id FROM biz_video_info v where v.screenshot_id IS NOT NULL AND v.id in (
+            <foreach item="item" index="index" collection="ids" separator=",">
+                #{item}
+            </foreach>
+            )
+        )
+    </select>
+
+    <!-- 根据视频查询出截屏文件Id -->
+    <select id="selectScreenshotFileIdByIds" resultType="java.lang.Long">
+        SELECT f.id FROM biz_file_info f WHERE f.id IN (
+            SELECT i.file_id FROM biz_image_info i WHERE i.id IN (
+                SELECT v.screenshot_id FROM biz_video_info v where v.screenshot_id IS NOT NULL AND v.id in (
+                <foreach item="item" index="index" collection="ids" separator=",">
+                    #{item}
+                </foreach>
+                )
+            )
+        )
+    </select>
+
+
+    <!-- 根据图片Id删除图片数据 -->
+    <delete id="deletedByIds">
+        DELETE FROM biz_video_info WHERE is_deleted != 0 AND id IN (
+        <foreach item="item" index="index" collection="ids" separator=",">
+            #{item}
+        </foreach>
+        )
+    </delete>
+
 
 </mapper>
