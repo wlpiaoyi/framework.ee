@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
@@ -18,13 +19,16 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
+import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -101,21 +105,30 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
 
     @SneakyThrows
     @Override
-    public ImageInfo saveByFileInfo(FileInfo fileInfo) {
+    public ImageInfo saveByFileInfo(FileInfo fileInfo, Map funcMap) {
+        Map<String, String> unMoveMap = MapUtils.getMap(funcMap, "unMoveMap");
+        if(unMoveMap == null){
+            throw new BusinessException("没有移动的文件容器");
+        }
+        File imageFile = new File(unMoveMap.get(this.fileConfig.parseFingerprintToHex(fileInfo.getFingerprint())));
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setId(IdUtils.nextId());
         imageInfo.setFileId(fileInfo.getId());
         imageInfo.setSuffix(fileInfo.getSuffix());
-        File orgImageFile = new File(this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint()));
-        Image orgImage = ImageIO.read(orgImageFile);
+        Image orgImage = ImageIO.read(imageFile);
         int width = orgImage.getWidth(null);
         int height = orgImage.getHeight(null);
         imageInfo.setWidth(width);
         imageInfo.setHeight(height);
-        if(!this.save(imageInfo)){
+        if(!super.save(imageInfo)){
             throw new BusinessException("图片信息保存失败");
         }
         return imageInfo;
+    }
+
+    @Override
+    public boolean save(ImageInfo entity) {
+        throw new BusinessException("not support is method");
     }
 
     @Override

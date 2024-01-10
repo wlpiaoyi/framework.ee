@@ -52,8 +52,8 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public String save(InputStream fileIo, FileInfo fileInfo, Map funcMap){
-        return this.fileInfoService.save(fileIo, fileInfo, funcMap, this);
+    public String save(Object fileIo, FileInfo entity, Map funcMap){
+        return this.fileInfoService.save(fileIo, entity, funcMap, this);
     }
 
     private static Map<String, String> contentTypeMap = new HashMap(){{
@@ -100,18 +100,18 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     private FileVideoHandle fileVideoHandle;
 
     @Override
-    public void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
             String dataType = MapUtils.getString(funcMap, "dataType", "org");
-            if(this.fileImageHandle.canDownloadByThumbnail(fileInfo.getSuffix(), dataType)){
-                fileInfo = this.fileImageHandle.getThumbnailFileInfo(this, fileInfo);
-            }else if(this.fileVideoHandle.canDownloadByScreenshot(fileInfo.getSuffix(), dataType)){
-                fileInfo = this.fileVideoHandle.getScreenshotFileInfo(this, fileInfo);
+            if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
+                entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
+            }else if(this.fileVideoHandle.canDownloadByScreenshot(entity.getSuffix(), dataType)){
+                entity = this.fileVideoHandle.getScreenshotFileInfo(this, entity);
             }
-            String ogPath = this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint());
-            if(fileInfo.getIsVerifySign() == 1){
+            String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
+            if(entity.getIsVerifySign() == 1){
                 String fileSign = request.getHeader("file-sign");
                 if(ValueUtils.isBlank(fileSign)){
                     throw new SystemException("无权访问文件");
@@ -120,7 +120,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                    String[] args = fileSign.split(",");
                    String tokenSign = args[0];
                    String dataSign = args[1];
-                   ByteArrayInputStream bis = new ByteArrayInputStream(fileInfo.getToken().getBytes());
+                   ByteArrayInputStream bis = new ByteArrayInputStream(entity.getToken().getBytes());
                    inputStreams.add(bis);
                    if(!this.fileConfig.getSignVerify().verify(bis, this.fileConfig.dataDecode(tokenSign))){
                        throw new SystemException("无权访问文件");
@@ -138,7 +138,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                    throw new SystemException("无权访问文件", e);
                }
             }
-            String ft = fileInfo.getSuffix();
+            String ft = entity.getSuffix();
             if(ValueUtils.isNotBlank(ft)){
                 ft = ft.toLowerCase(Locale.ROOT);
             }
@@ -149,9 +149,9 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             response.setContentType(contentType);
             response.setCharacterEncoding(Charsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
-            String filename = fileInfo.getName();
+            String filename = entity.getName();
             if(!filename.contains(".")){
-                filename += "." + fileInfo.getSuffix();
+                filename += "." + entity.getSuffix();
             }
             response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
 //            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));

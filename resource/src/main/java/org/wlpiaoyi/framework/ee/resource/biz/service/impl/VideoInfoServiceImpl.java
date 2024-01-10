@@ -22,6 +22,7 @@ import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -78,17 +79,26 @@ public class VideoInfoServiceImpl extends BaseServiceImpl<VideoInfoMapper, Video
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public VideoInfo saveByFileInfo(FileInfo fileInfo) {
+    public VideoInfo saveByFileInfo(FileInfo fileInfo, Map funcMap) {
+        Map<String, String> unMoveMap = MapUtils.getMap(funcMap, "unMoveMap");
+        if(unMoveMap == null){
+            throw new BusinessException("没有移动的文件容器");
+        }
+        File videoFile = new File(unMoveMap.get(this.fileConfig.parseFingerprintToHex(fileInfo.getFingerprint())));
         VideoInfo entity = new VideoInfo();
         entity.setId(IdUtils.nextId());
         entity.setFileId(fileInfo.getId());
         entity.setSuffix(fileInfo.getSuffix());
-        File videoFile = new File(this.fileConfig.getFilePathByFingerprint(fileInfo.getFingerprint()));
         FileVideoHandle.setVideoInfo(videoFile, entity);
-        if(!this.save(entity)){
+        if(!super.save(entity)){
             return null;
         }
         return entity;
+    }
+
+    @Override
+    public boolean save(VideoInfo entity) {
+        throw new BusinessException("not support is method");
     }
 
     @Transactional(rollbackFor = Exception.class)

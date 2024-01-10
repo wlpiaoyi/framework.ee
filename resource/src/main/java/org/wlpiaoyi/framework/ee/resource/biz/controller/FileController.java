@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileService;
@@ -70,36 +71,44 @@ public class FileController {
     @ResponseBody
     public R<FileInfo> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
-                              @Parameter(description = "文件缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
+                              @Parameter(description = "图片缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
+                              @Parameter(description = "视频截图位置,视频专用0.0~1.0") @RequestParam(value = "screenshotFloat", required = false, defaultValue = "-1") double screenshotFloat,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
                               HttpServletResponse response) {
         FileInfo fileInfo = new FileInfo();
-        fileInfo.setIsVerifySign(isVerifySign);
-        if(ValueUtils.isNotBlank(name)){
-            fileInfo.setName(name);
-        }
-        if(ValueUtils.isNotBlank(suffix)){
-            fileInfo.setSuffix(suffix);
-        }
-        if(ValueUtils.isBlank(fileInfo.getName())){
-            fileInfo.setName(file.getOriginalFilename());
-        }
-        if(ValueUtils.isBlank(fileInfo.getSuffix())){
-            if(fileInfo.getName().contains(".")){
-                fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
-            }else if(file.getOriginalFilename().contains(".")){
-                fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+        try{
+            fileInfo.setIsVerifySign(isVerifySign);
+            if(ValueUtils.isNotBlank(name)){
+                fileInfo.setName(name);
             }
-        }
-        Map funcMap = new HashMap<>();
-        funcMap.put("thumbnailSize", thumbnailSize);
+            if(ValueUtils.isNotBlank(suffix)){
+                fileInfo.setSuffix(suffix);
+            }
+            if(ValueUtils.isBlank(fileInfo.getName())){
+                fileInfo.setName(file.getOriginalFilename());
+            }
+            if(ValueUtils.isBlank(fileInfo.getSuffix())){
+                if(fileInfo.getName().contains(".")){
+                    fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
+                }else if(file.getOriginalFilename().contains(".")){
+                    fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+                }
+            }
+            Map funcMap = new HashMap<>();
+            funcMap.put("thumbnailSize", thumbnailSize);
+            funcMap.put("screenshotFloat", screenshotFloat);
 
-        String fileSign = this.fileService.save(file.getInputStream(), fileInfo, funcMap);
-        if(ValueUtils.isNotBlank(fileSign)){
-            response.setHeader("file-sign", fileSign);
+            String fileSign = this.fileService.save(file, fileInfo, funcMap);
+            if(ValueUtils.isNotBlank(fileSign)){
+                response.setHeader("file-sign", fileSign);
+            }
+            fileInfo.setId(null);
+        }finally {
+//            if(file.getResource().exists()){
+//                file.getInputStream().close();
+//            }
         }
-        fileInfo.setId(null);
         return R.success(fileInfo);
     }
 

@@ -1,27 +1,19 @@
 package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.ImageInfoMapper;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
+import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
-import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
-import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileImageHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
-import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
@@ -52,34 +44,49 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
-    public String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, FileInfoSaveInterceptor interceptor){
+    public String save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor){
         if(funcMap == null) funcMap = new HashMap<>();
         List<InputStream> inputStreams = new ArrayList<>();
-        inputStreams.add(fileIo);
         List<String> removePaths = MapUtils.get(funcMap, "removePaths", new ArrayList<>());
-        boolean fileExists = false;
+        funcMap.put("removePaths", removePaths);
+        Map<String, String> unMoveMap = MapUtils.getMap(funcMap, "unMoveMap");
+        boolean isRootDone = false;
+        if(unMoveMap == null){
+            isRootDone = true;
+            unMoveMap = new HashMap<>();
+            funcMap.put("unMoveMap", unMoveMap);
+        }
         try{
-            String tempFilePath = FileUtils.writeFileToTargetPath(fileIo, this.fileConfig.getTempPath());
-            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
-            if(ValueUtils.isBlank(fileInfo.getId())){
-                fileInfo.setId(IdUtils.nextId());
+            String tempFilePath;
+            if(fileIo instanceof MultipartFile){
+                MultipartFile multipartFile = (MultipartFile) fileIo;
+                tempFilePath = FileUtils.moveFileToTempPath(multipartFile, this.fileConfig.getTempPath());
+            }else if (fileIo instanceof InputStream){
+                InputStream io = (InputStream) fileIo;
+                tempFilePath = FileUtils.writeFileToTempPath(io, this.fileConfig.getTempPath());
+            }else{
+                throw new BusinessException("不支持的文件输入");
             }
-            if(ValueUtils.isBlank(fileInfo.getName())){
+            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
+            if(ValueUtils.isBlank(entity.getId())){
+                entity.setId(IdUtils.nextId());
+            }
+            if(ValueUtils.isBlank(entity.getName())){
                 throw new BusinessException("文件名称不能为空");
             }
-            if(ValueUtils.isBlank(fileInfo.getSuffix())){
-                if(fileInfo.getName().contains(".")){
-                    fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
+            if(ValueUtils.isBlank(entity.getSuffix())){
+                if(entity.getName().contains(".")){
+                    entity.setSuffix(entity.getName().substring(entity.getName().lastIndexOf(".") + 1));
                 }
             }
-            fileInfo.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
-            fileInfo.setSize(DataUtils.getSize(tempFilePath));
-            fileInfo.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.getId().toString().getBytes())));
+            entity.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
+            entity.setSize(DataUtils.getSize(tempFilePath));
+            entity.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(entity.getId().toString().getBytes())));
             String fileSign = null;
-            if(fileInfo.getIsVerifySign() == 1){
+            if(entity.getIsVerifySign() == 1){
                 FileInputStream orgFileIo = new FileInputStream(this.fileConfig.getFilePathByFingerprintHex(fingerprintHex));
                 inputStreams.add(orgFileIo);
-                InputStream tokenByteInput = new ByteArrayInputStream(fileInfo.getToken().getBytes());
+                InputStream tokenByteInput = new ByteArrayInputStream(entity.getToken().getBytes());
                 final String dataSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(orgFileIo));
                 final String tokenSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(tokenByteInput));
                 tokenByteInput.close();
@@ -91,24 +98,23 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                     throw e;
                 }
             }
-            String fileLocalPath = this.fileConfig.getFilePathByFingerprintHex(fingerprintHex);
-            fileExists = FileUtils.mergeByFingerprintHex(new File(tempFilePath), fingerprintHex, this.fileConfig.getDataPath());
-            funcMap.put("tempFilePath", tempFilePath);
-            funcMap.put("fileLocalPath", fileLocalPath);
+            unMoveMap.put(fingerprintHex, tempFilePath);
             removePaths.add(tempFilePath);
-            if(!fileExists){
-                removePaths.add(fileLocalPath);
+            this.save(entity, funcMap, interceptor);
+            if (isRootDone){
+                if(ValueUtils.isBlank(unMoveMap)){
+                    throw new BusinessException("没有移动的文件");
+                }
+                for (Map.Entry<String, String> entry : unMoveMap.entrySet()){
+                    boolean fileExists = FileUtils.mergeByFingerprintHex(new File(entry.getValue()), entry.getKey(), this.fileConfig.getDataPath());
+                    log.info("file upload fileExists:{}, fingerprintHex: {}", fileExists, fingerprintHex);
+                }
             }
-            funcMap.put("removePaths", removePaths);
-            this.save(fileInfo, funcMap, interceptor);
-            log.info("file upload localPath: {}", fileLocalPath);
             return fileSign;
-        } catch (Exception e){
-            for(String filePath : removePaths){
-                this.deleteFile(filePath);
-            }
-            throw e;
         }finally {
+            if(isRootDone){
+                removePaths.forEach(this::deleteFile);
+            }
             try{
                 if(ValueUtils.isNotBlank(inputStreams)){
                     for (InputStream inputStream : inputStreams){
@@ -138,19 +144,26 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
     }
 
     public void deleteFile(String filePath){
+        filePath = filePath.replaceAll("\\\\", "/");
         String basePath;
-        if(filePath.startsWith(this.fileConfig.getDataPath())){
+        if(filePath.startsWith(this.fileConfig.getDataPath().replaceAll("\\\\", "/"))){
             basePath = this.fileConfig.getDataPath();
-        }else if(filePath.startsWith(this.fileConfig.getTempPath())){
+        }else if(filePath.startsWith(this.fileConfig.getTempPath().replaceAll("\\\\", "/"))){
             basePath = this.fileConfig.getTempPath();
         }else{
             throw new BusinessException("不支持删除文件资源以外的数据");
         }
+        File removeFile = new File(filePath);
+        if(removeFile.delete()){
+            log.info("file.clean delete success for path [{}]", removeFile.getAbsolutePath());
+        }else{
+            log.warn("file.clean delete failed for path [{}]", removeFile.getAbsolutePath());
+        }
         String relativePath = filePath.substring(basePath.length());
         while (relativePath.length() > 0 && relativePath.contains("/")){
             relativePath = relativePath.substring(0, relativePath.lastIndexOf("/"));
-            String absolutePath = basePath + "/" + relativePath;
-            File removeFile = new File(absolutePath);
+            String absolutePath = FileUtils.concatAbsolutePath(basePath, relativePath);
+            removeFile = new File(absolutePath);
             if(ValueUtils.isNotBlank(removeFile.list())){
                 break;
             }

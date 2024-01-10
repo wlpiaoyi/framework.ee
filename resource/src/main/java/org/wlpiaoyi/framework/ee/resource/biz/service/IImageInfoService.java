@@ -6,6 +6,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.resource.service.IBaseService;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -76,11 +77,12 @@ public interface IImageInfoService extends IBaseService<ImageInfo> {
     /**
      * 根据文件信息保存图片
      * @param fileInfo
-     * @return: entity.domain.biz.org.wlpiaoyi.framework.ee.resource.ImageInfo
+     * @param funcMap
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo
      * @author: wlpia
-     * @date: 2023/12/30 16:30
+     * @date: 2024/1/9 17:56
      */
-    ImageInfo saveByFileInfo(FileInfo fileInfo);
+    ImageInfo saveByFileInfo(FileInfo fileInfo, Map funcMap);
 
     /**
      * 清理图片

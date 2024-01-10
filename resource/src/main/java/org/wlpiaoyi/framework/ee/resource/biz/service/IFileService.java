@@ -19,13 +19,13 @@ public interface IFileService {
     /**
      * 保存文件
      * @param fileIo 文件IO
-     * @param fileInfo 文件实体信息
+     * @param entity 文件实体信息
      * @param funcMap 拓展字段
      * @return: java.lang.String file-sign
      * @author: wlpia
      * @date: 2023/12/30 15:51
      */
-    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap);
+    String save(Object fileIo, FileInfo entity, Map funcMap);
 
     /**
      * 下载文件
@@ -36,7 +36,7 @@ public interface IFileService {
      * @param response
      */
     void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
-    void download(FileInfo fileInfo, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
     /**

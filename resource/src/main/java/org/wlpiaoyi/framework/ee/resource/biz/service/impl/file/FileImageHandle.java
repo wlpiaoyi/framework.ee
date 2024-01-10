@@ -9,6 +9,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.utils.MapUtils;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
@@ -77,11 +78,16 @@ public class FileImageHandle {
         if(this.imageInfoService.hasThumbnail(entity.getId())){
             return true;
         }
-        ImageInfo imageInfo =  this.imageInfoService.saveByFileInfo(entity);
+        Map<String, String> unMoveMap = MapUtils.getMap(funcMap, "unMoveMap");
+        if(unMoveMap == null){
+            throw new BusinessException("没有移动的文件容器");
+        }
+        ImageInfo imageInfo =  this.imageInfoService.saveByFileInfo(entity, funcMap);
         log.info("image save success, id:{}", imageInfo.getId());
         if(!funcMap.containsKey("thumbnailSize")){
             return true;
         }
+        funcMap.remove("screenshotFloat");
         double thumbnailSize = MapUtils.getDouble(funcMap, "thumbnailSize");
         if(thumbnailSize < 0){
             return true;
@@ -94,7 +100,10 @@ public class FileImageHandle {
         }
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
 
-        String orgImagePath = fileService.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
+        String orgImagePath = unMoveMap.get(fileService.fileConfig.parseFingerprintToHex(entity.getFingerprint()));
+        if(ValueUtils.isBlank(orgImagePath)){
+            throw new BusinessException("没有找到原图");
+        }
         FileImageHandle.generateSmall(orgImagePath,
                 entity.getSuffix(), thumbnailSize, byteOutputStream);
         ByteArrayInputStream byteInputStream = new ByteArrayInputStream(byteOutputStream.toByteArray());
@@ -105,7 +114,7 @@ public class FileImageHandle {
         }
         smallFileInfo.setName("thumbnail." + entity.getSuffix());
         fileService.fileInfoService.save(byteInputStream, smallFileInfo,  funcMap, null);
-        ImageInfo smallImageInfo = this.imageInfoService.saveByFileInfo(smallFileInfo);
+        ImageInfo smallImageInfo = this.imageInfoService.saveByFileInfo(smallFileInfo, funcMap);
         imageInfo.setThumbnailId(smallImageInfo.getId());
         imageInfoService.updateById(imageInfo);
         return true;

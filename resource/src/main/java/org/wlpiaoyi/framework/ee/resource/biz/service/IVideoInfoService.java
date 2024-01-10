@@ -6,6 +6,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
 import org.wlpiaoyi.framework.ee.resource.service.IBaseService;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -42,7 +43,7 @@ public interface IVideoInfoService extends IBaseService<VideoInfo> {
      * @author: wlpia
      * @date: 2024/1/8 15:07
      */
-    VideoInfo saveByFileInfo(FileInfo fileInfo);
+    VideoInfo saveByFileInfo(FileInfo fileInfo, Map funcMap);
 
     /**
      * @param

@@ -1,4 +1,7 @@
-#dev环境  mysql7.0
+server:
+  tomcat:
+    basedir: D:/upload/temp/
+#dev环境  mysql8.0
 resource:
   dataPath:
     D:/upload/data/

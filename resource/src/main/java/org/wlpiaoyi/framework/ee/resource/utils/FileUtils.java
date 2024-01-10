@@ -2,14 +2,14 @@ package org.wlpiaoyi.framework.ee.resource.utils;
 
 
 import lombok.SneakyThrows;
+import org.springframework.web.multipart.MultipartFile;
 import org.wlpiaoyi.framework.utils.DateUtils;
-import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.io.*;
 import java.util.Date;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -28,7 +28,7 @@ public class FileUtils extends DataUtils{
 
     }
 
-    public static String writeFileToTargetPath(InputStream fileInput, String targetPath) throws IOException {
+    public static String writeFileToTempPath(InputStream fileInput, String targetPath) throws IOException {
         String filePath = createTempFilePath(targetPath);
         File tempFileWriting = new java.io.File(filePath + ".writing");
         OutputStream out = null;
@@ -58,8 +58,15 @@ public class FileUtils extends DataUtils{
         File tempFile = new java.io.File(tempFilePath);
         tempFileWriting.renameTo(tempFile);
         return tempFilePath;
-//        String fingerprintHex = FileUtils.mergeToFingerprintHex(tempFile, savePath);
-//        return fingerprintHex;
+    }
+
+
+    public static String moveFileToTempPath(MultipartFile multipartFile, String targetPath) throws IOException {
+        String filePath = createTempFilePath(targetPath);
+        String tempFilePath = filePath + ".done.temp";
+        File tempFile = new java.io.File(tempFilePath);
+        multipartFile.transferTo(tempFile);
+        return tempFilePath;
     }
 
 
@@ -95,7 +102,7 @@ public class FileUtils extends DataUtils{
 
     @SneakyThrows
     public static String getFingerprintHex(java.io.File orgFile){
-        return DataUtils.MD(orgFile, DataUtils.KEY_SHA) + DataUtils.MD(orgFile, DataUtils.KEY_MD5);
+        return DataUtils.MD(orgFile, DataUtils.KEY_SHA).toUpperCase(Locale.ROOT) + DataUtils.MD(orgFile, DataUtils.KEY_MD5).toUpperCase(Locale.ROOT);
     }
 
     /**
@@ -103,32 +110,28 @@ public class FileUtils extends DataUtils{
      * @param tempPath
      * @param fingerprintHex
      * @param savePath
-     * @return: boolean
+     * @return: boolean 文件是否已存在
      * @author: wlpia
      * @date: 2024/1/4 15:40
      */
     @SneakyThrows
     public static boolean mergeByFingerprintHex(java.io.File tempPath, final String fingerprintHex, String savePath) {
-        try{
-            final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);
-            final String dataSuffix = getDataSuffixByFingerprintHex(fingerprintHex);
-            //文件夹路径
-            String dirPath = FileUtils.concatAbsolutePath(savePath, md5Path);
-            java.io.File md5File = new java.io.File(dirPath);
-            if (!md5File.exists()) {// 判断目录是否存在
-                md5File.mkdirs();
-            }
-            //文件路径
-            String filePath = dirPath + dataSuffix;
-            md5File = new java.io.File(filePath);
-            if(md5File.exists()) return true;
-            if(!tempPath.renameTo(md5File)){
-                throw new BusinessException("File.MoveError");
-            }
-            return false;
-        } finally {
-            if(tempPath.exists()) tempPath.delete();
+        final String md5Path = getMd5PathByFingerprintHex(fingerprintHex);
+        final String dataSuffix = getDataSuffixByFingerprintHex(fingerprintHex);
+        //文件夹路径
+        String dirPath = FileUtils.concatAbsolutePath(savePath, md5Path);
+        java.io.File md5File = new java.io.File(dirPath);
+        if (!md5File.exists()) {// 判断目录是否存在
+            md5File.mkdirs();
         }
+        //文件路径
+        String filePath = dirPath + dataSuffix;
+        md5File = new java.io.File(filePath);
+        if(md5File.exists()) return true;
+        if(!tempPath.renameTo(md5File)){
+            throw new BusinessException("File.MoveError");
+        }
+        return false;
     }
 
 }

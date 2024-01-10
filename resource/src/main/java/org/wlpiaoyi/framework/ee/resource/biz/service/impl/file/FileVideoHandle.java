@@ -13,6 +13,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
+import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
@@ -86,28 +87,36 @@ public class FileVideoHandle {
         if(!FileVideoHandle.isSupportSuffix(entity.getSuffix())){
             return false;
         }
-        VideoInfo videoInfo = fileService.videoInfoService.saveByFileInfo(entity);
+        VideoInfo videoInfo = fileService.videoInfoService.saveByFileInfo(entity, funcMap);
         if(videoInfo == null){
             throw new BusinessException("视频信息保存失败");
         }
+        Map<String, String> unMoveMap = MapUtils.getMap(funcMap, "unMoveMap");
+        if(unMoveMap == null){
+            throw new BusinessException("没有移动的文件容器");
+        }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        String videoFile = fileConfig.getFilePathByFingerprint(entity.getFingerprint());
+        String videoFile = unMoveMap.get(fileService.fileConfig.parseFingerprintToHex(entity.getFingerprint()));
         FileInfo fileInfo = new FileInfo();
         fileInfo.setId(IdUtils.nextId());
         fileInfo.setSuffix("jpg");
         fileInfo.setName("screenshot.jpg");
-        FileVideoHandle.getVideoImage(new File(videoFile), -1, fileInfo.getSuffix(), outputStream);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        outputStream.close();
-        funcMap.remove("thumbnailSize");
-        fileService.fileInfoService.save(inputStream, fileInfo, funcMap, fileService);
-        inputStream.close();
-        ImageInfo imageInfo = fileService.imageInfoService.getImageByFileId(fileInfo.getId());
-        if(imageInfo == null){
-            throw new BusinessException("没有找到截图信息");
+        float screenshotFloat = MapUtils.getFloat(funcMap, "screenshotFloat", -1.0f);
+        if(screenshotFloat >= 0){
+            FileVideoHandle.getVideoImage(new File(videoFile), screenshotFloat, fileInfo.getSuffix(), outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            outputStream.close();
+            funcMap.remove("thumbnailSize");
+            fileService.fileInfoService.save(inputStream, fileInfo, funcMap, fileService);
+            inputStream.close();
+            ImageInfo imageInfo = fileService.imageInfoService.getImageByFileId(fileInfo.getId());
+            if(imageInfo == null){
+                throw new BusinessException("没有找到截图信息");
+            }
+            videoInfo.setScreenshotId(imageInfo.getId());
+            return fileService.videoInfoService.updateById(videoInfo);
         }
-        videoInfo.setScreenshotId(imageInfo.getId());
-        return fileService.videoInfoService.updateById(videoInfo);
+        return true;
     }
 
     private static final Set<String> videoSuffixSet= new HashSet(){{
@@ -148,15 +157,16 @@ public class FileVideoHandle {
         }
     }
 
-    public static boolean getVideoImage(File fileVideo, int frameNum, String suffix, OutputStream outputStream){
+    public static boolean getVideoImage(File fileVideo, float screenshotFloat, String suffix, OutputStream outputStream){
         final FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(fileVideo);
         try {
             grabber.start();
             int i = 0;
             int length = grabber.getLengthInFrames();
-            if(frameNum < 0){
-                frameNum = length / 2;
+            if(screenshotFloat < 0. || screenshotFloat > 1.){
+                throw new BusinessException("screenshotFloat取值范围[0.0~1.0]");
             }
+            int frameNum = (int) ((double)length * (double)screenshotFloat);
             Frame frame = null;
             while (i < length) {
                 i++;

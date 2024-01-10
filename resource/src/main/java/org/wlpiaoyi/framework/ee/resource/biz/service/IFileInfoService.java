@@ -31,14 +31,14 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
     /**
      * 存储文件
      * @param fileIo 文件IO
-     * @param fileInfo 文件实体信息
+     * @param entity 文件实体信息
      * @param funcMap 拓展字段
      * @param interceptor 存储回调
      * @return: java.lang.String
      * @author: wlpia
      * @date: 2024/1/8 17:26
      */
-    String save(InputStream fileIo, FileInfo fileInfo, Map funcMap, FileInfoSaveInterceptor interceptor);
+    String save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor);
 
 
     /**
