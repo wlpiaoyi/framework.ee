@@ -28,4 +28,14 @@ public class VideoInfoVo extends VideoInfo implements Serializable {
 	@Schema(description = "视频截图")
 	private ImageInfo screenshot;
 
+	@Override
+	public void cleanKeyData() {
+		super.cleanKeyData();
+		if(this.fileInfo != null){
+			this.fileInfo.cleanKeyData();
+		}
+		if(this.screenshot != null){
+			this.screenshot.cleanKeyData();
+		}
+	}
 }

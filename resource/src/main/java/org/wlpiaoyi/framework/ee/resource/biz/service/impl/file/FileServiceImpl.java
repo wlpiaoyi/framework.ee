@@ -79,8 +79,10 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @SneakyThrows
     @Override
-    public void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response){
-        Long id = new Long(new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(token))));
+    public void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+        Object[] eToken = this.fileConfig.decodeToken(token);
+        Long id = (Long) eToken[0];
+        String fingerprint = (String) eToken[1];
         FileInfo fileInfo = this.fileInfoService.getById(id);
         if(fileInfo == null){
             throw new SystemException("没有找到文件");
@@ -112,28 +114,14 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             }
             String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
             if(entity.getIsVerifySign() == 1){
-                String fileSign = request.getHeader("file-sign");
+                String fileSign = MapUtils.getString(funcMap, "fileSign");
                 if(ValueUtils.isBlank(fileSign)){
                     throw new SystemException("无权访问文件");
                 }
                try{
-                   String[] args = fileSign.split(",");
-                   String tokenSign = args[0];
-                   String dataSign = args[1];
-                   ByteArrayInputStream bis = new ByteArrayInputStream(entity.getToken().getBytes());
-                   inputStreams.add(bis);
-                   if(!this.fileConfig.getSignVerify().verify(bis, this.fileConfig.dataDecode(tokenSign))){
+                   if(!this.fileConfig.verifyFile(entity.getId(), entity.getFingerprint(), fileSign)){
                        throw new SystemException("无权访问文件");
                    }
-                   bis.close();
-                   inputStreams.remove(bis);
-                   FileInputStream fis = new FileInputStream(ogPath);
-                   inputStreams.add(fis);
-                   if(!this.fileConfig.getSignVerify().verify(fis, this.fileConfig.dataDecode(dataSign))){
-                       throw new SystemException("无权访问文件");
-                   }
-                   fis.close();
-                   inputStreams.remove(fis);
                }catch (Exception e){
                    throw new SystemException("无权访问文件", e);
                }

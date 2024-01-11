@@ -14,16 +14,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileService;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.response.R;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,56 +80,69 @@ public class FileController {
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
                               HttpServletResponse response) {
         FileInfo fileInfo = new FileInfo();
-        try{
-            fileInfo.setIsVerifySign(isVerifySign);
-            if(ValueUtils.isNotBlank(name)){
-                fileInfo.setName(name);
-            }
-            if(ValueUtils.isNotBlank(suffix)){
-                fileInfo.setSuffix(suffix);
-            }
-            if(ValueUtils.isBlank(fileInfo.getName())){
-                fileInfo.setName(file.getOriginalFilename());
-            }
-            if(ValueUtils.isBlank(fileInfo.getSuffix())){
-                if(fileInfo.getName().contains(".")){
-                    fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
-                }else if(file.getOriginalFilename().contains(".")){
-                    fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
-                }
-            }
-            Map funcMap = new HashMap<>();
-            funcMap.put("thumbnailSize", thumbnailSize);
-            funcMap.put("screenshotFloat", screenshotFloat);
-
-            String fileSign = this.fileService.save(file, fileInfo, funcMap);
-            if(ValueUtils.isNotBlank(fileSign)){
-                response.setHeader("file-sign", fileSign);
-            }
-            fileInfo.setId(null);
-        }finally {
-//            if(file.getResource().exists()){
-//                file.getInputStream().close();
-//            }
+        fileInfo.setIsVerifySign(isVerifySign);
+        if(ValueUtils.isNotBlank(name)){
+            fileInfo.setName(name);
         }
-        return R.success(fileInfo);
+        if(ValueUtils.isNotBlank(suffix)){
+            fileInfo.setSuffix(suffix);
+        }
+        if(ValueUtils.isBlank(fileInfo.getName())){
+            fileInfo.setName(file.getOriginalFilename());
+        }
+        if(ValueUtils.isBlank(fileInfo.getSuffix())){
+            if(file.getOriginalFilename().contains(".")){
+                fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
+            }else if(fileInfo.getName().contains(".")){
+                fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
+            }
+        }
+        Map funcMap = new HashMap<>();
+        funcMap.put("thumbnailSize", thumbnailSize);
+        funcMap.put("screenshotFloat", screenshotFloat);
+
+        String fileSign = this.fileService.save(file, fileInfo, funcMap);
+        if(ValueUtils.isNotBlank(fileSign)){
+            response.setHeader("file-sign", fileSign);
+        }
+        FileInfoVo fileInfoVo = this.fileDataService.detail(fileInfo.getId());
+        fileInfoVo.cleanKeyData();
+        fileInfoVo.setToken(this.fileConfig.encodeToken(fileInfo.getId(), fileInfo.getFingerprint()));
+        return R.success(fileInfoVo);
     }
 
     @SneakyThrows
-    @GetMapping("/download/{token}/{fingerprint}")
+    @GetMapping("/download/{token}")
     @ApiOperationSupport(order = 2)
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
     public void download(@Validated @Parameter(description = "token") @PathVariable String token,
-                         @Validated @Parameter(description = "文件指纹") @PathVariable String fingerprint,
+                         @RequestHeader(value = "file-sign", required = false, defaultValue = "") String fileSign,
                          @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
                          @Parameter(description = "数据类型: org,thumbnail,screenshot") @RequestParam(required = false, defaultValue = "org") String dataType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        this.fileService.download(token, fingerprint, new HashMap(){{
+        this.fileService.download(token, new HashMap(){{
             put("readType", readType);
             put("dataType", dataType);
+            put("fileSign", fileSign);
         }}, request, response);
+    }
+
+
+    /**
+     * 文件信息 删除
+     */
+    @SneakyThrows
+    @GetMapping("/remove")
+    @ApiOperationSupport(order = 40)
+    @Operation(summary = "文件信息 逻辑删除")
+    public R remove(@Parameter(description = "token", required = true) @RequestParam String token) {
+        Object[] res = this.fileConfig.decodeToken(token);
+        Long id = (Long) res[0];
+        return R.success(fileDataService.deleteLogic(new ArrayList(){{
+            add(id);
+        }}));
     }
 }

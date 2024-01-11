@@ -5,15 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
+import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileImageHandle;
+import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileVideoHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
+import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
@@ -37,10 +43,29 @@ import java.util.Map;
 @Service
 public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInfo> implements IFileInfoService {
 
-
     @Autowired
     private FileConfig fileConfig;
 
+    @Autowired
+    private IImageInfoService imageInfoService;
+
+    @Autowired
+    private IVideoInfoService videoInfoService;
+
+    public FileInfoVo detail(Long id){
+        FileInfo fileInfo = this.getById(id);
+        if(fileInfo == null){
+            return null;
+        }
+        FileInfoVo fileInfoVo = ModelWrapper.parseOne(fileInfo, FileInfoVo.class);
+
+        if(FileImageHandle.isSupportSuffix(fileInfoVo.getSuffix())){
+            fileInfoVo.setExpandInfo(this.imageInfoService.detailByFileId(id));
+        }else if(FileVideoHandle.isSupportSuffix(fileInfoVo.getSuffix())){
+            fileInfoVo.setExpandInfo(this.videoInfoService.detailByFileId(id));
+        }
+        return fileInfoVo;
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
@@ -81,22 +106,9 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             }
             entity.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
             entity.setSize(DataUtils.getSize(tempFilePath));
-            entity.setToken(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(entity.getId().toString().getBytes())));
             String fileSign = null;
             if(entity.getIsVerifySign() == 1){
-                FileInputStream orgFileIo = new FileInputStream(this.fileConfig.getFilePathByFingerprintHex(fingerprintHex));
-                inputStreams.add(orgFileIo);
-                InputStream tokenByteInput = new ByteArrayInputStream(entity.getToken().getBytes());
-                final String dataSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(orgFileIo));
-                final String tokenSign = this.fileConfig.dataEncode(this.fileConfig.getSignVerify().sign(tokenByteInput));
-                tokenByteInput.close();
-                fileSign = tokenSign + "," + dataSign;
-                try {
-                    orgFileIo.close();
-                    inputStreams.remove(orgFileIo);
-                } catch (Exception e) {
-                    throw e;
-                }
+                fileSign = this.fileConfig.signFile(entity.getId(), entity.getFingerprint());
             }
             unMoveMap.put(fingerprintHex, tempFilePath);
             removePaths.add(tempFilePath);
@@ -107,7 +119,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 }
                 for (Map.Entry<String, String> entry : unMoveMap.entrySet()){
                     boolean fileExists = FileUtils.mergeByFingerprintHex(new File(entry.getValue()), entry.getKey(), this.fileConfig.getDataPath());
-                    log.info("file upload fileExists:{}, fingerprintHex: {}", fileExists, fingerprintHex);
+                    log.info("file dataPath fileExists:{}, fingerprintHex: {}", fileExists, fingerprintHex);
                 }
             }
             return fileSign;

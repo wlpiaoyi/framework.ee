@@ -30,12 +30,11 @@ public interface IFileService {
     /**
      * 下载文件
      * @param token
-     * @param fingerprint
      * @param funcMap
      * @param request
      * @param response
      */
-    void download(String token, String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response);
     void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
 

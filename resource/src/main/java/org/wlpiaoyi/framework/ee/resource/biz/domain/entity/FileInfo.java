@@ -1,6 +1,7 @@
 package org.wlpiaoyi.framework.ee.resource.biz.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import org.wlpiaoyi.framework.ee.resource.domain.entity.BaseEntity;
@@ -38,11 +39,6 @@ public class FileInfo extends BaseEntity implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long size;
 
-    /** token **/
-    @Schema(description = "token")
-    @NotBlank(message = "token不能为空")
-    private String token;
-
     /** 是否验证签名 0:否 1:是 **/
     @Schema(description = "是否验证签名 0:否 1:是")
     private byte isVerifySign = 0;
@@ -56,4 +52,9 @@ public class FileInfo extends BaseEntity implements Serializable {
     @Schema(description = "文件后缀")
     private String suffix;
 
+    @Override
+    public void cleanKeyData() {
+        super.cleanKeyData();
+        this.setFingerprint(null);
+    }
 }

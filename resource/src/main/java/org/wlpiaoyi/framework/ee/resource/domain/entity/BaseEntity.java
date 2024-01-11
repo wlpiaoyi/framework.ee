@@ -76,5 +76,19 @@ public class BaseEntity implements Serializable {
     private int isDeleted = 0;
 
 
+    /**
+     * 清理关键数据
+     * @return: void
+     * @author: wlpia
+     * @date: 2024/1/11 16:37
+     */
+    public void cleanKeyData(){
+        this.setId(null);
+        this.setCreateTime(null);
+        this.setCreateUser(null);
+        this.setUpdateTime(null);
+        this.setUpdateUser(null);
+    }
+
 
 }

@@ -22,15 +22,11 @@ import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.springframework.web.bind.annotation.*;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
-import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileImageHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.request.Condition;
 import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -45,7 +41,7 @@ import java.util.List;
 @Tag(name = "文件信息接口")
 public class FileInfoController {
 
-	private final IFileInfoService fileDataService;
+	private final IFileInfoService fileInfoService;
 
 	private final IImageInfoService imageInfoService;
 
@@ -58,9 +54,8 @@ public class FileInfoController {
 	@ApiOperationSupport(order = 10)
 	@Operation(summary = "文件信息 修改")
 	public R<Boolean> update(@Validated @RequestBody FileInfoRo.Submit body) {
-		return R.success(fileDataService.updateById(ModelWrapper.parseOne(body, FileInfo.class)));
+		return R.success(fileInfoService.updateById(ModelWrapper.parseOne(body, FileInfo.class)));
 	}
-
 
 	/**
 	 * 文件信息 详情
@@ -68,9 +63,13 @@ public class FileInfoController {
 	@GetMapping("/detail")
 	@ApiOperationSupport(order = 20)
 	@Operation(summary = "文件信息 详情")
-	public R<FileInfo> detail(@RequestParam Long id) {
-		FileInfo fileMenu = this.fileDataService.getById(id);
-		return R.success(fileMenu);
+	public R<FileInfoVo> detail(@RequestParam Long id) {
+		FileInfoVo fileInfo = this.fileInfoService.detail(id);
+		if(fileInfo == null){
+			return R.success(null);
+		}
+		fileInfo.setToken(this.fileConfig.encodeToken(fileInfo.getId(), fileInfo.getFingerprint()));
+		return R.success(fileInfo);
 	}
 
 	/**
@@ -111,7 +110,7 @@ public class FileInfoController {
 			wrapper.eq(FileInfo::getSuffix, body.getSuffix());
 		}
 		wrapper.orderByDesc(FileInfo::getCreateTime);
-		IPage<FileInfo> pages = fileDataService.page(Condition.getPage(body), wrapper);
+		IPage<FileInfo> pages = fileInfoService.page(Condition.getPage(body), wrapper);
 		return R.success(ModelWrapper.parseForPage(pages, FileInfoVo.class));
 	}
 
@@ -124,13 +123,8 @@ public class FileInfoController {
 	@GetMapping("/remove")
 	@ApiOperationSupport(order = 40)
 	@Operation(summary = "文件信息 逻辑删除")
-	public R remove(@Parameter(description = "token集合", required = true) @RequestParam String tokens) {
-		List<String> tokenList = ValueUtils.toStringList(tokens);
-		List<Long> ids = new ArrayList<>();
-		for (String token : tokenList){
-			ids.add(new Long(new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(token)))));
-		}
-		return R.success(fileDataService.deleteLogic(ids));
+	public R remove(@Parameter(description = "id集合", required = true) @RequestParam String ids) {
+		return R.success(fileInfoService.deleteLogic(ValueUtils.toLongList(ids)));
 	}
 
 }

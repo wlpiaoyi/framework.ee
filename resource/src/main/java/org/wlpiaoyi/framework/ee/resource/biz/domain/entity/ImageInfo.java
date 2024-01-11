@@ -56,4 +56,10 @@ public class ImageInfo extends BaseEntity implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long thumbnailId;
 
+    @Override
+    public void cleanKeyData() {
+        super.cleanKeyData();
+        this.setFileId(null);
+        this.setThumbnailId(null);
+    }
 }

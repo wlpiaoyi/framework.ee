@@ -5,9 +5,8 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
-import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
+import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
@@ -107,20 +106,39 @@ public class FileConfig {
         return this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT)));
     }
 
+    @SneakyThrows
+    public String signFile(long id, String fingerprint){
+        byte[] idBytes = ValueUtils.toBytes(id);
+        String idEncode = this.dataEncode(idBytes);
+        String argStr = idEncode + ":" + fingerprint;
+        return this.dataEncode(this.getSignVerify().sign(argStr.getBytes()));
+    }
 
 
     @SneakyThrows
-    public void synFileMenuByFingerprint(FileInfo fileInfo, String fingerprint) {
-        if(ValueUtils.isBlank(fileInfo.getId())){
-            fileInfo.setId(IdUtils.nextId());
-        }
-        fileInfo.setSize(DataUtils.getSize(this.getFilePathByFingerprint(fingerprint)));
-        fileInfo.setFingerprint(fingerprint);
-        fileInfo.setToken(this.dataEncode(this.getAesCipher().encrypt(fileInfo.getId().toString().getBytes())));
-        if(ValueUtils.isNotBlank(fileInfo.getName()) &&ValueUtils.isBlank(fileInfo.getSuffix())){
-            if(fileInfo.getName().contains(".")){
-                fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
-            }
-        }
+    public boolean verifyFile(long id, String fingerprint, String fileSign){
+        byte[] idBytes = ValueUtils.toBytes(id);
+        String idEncode = this.dataEncode(idBytes);
+        String argStr = idEncode + ":" + fingerprint;
+        return this.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
     }
+
+    @SneakyThrows
+    public String encodeToken(long id, String fingerprint){
+        byte[] idBytes = ValueUtils.toBytes(id);
+        String idEncode = this.dataEncode(idBytes);
+        byte[] randomBytes = StringUtils.getUUID64().getBytes();
+        String randomEncode = this.dataEncode(randomBytes);
+        String argStr = idEncode + ":" + fingerprint + ":" + randomEncode;
+        return this.dataEncode(this.getAesCipher().encrypt(argStr.getBytes()));
+    }
+    @SneakyThrows
+    public Object[] decodeToken(String token){
+        String argStr = new String(this.getAesCipher().decrypt(this.dataDecode(token)));
+        String[] args = argStr.split(":");
+        Long id = ValueUtils.toLong(this.dataDecode(args[0]));
+        String fingerprint = args[1];
+        return new Object[]{id, fingerprint};
+    }
+
 }

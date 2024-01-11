@@ -59,4 +59,10 @@ public class VideoInfo extends BaseEntity implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long screenshotId;
 
+    @Override
+    public void cleanKeyData() {
+        super.cleanKeyData();
+        this.setFileId(null);
+        this.setScreenshotId(null);
+    }
 }

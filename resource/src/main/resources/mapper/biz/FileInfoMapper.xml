@@ -16,8 +16,6 @@
         <result column="fingerprint" property="fingerprint"/>
         <!-- 是否验证签名 0:否 1:是 -->
         <result column="is_verify_sign" property="isVerifySign"/>
-        <!-- token -->
-        <result column="token" property="token"/>
         <!-- 文件后缀 -->
         <result column="suffix" property="suffix"/>
         <!-- 状态 -->

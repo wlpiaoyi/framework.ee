@@ -29,6 +29,15 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
     }
 
     /**
+     * 详情
+     * @param id
+     * @return: org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo
+     * @author: wlpia
+     * @date: 2024/1/11 16:47
+     */
+    FileInfoVo detail(Long id);
+
+    /**
      * 存储文件
      * @param fileIo 文件IO
      * @param entity 文件实体信息

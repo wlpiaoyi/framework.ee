@@ -28,4 +28,14 @@ public class ImageInfoVo extends ImageInfo implements Serializable {
 	@Schema(description = "缩略图信息")
 	private ImageInfo thumbnailInfo;
 
+	@Override
+	public void cleanKeyData() {
+		super.cleanKeyData();
+		if(this.fileInfo != null){
+			this.fileInfo.cleanKeyData();
+		}
+		if(this.thumbnailInfo != null){
+			this.thumbnailInfo.cleanKeyData();
+		}
+	}
 }
