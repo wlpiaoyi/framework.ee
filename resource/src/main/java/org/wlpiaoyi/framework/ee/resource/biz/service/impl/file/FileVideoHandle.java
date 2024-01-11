@@ -248,9 +248,8 @@ public class FileVideoHandle {
                     recorder.record(frame);
                 }
             }
-            new Thread(() -> {
-                progress.end();
-            }).start();
+            progress.end();
+            System.out.println();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -272,8 +271,8 @@ public class FileVideoHandle {
     public static void main(String[] args) {
         BufferedImage bufferedImage = FileImageHandle.parseTextToImage("哈哈，有🐕吗",
                 new Font("微软雅黑", Font.BOLD, 100),
-                Color.GREEN, 500, 500, 1.0f);
-        FileVideoHandle.watermark(new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\WeChat_20231220232138.mp4"),
+                Color.GREEN, 1000, 1000, 1.0f);
+        FileVideoHandle.watermark(new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\a2b518a3625fbc19f927c06a2236384e.mp4"),
                 "jpg", bufferedImage,1, 45., 0.3f, new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\1.mp4"));
 
     }
