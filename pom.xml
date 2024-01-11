@@ -45,6 +45,49 @@
         <skipTests>true</skipTests>
     </properties>
 
+    <!-- 环境平台 -->
+    <profiles>
+        <profile>
+            <id>linux-armhf</id>
+            <properties>
+                <system.env>linux-armhf</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-arm64</id>
+            <properties>
+                <system.env>linux-arm64</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-x86_64</id>
+            <properties>
+                <system.env>linux-x86_64</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-ppc64le</id>
+            <properties>
+                <system.env>linux-ppc64le</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-x86</id>
+            <properties>
+                <system.env>linux-x86</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows-x86_64</id>
+            <properties>
+                <system.env>windows-x86_64</system.env>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
 
     <modules>
         <module>utils</module>

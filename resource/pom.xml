@@ -63,6 +63,7 @@
 <!--            <version>0.4.20</version>-->
 <!--        </dependency>-->
 
+        <!-- 视频工具 -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
@@ -124,6 +125,10 @@
             <version>1.4.4</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.bytedeco.javacpp-presets</groupId>
+                    <artifactId>ffmpeg-platform</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.bytedeco</groupId>
                     <artifactId>javacv</artifactId>
                 </exclusion>
@@ -173,7 +178,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg-platform</artifactId>
+            <version>4.1-1.4.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bytedeco.javacpp-presets</groupId>
+                    <artifactId>ffmpeg</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- 根据自己的平台筛选工具 -->
+        <dependency>
+            <groupId>org.bytedeco.javacpp-presets</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>4.1-1.4.4</version>
+            <classifier>${system.env}</classifier>
+        </dependency>
         <!-- swagger3工具 -->
         <dependency>
             <groupId>io.swagger.core.v3</groupId> <!-- 接口文档：使用最新版本的 Swagger 模型 -->
@@ -242,7 +264,7 @@
 
     <build>
         <!-- 打包不带版本号 -->
-        <finalName>resource</finalName>
+        <finalName>resource-${system.env}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wlpiaoyi.framework.datasource</groupId>
