@@ -2,10 +2,12 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FFmpegLogCallback;
+import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Positions;
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avutil;
+import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +17,18 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
+import org.wlpiaoyi.framework.utils.Progress;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.bytedeco.ffmpeg.global.avutil.AV_LOG_ERROR;
 
 /**
  * {@code @author:}         wlpia
@@ -156,27 +162,24 @@ public class FileVideoHandle {
         }
     }
 
-    public static boolean getVideoImage(File fileVideo, float screenshotFloat, String suffix, OutputStream outputStream){
-        final FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(fileVideo);
+    public static boolean getVideoImage(File inputFile, float screenshotFloat, String suffix, OutputStream outputStream){
+        final FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(inputFile);
         try {
             grabber.start();
-            int i = 0;
             int length = grabber.getLengthInFrames();
             if(screenshotFloat < 0. || screenshotFloat > 1.){
                 throw new BusinessException("screenshotFloat取值范围[0.0~1.0]");
             }
             int frameNum = (int) ((double)length * (double)screenshotFloat);
-            Frame frame = null;
-            while (i < length) {
-                i++;
-                if(frameNum > i){
+            Frame frame;
+            while ((frame = grabber.grabImage()) != null) {
+                frameNum --;
+                if(frameNum > 0){
                     continue;
                 }
-                Frame curframe = grabber.grabFrame();
-                if(curframe.image == null){
+                if(frame.image == null){
                     continue;
                 }
-                frame = curframe;
                 break;
             }
             // 截取的帧图片
@@ -199,15 +202,79 @@ public class FileVideoHandle {
         }
     }
 
-//    public static void main(String[] args) {
-//        File file = new File("D:\\wlpia\\Documents\\Temp\\c809cb3e5e02c5de10fc850f77a43556.mp4");
-//        int i = 1000;
-//        while (--i > 0){
-//            VideoInfo vi = new VideoInfo();
-//            setVideoInfo(file, vi);
-//            getVideoImage(file, -1, "jpg", new ByteArrayOutputStream());
-//        }
-//        System.out.println("======================>");
-//
-//    }
+    @SneakyThrows
+    public static void watermark(File inputFile, String suffix, BufferedImage waterImage, double scale, double angle, float opacity, File outFile){
+        // 设置源视频、加字幕后的视频文件路径
+        FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(inputFile);
+        grabber.start();
+        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outFile, grabber.getImageWidth(), grabber.getImageHeight(), grabber.getAudioChannels());
+        try{
+            // 视频相关配置，取原视频配置
+            recorder.setFormat(grabber.getFormat());
+            recorder.setFrameRate(grabber.getFrameRate());
+            recorder.setVideoCodec(grabber.getVideoCodec());
+            recorder.setVideoBitrate(grabber.getVideoBitrate());
+            recorder.setVideoCodecName(grabber.getVideoCodecName());
+            recorder.setTimestamp(grabber.getTimestamp());
+//            recorder.setFrameNumber(grabber.getFrameNumber());
+//            recorder.setPixelFormat(grabber.getPixelFormat());
+            // 音频相关配置，取原音频配置
+            recorder.setSampleRate(grabber.getSampleRate());
+            recorder.setAudioCodec(grabber.getAudioCodec());
+            recorder.start();
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+            Frame frame;
+            int length = grabber.getLengthInVideoFrames();
+            int cur = 0;
+            Progress progress = new Progress();
+            new Thread(() -> progress.begin("转化进度")).start();
+
+            while ((frame = grabber.grab()) != null) {
+                // 从视频帧中获取图片
+                if (frame.image != null) {
+                    progress.setRate((int) (((float) (++ cur) * 100.0f) / ((float) length)));
+                    BufferedImage bufferedImage = converter.getBufferedImage(frame);
+
+                    // 对图片进行文本合入
+                    bufferedImage = FileImageHandle.watermark(bufferedImage, suffix,  waterImage, scale, angle, opacity);
+
+                    // 视频帧赋值，写入输出流
+                    frame.image = converter.getFrame(bufferedImage).image;
+                    recorder.record(frame);
+                }
+
+                // 音频帧写入输出流
+                if(frame.samples != null) {
+                    recorder.record(frame);
+                }
+            }
+            new Thread(() -> {
+                progress.end();
+            }).start();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+
+            grabber.flush();
+            grabber.stop();
+            grabber.close();
+            grabber.release();
+
+            recorder.flush();
+            recorder.stop();
+            recorder.close();
+            recorder.release();
+        }
+    }
+
+    @SneakyThrows
+    public static void main(String[] args) {
+        BufferedImage bufferedImage = FileImageHandle.parseTextToImage("哈哈，有🐕吗",
+                new Font("微软雅黑", Font.BOLD, 100),
+                Color.GREEN, 500, 500, 1.0f);
+        FileVideoHandle.watermark(new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\WeChat_20231220232138.mp4"),
+                "jpg", bufferedImage,1, 45., 0.3f, new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\1.mp4"));
+
+    }
 }
