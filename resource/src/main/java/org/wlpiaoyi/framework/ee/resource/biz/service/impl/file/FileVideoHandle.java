@@ -2,8 +2,10 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.*;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.FFmpegLogCallback;
 import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,14 +13,11 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
-import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
-import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.HashSet;
