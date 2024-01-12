@@ -203,7 +203,7 @@ public class FileVideoHandle {
     }
 
     @SneakyThrows
-    public static void watermark(File inputFile, String suffix, BufferedImage waterImage, double scale, double angle, float opacity, File outFile){
+    public static void watermark(File inputFile, String suffix, BufferedImage waterImage, FileImageHandle.ImageWriteModel waterModel, File outFile){
         // 设置源视频、加字幕后的视频文件路径
         FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(inputFile);
         grabber.start();
@@ -226,17 +226,15 @@ public class FileVideoHandle {
             Frame frame;
             int length = grabber.getLengthInVideoFrames();
             int cur = 0;
-            Progress progress = new Progress();
-            new Thread(() -> progress.begin("转化进度")).start();
-
+            new Thread(() -> Progress.singleInstance().begin("转化进度")).start();
             while ((frame = grabber.grab()) != null) {
                 // 从视频帧中获取图片
                 if (frame.image != null) {
-                    progress.setRate((int) (((float) (++ cur) * 100.0f) / ((float) length)));
+                    Progress.singleInstance().setRate((((float) (++ cur) * 100.0f) / ((float) length)));
                     BufferedImage bufferedImage = converter.getBufferedImage(frame);
 
                     // 对图片进行文本合入
-                    bufferedImage = FileImageHandle.watermark(bufferedImage, suffix,  waterImage, scale, angle, opacity);
+                    bufferedImage = FileImageHandle.watermark(bufferedImage, suffix,  waterImage, FileImageHandle.ImageWriteModel.builder().build(), waterModel);
 
                     // 视频帧赋值，写入输出流
                     frame.image = converter.getFrame(bufferedImage).image;
@@ -248,7 +246,7 @@ public class FileVideoHandle {
                     recorder.record(frame);
                 }
             }
-            progress.end();
+            Progress.singleInstance().end();
             System.out.println();
 
         }catch (Exception e){
@@ -267,13 +265,13 @@ public class FileVideoHandle {
         }
     }
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        BufferedImage bufferedImage = FileImageHandle.parseTextToImage("哈哈，有🐕吗",
-                new Font("微软雅黑", Font.BOLD, 100),
-                Color.GREEN, 1000, 1000, 1.0f);
-        FileVideoHandle.watermark(new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\a2b518a3625fbc19f927c06a2236384e.mp4"),
-                "jpg", bufferedImage,1, 45., 0.3f, new File("C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\1.mp4"));
-
-    }
+//    @SneakyThrows
+//    public static void main(String[] args) {
+//        BufferedImage bufferedImage = FileImageHandle.parseTextToImage("哈哈，你好",
+//                new Font("微软雅黑", Font.BOLD, 100),
+//                Color.GREEN, 1000, 1000, 1.0f);
+//        FileVideoHandle.watermark(new File("D:\\wlpia\\Documents\\Temp\\981473cb1ad095e18d7fdf8a8e656c71.mp4"),
+//                "jpg", bufferedImage,1, 45., 0.3f, new File("D:\\wlpia\\Documents\\Temp\\1.mp4"));
+//
+//    }
 }

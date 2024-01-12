@@ -1,8 +1,11 @@
 package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
+import lombok.Builder;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import sun.font.FontDesignMetrics;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -150,96 +154,162 @@ public class FileImageHandle {
                 .toOutputStream(outputStream);   //输出到指定的输出流中
     }
 
+    @Builder
+    @Getter
+    public static class ParseTextToImageModel{
+        private Font textfont;                  //文本字体
+        private Color textColor;                //文本颜色
+        private float textAlpha;                //文本透明度
+        private GradientPaint textPaint;        //文本渐变
+        private Color textShadowColor;          //文本偏移颜色
+        private GradientPaint textShadowPaint;  //文本偏移渐变
+        private int textShadowOffsetX;          //文本偏移x
+        private int textShadowOffsetY;          //文本偏移y
+        private int imageWidth;                 //图片宽度
+        private int imageHeight;                //图片高度
+    }
     /**
-     * 文字转字图片
-     * @param text      文本字符串
-     * @param font      设置字体
-     * @param fontColor 字体颜色
-     * @param width     图片宽度
-     * @param height    图片高度
-     * @param alpha     文字透明度，值从0.0f-1.0f，依次变得不透明
+     * 文字转图片
+     * @param text
+     * @param modelParams
      * @return: java.awt.image.BufferedImage
      * @author: wlpia
-     * @date: 2024/1/11 18:50
+     * @date: 2024/1/12 15:04
      */
-    public static BufferedImage parseTextToImage(String text, Font font, Color fontColor, int width, int height, float alpha) {
-       return parseTextToImage(text, font, fontColor, Color.ORANGE, 4, 4, width, height, alpha);
-    }
-    public static BufferedImage parseTextToImage(String text, Font font, Color fontColor, Color shadowColor, int shadowOffsetX, int shadowOffsetY, int width, int height, float alpha) {
-        BufferedImage textImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    public static BufferedImage parseTextToImage(String text, ParseTextToImageModel modelParams) {
+        BufferedImage textImage = new BufferedImage(modelParams.imageWidth, modelParams.imageHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = textImage.createGraphics();
         //设置背景透明
-        textImage = g2.getDeviceConfiguration().createCompatibleImage(width, height, Transparency.TRANSLUCENT);
+        textImage = g2.getDeviceConfiguration().createCompatibleImage(modelParams.imageWidth, modelParams.imageHeight, Transparency.TRANSLUCENT);
         g2.dispose();
         g2 = textImage.createGraphics();
 
         //开启文字抗锯齿
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         //设置字体
-        g2.setFont(font);
-//        // 创建循环渐变的GraphientPaint对象
-//        GradientPaint paint = new GradientPaint(20, 20, Color.BLUE, 100,120, Color.RED, true);
-//        g2.setPaint(paint);// 设置渐变
-        //设置透明度:1.0f为透明度 ，值从0-1.0，依次变得不透明
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        g2.setFont(modelParams.textfont);
         //计算字体位置：上下左右居中
         FontRenderContext context = g2.getFontRenderContext();
-        LineMetrics lineMetrics = font.getLineMetrics(text, context);
-        FontMetrics fontMetrics = FontDesignMetrics.getMetrics(font);
-        float offset = (width - fontMetrics.stringWidth(text)) / 2;
-        float y = (height + lineMetrics.getAscent() - lineMetrics.getDescent() - lineMetrics.getLeading()) / 2;
-        //绘图
-        if(shadowColor != null){
-            g2.setColor(shadowColor);
-            g2.drawString(text, (int) offset + shadowOffsetX, (int) y + shadowOffsetY);
+        LineMetrics lineMetrics = modelParams.textfont.getLineMetrics(text, context);
+        FontMetrics fontMetrics = FontDesignMetrics.getMetrics(modelParams.textfont);
+
+        String[] texts = text.split("\n");
+        float offsetY =  (lineMetrics.getAscent() + lineMetrics.getDescent() + lineMetrics.getLeading()) * (texts.length - 1) / 2;
+        int tLine = 0;
+        for(String txt : texts){
+            tLine ++;
+            float offset = (modelParams.imageWidth - fontMetrics.stringWidth(txt)) / 2;
+            float y = (modelParams.imageHeight + lineMetrics.getAscent() - lineMetrics.getDescent() - lineMetrics.getLeading()) / 2 - offsetY
+                    + (lineMetrics.getAscent() + lineMetrics.getDescent() + lineMetrics.getLeading()) * (tLine - 1);
+
+            if(modelParams.textColor != null){
+                //绘图
+                if(modelParams.textShadowColor != null){
+                    g2.setColor(modelParams.textShadowColor);
+                    g2.drawString(txt, (int) offset + modelParams.textShadowOffsetX, (int) y + modelParams.textShadowOffsetY);
+                }
+                //设置字体颜色
+                g2.setColor(modelParams.textColor);
+                g2.drawString(txt, (int) offset, (int) y);
+            }else if(modelParams.textPaint != null){
+                //绘图
+                if(modelParams.textShadowPaint != null){
+                    g2.setPaint(modelParams.textShadowPaint);
+                    g2.drawString(txt, (int) offset + modelParams.textShadowOffsetX, (int) y + modelParams.textShadowOffsetY);
+                }
+                // 创建循环渐变的GraphientPaint对象
+//            GradientPaint paint = new GradientPaint(20, 20, Color.BLUE, 100,120, Color.RED, true);
+                g2.setPaint(modelParams.textPaint);// 设置渐变
+                g2.drawString(txt, (int) offset, (int) y);
+            }
         }
-        //设置字体颜色
-        g2.setColor(fontColor);
-        g2.drawString(text, (int) offset, (int) y);
+
+        //设置透明度:1.0f为透明度 ，值从0-1.0，依次变得不透明
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, modelParams.textAlpha));
         //释放资源
         g2.dispose();
         return textImage;
     }
-
+    @Builder
+    @Getter
+    public static class ImageWriteModel{
+        @Builder.Default
+        private double scale = 1;   //放大缩小
+        @Builder.Default
+        private double angle = 0;   //旋转
+        @Builder.Default
+        private float quality = 0;  //质量
+        @Builder.Default
+        private float opacity = 1;  //透明
+    }
 
     /**
      * 图片水印
      * @param inputImage    输入图片
      * @param suffix        图片格式
-     * @param waterImage         水印图片
-     * @param scale         放大缩小水印
-     * @param angle         旋转水印
-     * @param opacity       透明水印
+     * @param waterImage    水印图片
+     * @param inputModel
+     * @param waterModel
      * @return: java.awt.image.BufferedImage
      * @author: wlpia
      * @date: 2024/1/11 22:22
      */
     @SneakyThrows
-    public static BufferedImage watermark(BufferedImage inputImage, String suffix, BufferedImage waterImage, double scale, double angle, float opacity){
+    public static BufferedImage watermark(BufferedImage inputImage, String suffix, BufferedImage waterImage, ImageWriteModel inputModel, ImageWriteModel waterModel){
         Thumbnails.Builder<BufferedImage> builder = Thumbnails.of(inputImage);
-        return builder.scale(1.f)
-                .outputFormat(suffix)   //保存为文件的格式设置
-                .outputQuality(1)   //输出的图片质量  0~1 之间,否则报错
+        return builder.scale(inputModel.scale)
+                .outputFormat(suffix)                   //保存为文件的格式设置
+                .outputQuality(inputModel.quality)      //输出的图片质量  0~1 之间,否则报错
+                .rotate(inputModel.angle)
                 .watermark(Positions.CENTER,
-                        Thumbnails.of(waterImage).scale(scale).rotate(angle).asBufferedImage(),
-                        opacity)
+                        Thumbnails.of(waterImage).scale(waterModel.scale).rotate(waterModel.angle).asBufferedImage(),
+                        waterModel.opacity)
                 .asBufferedImage();
-//                .toOutputStream(outputStream);   //输出到指定的输出流中
+    }
+    /**
+     * 保存图片
+     * @param inputImage    输入图片
+     * @param suffix        图片格式
+     * @param angle         图片旋转幅度
+     * @return: java.awt.image.BufferedImage
+     * @author: wlpia
+     * @date: 2024/1/11 22:22
+     */
+    @SneakyThrows
+    public static void write(BufferedImage inputImage, String suffix, double scale, double angle, double quality, OutputStream outputStream){
+        Thumbnails.Builder<BufferedImage> builder = Thumbnails.of(inputImage);
+        builder.scale(scale)
+                .rotate(angle)
+                .outputFormat(suffix)           //保存为文件的格式设置
+                .outputQuality(quality)         //输出的图片质量  0~1 之间,否则报错
+                .toOutputStream(outputStream);  //输出到指定的输出流中
     }
 
-//    @SneakyThrows
-//    public static void main(String[] args) {
-////        generateSmall("D:\\wlpia\\Documents\\Temp\\微信图片_20231227174448.jpg", "jpg", 0.3f,
-////                new FileOutputStream(new File("D:\\wlpia\\Documents\\Temp\\1.jpg")));
-//        BufferedImage bufferedImage = parseTextToImage("请在这里输入文字",
-//                        new Font("微软雅黑", Font.BOLD, 100),
-//                        Color.BLACK, 1000, 200, 1.0f);
-//        watermark("D:\\wlpia\\Documents\\Temp\\微信图片_20231227174448.jpg",
-//                "jpg", bufferedImage, 4., 45., 0.5f,
+
+    @SneakyThrows
+    public static void main(String[] args) {
+        String basePath = "D:\\wlpia\\Documents\\Temp\\";
+//        generateSmall("D:\\wlpia\\Documents\\Temp\\微信图片_20231227174448.jpg", "jpg", 0.3f,
 //                new FileOutputStream(new File("D:\\wlpia\\Documents\\Temp\\1.jpg")));
-//        ImageIO.write(bufferedImage, "png",
-//                        new FileOutputStream(new File("D:\\wlpia\\Documents\\Temp\\1.png")));
-//
-//    }
+        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
+        ParseTextToImageModel imageModel = ParseTextToImageModel.builder()
+                .textfont(new Font("微软雅黑", Font.BOLD, 100))
+                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+                .textShadowOffsetX(4)
+                .textShadowOffsetY(4)
+                .textAlpha(1.f)
+                .imageWidth(1400)
+                .imageHeight(500)
+                .build();
+        BufferedImage textImage = parseTextToImage(text, imageModel);
+        BufferedImage inputImage = ImageIO.read(new File(basePath + "微信图片_20240112155046.jpg"));
+        BufferedImage waterImage = watermark(inputImage,"jpg", textImage,
+                ImageWriteModel.builder().build(),
+                ImageWriteModel.builder().angle(45.f).opacity(0.5f).build());
+        write(textImage, "jpg", 1, 0, 1, new FileOutputStream(new File(basePath + "textImage.jpg")));
+        write(waterImage, "jpg", 1, 0, 1, new FileOutputStream(basePath + "waterImage.jpg"));
+
+    }
 
 }

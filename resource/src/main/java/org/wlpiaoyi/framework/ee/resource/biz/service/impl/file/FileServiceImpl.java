@@ -106,7 +106,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
-            String dataType = MapUtils.getString(funcMap, "dataType", "org");
+            String dataType = MapUtils.getString(funcMap, "dataType", "general");
             if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
                 entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
             }else if(this.fileVideoHandle.canDownloadByScreenshot(entity.getSuffix(), dataType)){
@@ -222,13 +222,15 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
 
+    @Override
+    public void beforeSave(Map funcMap, FileInfo entity) {
+
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public void afterSave(boolean saveRes, Map funcMap, FileInfo entity) {
-        if(!saveRes){
-            throw new BusinessException("保存失败");
-        }
+    public void afterSave(Map funcMap, FileInfo entity) {
         if(ValueUtils.isBlank(entity.getSuffix())){
             return;
         }
@@ -243,9 +245,11 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
     @Override
-    public void afterUpdate(boolean updateRes, Map funcMap, FileInfo entity) {
-        if(!updateRes){
-            throw new BusinessException("更新-失败");
-        }
+    public void beforeUpdate(Map funcMap, FileInfo entity) {
+
+    }
+
+    @Override
+    public void afterUpdate(Map funcMap, FileInfo entity) {
     }
 }

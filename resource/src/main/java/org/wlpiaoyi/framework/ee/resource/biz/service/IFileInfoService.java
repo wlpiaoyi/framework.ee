@@ -21,11 +21,13 @@ import java.util.Map;
 public interface IFileInfoService extends IBaseService<FileInfo> {
 
     interface FileInfoSaveInterceptor{
-        void afterSave(boolean saveRes, Map funcMap, FileInfo entity);
+        void beforeSave(Map funcMap, FileInfo entity);
+        void afterSave(Map funcMap, FileInfo entity);
     }
 
     interface FileInfoUpdateInterceptor{
-        void afterUpdate(boolean updateRes, Map funcMap, FileInfo entity);
+        void beforeUpdate(Map funcMap, FileInfo entity);
+        void afterUpdate(Map funcMap, FileInfo entity);
     }
 
     /**

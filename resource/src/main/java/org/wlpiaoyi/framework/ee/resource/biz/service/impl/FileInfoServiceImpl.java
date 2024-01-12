@@ -92,7 +92,6 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             }else{
                 throw new BusinessException("不支持的文件输入");
             }
-            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
             if(ValueUtils.isBlank(entity.getId())){
                 entity.setId(IdUtils.nextId());
             }
@@ -104,6 +103,14 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                     entity.setSuffix(entity.getName().substring(entity.getName().lastIndexOf(".") + 1));
                 }
             }
+
+            if(interceptor != null){
+                funcMap.put("tempFilePath", tempFilePath);
+                interceptor.beforeSave(funcMap, entity);
+                tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
+            }
+
+            String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
             entity.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
             entity.setSize(DataUtils.getSize(tempFilePath));
             String fileSign = null;
@@ -112,7 +119,15 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             }
             unMoveMap.put(fingerprintHex, tempFilePath);
             removePaths.add(tempFilePath);
-            this.save(entity, funcMap, interceptor);
+
+            if(!super.save(entity)){
+                throw new BusinessException("保存失败");
+            }
+            if(interceptor != null){
+                funcMap.put("tempFilePath", tempFilePath);
+                interceptor.afterSave(funcMap, entity);
+                tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
+            }
             if (isRootDone){
                 if(ValueUtils.isBlank(unMoveMap)){
                     throw new BusinessException("没有移动的文件");
@@ -141,18 +156,6 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 e.printStackTrace();
             }
         }
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    private boolean save(FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor) {
-        if(ValueUtils.isBlank(entity.getId())){
-            entity.setId(IdUtils.nextId());
-        }
-        boolean saveRes = super.save(entity);
-        if(interceptor != null){
-            interceptor.afterSave(saveRes, funcMap, entity);
-        }
-        return saveRes;
     }
 
     public void deleteFile(String filePath){

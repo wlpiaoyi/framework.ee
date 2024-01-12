@@ -72,12 +72,13 @@ public class FileController {
     @ApiOperationSupport(order = 1)
     @Operation(summary = "上传单个文件 请求", description = "上传单个文件")
     @ResponseBody
-    public R<FileInfo> upload(@Validated  @Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
+    public R<FileInfo> upload(@Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
                               @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
                               @Parameter(description = "图片缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
                               @Parameter(description = "视频截图位置,视频专用0.0~1.0") @RequestParam(value = "screenshotFloat", required = false, defaultValue = "-1") double screenshotFloat,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
+                              @Parameter(description = "水印") @RequestParam(value = "waterText", required = false) String waterText,
                               HttpServletResponse response) {
         FileInfo fileInfo = new FileInfo();
         fileInfo.setIsVerifySign(isVerifySign);
@@ -100,6 +101,7 @@ public class FileController {
         Map funcMap = new HashMap<>();
         funcMap.put("thumbnailSize", thumbnailSize);
         funcMap.put("screenshotFloat", screenshotFloat);
+        funcMap.put("waterText", waterText);
 
         String fileSign = this.fileService.save(file, fileInfo, funcMap);
         if(ValueUtils.isNotBlank(fileSign)){
@@ -119,8 +121,10 @@ public class FileController {
     @PermitAll
     public void download(@Validated @Parameter(description = "token") @PathVariable String token,
                          @RequestHeader(value = "file-sign", required = false, defaultValue = "") String fileSign,
-                         @Parameter(description = "文件读取类型: attachment,inline") @RequestParam(required = false, defaultValue = "attachment") String readType,
-                         @Parameter(description = "数据类型: org,thumbnail,screenshot") @RequestParam(required = false, defaultValue = "org") String dataType,
+                         @Parameter(description = "文件读取类型: attachment,inline")
+                             @RequestParam(required = false, defaultValue = "attachment") String readType,
+                         @Parameter(description = "数据类型: general,thumbnail,screenshot,original")
+                             @RequestParam(required = false, defaultValue = "general") String dataType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
         this.fileService.download(token, new HashMap(){{
