@@ -1,5 +1,6 @@
 package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -9,15 +10,18 @@ import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
+import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.Progress;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.imageio.ImageIO;
@@ -84,6 +88,45 @@ public class FileVideoHandle {
             return null;
         }
         return fileInfo;
+    }
+
+    @Getter
+    @Value("${resource.fontName}")
+    private String fontName;
+
+    @SneakyThrows
+    public boolean beforeSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
+        if(!FileVideoHandle.isSupportSuffix(entity.getSuffix())){
+            return false;
+        }
+        String tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
+        if(ValueUtils.isBlank(tempFilePath)){
+            return false;
+        }
+        if(ValueUtils.isNotBlank(MapUtils.getString(funcMap, "waterText"))){
+            String waterText = MapUtils.getString(funcMap, "waterText").replaceAll("\\\\n", "\n");
+            Integer waterFontSize = MapUtils.getInteger(funcMap, "waterFontSize", 15);
+            FileImageHandle.ParseTextToImageModel imageModel = FileImageHandle.ParseTextToImageModel.builder()
+                    .textfont(new Font(this.fontName, Font.BOLD, waterFontSize))
+                    .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+                    .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+                    .textShadowOffsetX(Math.max(1, waterFontSize.intValue() / 25))
+                    .textShadowOffsetY(Math.max(1, waterFontSize.intValue() / 25))
+                    .textAlpha(1.f)
+                    .imageWidth(1400)
+                    .imageHeight(500)
+                    .build();
+
+            BufferedImage waterImage = FileImageHandle.parseTextToImage(waterText, imageModel);
+            FileImageHandle.ImageWriteModel waterModel = FileImageHandle.ImageWriteModel.builder().angle(45.f).build();
+            String tempPath = FileUtils.createTempFilePath(this.fileConfig.getTempPath()) + "." + entity.getSuffix();
+            FileVideoHandle.watermark(new File(tempFilePath),
+                    "jpg", waterImage,waterModel, new File(tempPath));
+            funcMap.put("tempFilePath", tempPath);
+            return true;
+        }
+        return false;
+
     }
 
     @SneakyThrows
@@ -265,13 +308,25 @@ public class FileVideoHandle {
         }
     }
 
-//    @SneakyThrows
-//    public static void main(String[] args) {
-//        BufferedImage bufferedImage = FileImageHandle.parseTextToImage("哈哈，你好",
-//                new Font("微软雅黑", Font.BOLD, 100),
-//                Color.GREEN, 1000, 1000, 1.0f);
-//        FileVideoHandle.watermark(new File("D:\\wlpia\\Documents\\Temp\\981473cb1ad095e18d7fdf8a8e656c71.mp4"),
-//                "jpg", bufferedImage,1, 45., 0.3f, new File("D:\\wlpia\\Documents\\Temp\\1.mp4"));
-//
-//    }
+    @SneakyThrows
+    public static void main(String[] args) {
+        String basePath = "C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\";
+//        String basePath = "D:\\wlpia\\Documents\\Temp\\";
+        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
+        FileImageHandle.ParseTextToImageModel imageModel = FileImageHandle.ParseTextToImageModel.builder()
+                .textfont(new Font("微软雅黑", Font.BOLD, 50))
+                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+                .textShadowOffsetX(4)
+                .textShadowOffsetY(4)
+                .textAlpha(1.f)
+                .imageWidth(1400)
+                .imageHeight(500)
+                .build();
+        BufferedImage waterImage = FileImageHandle.parseTextToImage(text, imageModel);
+        FileImageHandle.ImageWriteModel waterModel = FileImageHandle.ImageWriteModel.builder().angle(45.f).build();
+        FileVideoHandle.watermark(new File("D:\\upload\\temp\\20240116230119_000863.8926.done.temp"),
+                "jpg", waterImage,waterModel, new File(basePath + "1.temp"));
+
+    }
 }

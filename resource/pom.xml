@@ -28,51 +28,31 @@
         <commons.io.version>2.7</commons.io.version>
         <!-- Web 相关 -->
         <servlet.versoin>2.5</servlet.versoin>
+        <!-- 图片工具 -->
+        <net.coobird.version>0.4.20</net.coobird.version>
+        <!-- 视频工具 -->
+        <org.bytedeco.version>1.5.9</org.bytedeco.version>
+        <org.bytedeco.ffmpeg.version>6.0</org.bytedeco.ffmpeg.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <artifactId>spring-boot-starter-validation</artifactId>
-            <groupId>org.springframework.boot</groupId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
-            <!-- <scope>provided</scope>-->
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-
         <!-- 使用google工具（推荐，压缩率高，图片清晰） -->
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
-            <version>0.4.20</version>
+            <version>${net.coobird.version}</version>
         </dependency>
 
         <!-- 视频工具 -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>1.5.9</version>
+            <version>${org.bytedeco.version}</version>
             <exclusions>
-<!--                <exclusion>-->
-<!--                    <groupId>org.bytedeco</groupId>-->
-<!--                    <artifactId>javacpp</artifactId>-->
-<!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>org.bytedeco</groupId>-->
+                <!--                    <artifactId>javacpp</artifactId>-->
+                <!--                </exclusion>-->
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
                     <artifactId>openblas</artifactId>
@@ -81,10 +61,10 @@
                     <groupId>org.bytedeco</groupId>
                     <artifactId>opencv</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.bytedeco</groupId>-->
-<!--                    <artifactId>ffmpeg</artifactId>-->
-<!--                </exclusion>-->
+                <!--                <exclusion>-->
+                <!--                    <groupId>org.bytedeco</groupId>-->
+                <!--                    <artifactId>ffmpeg</artifactId>-->
+                <!--                </exclusion>-->
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
                     <artifactId>flycapture</artifactId>
@@ -130,7 +110,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
-            <version>1.5.9</version>
+            <version>${org.bytedeco.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
@@ -193,7 +173,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg-platform</artifactId>
-            <version>6.0-1.5.9</version>
+            <version>${org.bytedeco.ffmpeg.version}-${org.bytedeco.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bytedeco</groupId>
@@ -208,8 +188,33 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg</artifactId>
-            <version>6.0-1.5.9</version>
+            <version>${org.bytedeco.ffmpeg.version}-${org.bytedeco.version}</version>
             <classifier>${system.env}</classifier>
+        </dependency>
+
+        <!-- 架构 -->
+        <dependency>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <groupId>org.springframework.boot</groupId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <!-- <scope>provided</scope>-->
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <!-- swagger3工具 -->
         <dependency>
@@ -234,14 +239,12 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
         </dependency>
 
         <!--文件上传工具类 -->
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>${commons.fileupload.version}</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

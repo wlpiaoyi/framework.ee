@@ -8,11 +8,14 @@ import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
+import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
+import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
@@ -74,6 +77,53 @@ public class FileImageHandle {
 
     @Autowired
     private IImageInfoService imageInfoService;
+
+    @Autowired
+    private FileConfig fileConfig;
+
+    @Getter
+    @Value("${resource.fontName}")
+    private String fontName;
+
+    @SneakyThrows
+    boolean beforeSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap) {
+        if(!FileImageHandle.isSupportSuffix(entity.getSuffix())){
+            return false;
+        }
+        String tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
+        if(ValueUtils.isBlank(tempFilePath)){
+            return false;
+        }
+        if(ValueUtils.isNotBlank(MapUtils.getString(funcMap, "waterText"))){
+            String waterText = MapUtils.getString(funcMap, "waterText").replaceAll("\\\\n", "\n");
+            Integer waterFontSize = MapUtils.getInteger(funcMap, "waterFontSize", 15);
+
+            ParseTextToImageModel imageModel = ParseTextToImageModel.builder()
+                    .textfont(new Font(this.fontName, Font.BOLD, waterFontSize))
+                    .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+                    .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+                    .textShadowOffsetX(Math.max(1, waterFontSize.intValue() / 25))
+                    .textShadowOffsetY(Math.max(1, waterFontSize.intValue() / 25))
+                    .textAlpha(1.f)
+                    .imageWidth(1400)
+                    .imageHeight(500)
+                    .build();
+            BufferedImage textImage = parseTextToImage(waterText, imageModel);
+            BufferedImage inputImage = ImageIO.read(new File(tempFilePath));
+            BufferedImage waterImage = watermark(inputImage,entity.getSuffix(), textImage,
+                    ImageWriteModel.builder().build(),
+                    ImageWriteModel.builder().angle(45.f).opacity(0.5f).build());
+            tempFilePath = FileUtils.createTempFilePath(this.fileConfig.getTempPath());
+            OutputStream outputStream = new FileOutputStream(tempFilePath);
+            write(waterImage, entity.getSuffix(), 1, 0, 1, outputStream);
+            outputStream.flush();
+            outputStream.close();
+            funcMap.put("tempFilePath", tempFilePath);
+            return true;
+        }
+        return false;
+
+    }
 
     @Transactional(rollbackFor = Exception.class)
     boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
@@ -286,30 +336,31 @@ public class FileImageHandle {
     }
 
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        String basePath = "D:\\wlpia\\Documents\\Temp\\";
-//        generateSmall("D:\\wlpia\\Documents\\Temp\\微信图片_20231227174448.jpg", "jpg", 0.3f,
-//                new FileOutputStream(new File("D:\\wlpia\\Documents\\Temp\\1.jpg")));
-        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
-        ParseTextToImageModel imageModel = ParseTextToImageModel.builder()
-                .textfont(new Font("微软雅黑", Font.BOLD, 100))
-                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
-                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
-                .textShadowOffsetX(4)
-                .textShadowOffsetY(4)
-                .textAlpha(1.f)
-                .imageWidth(1400)
-                .imageHeight(500)
-                .build();
-        BufferedImage textImage = parseTextToImage(text, imageModel);
-        BufferedImage inputImage = ImageIO.read(new File(basePath + "微信图片_20240112155046.jpg"));
-        BufferedImage waterImage = watermark(inputImage,"jpg", textImage,
-                ImageWriteModel.builder().build(),
-                ImageWriteModel.builder().angle(45.f).opacity(0.5f).build());
-        write(textImage, "jpg", 1, 0, 1, new FileOutputStream(new File(basePath + "textImage.jpg")));
-        write(waterImage, "jpg", 1, 0, 1, new FileOutputStream(basePath + "waterImage.jpg"));
-
-    }
+//    @SneakyThrows
+//    public static void main(String[] args) {
+//        String basePath = "C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\";
+////        String basePath = "D:\\wlpia\\Documents\\Temp\\";
+////        generateSmall("D:\\wlpia\\Documents\\Temp\\微信图片_20231227174448.jpg", "jpg", 0.3f,
+////                new FileOutputStream(new File("D:\\wlpia\\Documents\\Temp\\1.jpg")));
+//        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
+//        ParseTextToImageModel imageModel = ParseTextToImageModel.builder()
+//                .textfont(new Font("微软雅黑", Font.BOLD, 100))
+//                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+//                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+//                .textShadowOffsetX(4)
+//                .textShadowOffsetY(4)
+//                .textAlpha(1.f)
+//                .imageWidth(1400)
+//                .imageHeight(500)
+//                .build();
+//        BufferedImage textImage = parseTextToImage(text, imageModel);
+//        BufferedImage inputImage = ImageIO.read(new File(basePath + "E6CF736F-D906-4399-B39B-8FA5D5DD4587.png"));
+//        BufferedImage waterImage = watermark(inputImage,"png", textImage,
+//                ImageWriteModel.builder().build(),
+//                ImageWriteModel.builder().angle(45.f).opacity(0.5f).build());
+//        write(textImage, "jpg", 1, 0, 1, new FileOutputStream(new File(basePath + "textImage.jpg")));
+//        write(waterImage, "jpg", 1, 0, 1, new FileOutputStream(basePath + "waterImage.jpg"));
+//
+//    }
 
 }

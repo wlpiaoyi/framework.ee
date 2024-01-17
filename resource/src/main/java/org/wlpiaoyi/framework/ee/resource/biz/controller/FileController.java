@@ -78,7 +78,8 @@ public class FileController {
                               @Parameter(description = "视频截图位置,视频专用0.0~1.0") @RequestParam(value = "screenshotFloat", required = false, defaultValue = "-1") double screenshotFloat,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
                               @Parameter(description = "文件格式") @RequestParam(value = "suffix", required = false) String suffix,
-                              @Parameter(description = "水印") @RequestParam(value = "waterText", required = false) String waterText,
+                              @Parameter(description = "水印文本") @RequestParam(value = "waterText", required = false) String waterText,
+                              @Parameter(description = "水印字体大小") @RequestParam(value = "waterFontSize", required = false) Integer waterFontSize,
                               HttpServletResponse response) {
         FileInfo fileInfo = new FileInfo();
         fileInfo.setIsVerifySign(isVerifySign);
@@ -99,9 +100,18 @@ public class FileController {
             }
         }
         Map funcMap = new HashMap<>();
-        funcMap.put("thumbnailSize", thumbnailSize);
-        funcMap.put("screenshotFloat", screenshotFloat);
-        funcMap.put("waterText", waterText);
+        if(ValueUtils.isNotBlank(thumbnailSize)){
+            funcMap.put("thumbnailSize", thumbnailSize);
+        }
+        if(ValueUtils.isNotBlank(screenshotFloat)){
+            funcMap.put("screenshotFloat", screenshotFloat);
+        }
+        if(ValueUtils.isNotBlank(waterText)){
+            funcMap.put("waterText", waterText);
+        }
+        if(ValueUtils.isNotBlank(waterFontSize)){
+            funcMap.put("waterFontSize", waterFontSize);
+        }
 
         String fileSign = this.fileService.save(file, fileInfo, funcMap);
         if(ValueUtils.isNotBlank(fileSign)){

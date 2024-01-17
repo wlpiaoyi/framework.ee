@@ -3,6 +3,7 @@ server:
     basedir: D:/upload/temp/
 #dev环境  mysql8.0
 resource:
+  fontName: "微软雅黑"
   dataPath:
     D:/upload/data/
   tempPath:

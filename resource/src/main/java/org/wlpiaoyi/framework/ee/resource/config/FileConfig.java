@@ -12,6 +12,7 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 import org.wlpiaoyi.framework.utils.security.SignVerify;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -23,7 +24,6 @@ import java.util.Locale;
 @Component
 @Scope("singleton")
 public class FileConfig {
-
 
 
     @Getter
@@ -125,19 +125,72 @@ public class FileConfig {
 
     @SneakyThrows
     public String encodeToken(long id, String fingerprint){
+        byte[] part1 = StringUtils.getUUID64().getBytes();
+        int p1L = part1.length;
+
         byte[] idBytes = ValueUtils.toBytes(id);
-        String idEncode = this.dataEncode(idBytes);
-        byte[] randomBytes = StringUtils.getUUID64().getBytes();
-        String randomEncode = this.dataEncode(randomBytes);
-        String argStr = idEncode + ":" + fingerprint + ":" + randomEncode;
-        return this.dataEncode(this.getAesCipher().encrypt(argStr.getBytes()));
+        byte[] fBytes = fingerprint.getBytes();
+        int idL = idBytes.length;
+        int fL = fBytes.length;
+        byte[] part2 = new byte[idL + fL + 2];
+        int p2L = part2.length;
+
+        int i1 = 0;
+        part2[i1 ++] = (byte) idBytes.length;
+        int i1_1 = 0;
+        while (i1_1 < idL){
+            part2[i1 ++] = idBytes[i1_1 ++];
+        }
+        part2[i1 ++] = (byte) fL;
+        i1_1 = 0;
+        while (i1_1 < fL){
+            part2[i1 ++] = fBytes[i1_1 ++];
+        }
+
+        int bL = p1L + p2L;
+        byte[] bytes = new byte[bL];
+        int i = 0;
+        i1 = 0;
+        int i2 = 0;
+        while (i < bL){
+            if(i1 < p1L){
+                bytes[i ++] = part1[i1 ++];
+            }
+            if(i2 < p2L){
+                bytes[i ++] = part2[i2 ++];
+            }
+        }
+        return this.dataEncode(this.getAesCipher().encrypt(bytes));
     }
     @SneakyThrows
     public Object[] decodeToken(String token){
-        String argStr = new String(this.getAesCipher().decrypt(this.dataDecode(token)));
-        String[] args = argStr.split(":");
-        Long id = ValueUtils.toLong(this.dataDecode(args[0]));
-        String fingerprint = args[1];
+        byte[] bytes = this.getAesCipher().decrypt(this.dataDecode(token));
+        int bL = bytes.length;
+        int p2L = bL - 64;
+        byte[] part2 = new byte[p2L];
+        int i2 = 0;
+        while (i2 < p2L){
+            part2[i2] = bytes[i2 * 2 + 1];
+            i2 ++;
+        }
+
+        i2 = 0;
+        int idL = part2[i2 ++];
+        byte[] idBytes = new byte[idL];
+        int i2_1 = 0;
+        while (i2_1 < idL){
+            idBytes[i2_1 ++] = part2[i2 ++];
+        }
+
+        int fL = part2[i2 ++];
+        byte[] fBytes = new byte[fL];
+        i2_1 = 0;
+        while (i2_1 < fL){
+            fBytes[i2_1 ++] = part2[i2 ++];
+        }
+
+        Long id = ValueUtils.toLong(idBytes);
+        String fingerprint = new String(fBytes);
         return new Object[]{id, fingerprint};
     }
 

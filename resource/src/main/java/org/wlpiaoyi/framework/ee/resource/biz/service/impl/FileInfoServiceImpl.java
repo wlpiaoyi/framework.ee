@@ -92,6 +92,8 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             }else{
                 throw new BusinessException("不支持的文件输入");
             }
+            if(!removePaths.contains(tempFilePath))
+                removePaths.add(tempFilePath);
             if(ValueUtils.isBlank(entity.getId())){
                 entity.setId(IdUtils.nextId());
             }
@@ -108,6 +110,8 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 funcMap.put("tempFilePath", tempFilePath);
                 interceptor.beforeSave(funcMap, entity);
                 tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
+                if(!removePaths.contains(tempFilePath))
+                    removePaths.add(tempFilePath);
             }
 
             String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
@@ -118,15 +122,12 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 fileSign = this.fileConfig.signFile(entity.getId(), entity.getFingerprint());
             }
             unMoveMap.put(fingerprintHex, tempFilePath);
-            removePaths.add(tempFilePath);
 
             if(!super.save(entity)){
                 throw new BusinessException("保存失败");
             }
             if(interceptor != null){
-                funcMap.put("tempFilePath", tempFilePath);
                 interceptor.afterSave(funcMap, entity);
-                tempFilePath = MapUtils.getString(funcMap, "tempFilePath");
             }
             if (isRootDone){
                 if(ValueUtils.isBlank(unMoveMap)){
@@ -158,7 +159,12 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
         }
     }
 
-    public void deleteFile(String filePath){
+    public boolean deleteFile(String filePath){
+        File removeFile = new File(filePath);
+        if(!removeFile.exists()){
+            log.warn("file.clean delete failed has not fund file:{}", removeFile.getAbsolutePath());
+            return false;
+        }
         filePath = filePath.replaceAll("\\\\", "/");
         String basePath;
         if(filePath.startsWith(this.fileConfig.getDataPath().replaceAll("\\\\", "/"))){
@@ -166,9 +172,9 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
         }else if(filePath.startsWith(this.fileConfig.getTempPath().replaceAll("\\\\", "/"))){
             basePath = this.fileConfig.getTempPath();
         }else{
-            throw new BusinessException("不支持删除文件资源以外的数据");
+            log.warn("file.clean delete failed must be data or temp for file:{}", removeFile.getAbsolutePath());
+            return false;
         }
-        File removeFile = new File(filePath);
         if(removeFile.delete()){
             log.info("file.clean delete success for path [{}]", removeFile.getAbsolutePath());
         }else{
@@ -188,6 +194,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 log.warn("file.clean delete failed for path [{}]", removeFile.getAbsolutePath());
             }
         }
+        return true;
     }
 
     @Transactional(rollbackFor = Exception.class)

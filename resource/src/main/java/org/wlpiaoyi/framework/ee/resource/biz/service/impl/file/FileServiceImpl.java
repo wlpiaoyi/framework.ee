@@ -224,6 +224,18 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @Override
     public void beforeSave(Map funcMap, FileInfo entity) {
+        if(ValueUtils.isBlank(entity.getSuffix())){
+            return;
+        }
+
+        if(this.fileImageHandle.beforeSaveHandle(this, entity, funcMap)){
+            log.info("file before handle image");
+            return;
+        }
+        if(this.fileVideoHandle.beforeSaveHandle(this, entity, funcMap)){
+            log.info("file before handle image");
+            return;
+        }
 
     }
 
@@ -235,11 +247,11 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             return;
         }
         if(this.fileImageHandle.afterSaveHandle(this, entity, funcMap)){
-           log.info("file handle image");
+           log.info("file after handle image");
            return;
         }
         if(this.fileVideoHandle.afterSaveHandle(this, entity, funcMap)){
-            log.info("file handle video");
+            log.info("file after handle video");
             return;
         }
     }

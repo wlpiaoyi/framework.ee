@@ -59,7 +59,7 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
      * @author: wlpia
      * @date: 2024/1/9 10:25
      */
-    void deleteFile(String filePath);
+    boolean deleteFile(String filePath);
 
     /**
      * 清理文件
