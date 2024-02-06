@@ -1,4 +1,4 @@
-CREATE TABLE `biz_file_info` (
+CREATE TABLE `res_file_info` (
   `id` bigint NOT NULL,
   `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '文件名称',
   `size` bigint NOT NULL DEFAULT '0' COMMENT '文件大小',
@@ -18,7 +18,7 @@ CREATE TABLE `biz_file_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='文件信息';
 
 
-CREATE TABLE `biz_image_info` (
+CREATE TABLE `res_image_info` (
   `id` bigint NOT NULL,
   `file_id` bigint NOT NULL COMMENT '文件id',
   `suffix` varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '文件后缀',
@@ -37,7 +37,7 @@ CREATE TABLE `biz_image_info` (
   KEY `file_id_index` (`file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='图片信息';
 
-CREATE TABLE `biz_video_info` (
+CREATE TABLE `res_video_info` (
   `id` bigint NOT NULL,
   `file_id` bigint NOT NULL COMMENT '文件id',
   `suffix` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '文件后缀',
@@ -57,3 +57,6 @@ CREATE TABLE `biz_video_info` (
   KEY `file_id_index` (`file_id`),
   KEY `screenshot_id_index` (`screenshot_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='视频信息';
+
+
+

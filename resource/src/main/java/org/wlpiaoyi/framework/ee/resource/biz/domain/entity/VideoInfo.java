@@ -22,7 +22,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 @Accessors(chain=true)
-@TableName("biz_video_info")
+@TableName("res_video_info")
 @Schema(description = "视频信息")
 @EqualsAndHashCode(callSuper = true)
 public class VideoInfo extends BaseEntity implements Serializable {

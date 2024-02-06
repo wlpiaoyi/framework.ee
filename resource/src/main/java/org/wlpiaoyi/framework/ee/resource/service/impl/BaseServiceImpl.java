@@ -36,32 +36,32 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
     }
 
     public boolean save(T entity) {
-        this.resolveEntity(entity);
+        this.resolveEntityForSave(entity);
         return super.save(entity);
     }
 
     public boolean saveBatch(Collection<T> entityList, int batchSize) {
-        entityList.forEach(this::resolveEntity);
+        entityList.forEach(this::resolveEntityForSave);
         return super.saveBatch(entityList, batchSize);
     }
 
     public boolean updateById(T entity) {
-        this.resolveEntity(entity);
+        this.resolveEntityForMerge(entity);
         return super.updateById(entity);
     }
 
     public boolean updateBatchById(Collection<T> entityList, int batchSize) {
-        entityList.forEach(this::resolveEntity);
+        entityList.forEach(this::resolveEntityForMerge);
         return super.updateBatchById(entityList, batchSize);
     }
 
     public boolean saveOrUpdate(T entity) {
-        this.resolveEntity(entity);
+        this.resolveEntityForMerge(entity);
         return entity.getId() == null ? this.save(entity) : this.updateById(entity);
     }
 
     public boolean saveOrUpdateBatch(Collection<T> entityList, int batchSize) {
-        entityList.forEach(this::resolveEntity);
+        entityList.forEach(this::resolveEntityForMerge);
         return super.saveOrUpdateBatch(entityList, batchSize);
     }
 
@@ -109,10 +109,25 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
         return super.updateBatchById(list);
     }
 
-    private void resolveEntity(T entity) {
+    private void resolveEntityForSave(T entity) {
         try {
             if(ValueUtils.isBlank(entity.getId())){
                 entity.setId(IdUtils.nextId());
+            }
+            if(entity.getCreateTime() == null)
+                entity.setCreateTime(new Date());
+        } catch (Throwable var8) {
+            throw var8;
+        }
+    }
+
+    private void resolveEntityForMerge(T entity) {
+        try {
+            if(ValueUtils.isBlank(entity.getId())){
+                this.resolveEntityForSave(entity);
+            }else{
+                if(entity.getUpdateTime() == null)
+                    entity.setUpdateTime(new Date());
             }
         } catch (Throwable var8) {
             throw var8;

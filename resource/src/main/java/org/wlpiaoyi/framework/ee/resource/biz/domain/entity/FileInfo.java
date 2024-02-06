@@ -22,7 +22,7 @@ import javax.validation.constraints.NotBlank;
  */
 @lombok.Data
 @Accessors(chain=true)
-@TableName("biz_file_info")
+@TableName("res_file_info")
 @Schema(description = "文件信息")
 @EqualsAndHashCode(callSuper = true)
 public class FileInfo extends BaseEntity implements Serializable {

@@ -36,14 +36,14 @@
 
     <!-- 通过已经参数的数据Id查询出图片Id -->
     <select id="selectIdsFromDeletedFile" resultType="java.lang.Long">
-        SELECT i.id FROM biz_image_info i WHERE i.file_id in (
-            SELECT id FROM biz_file_info WHERE is_deleted != 0
+        SELECT i.id FROM res_image_info i WHERE i.file_id in (
+            SELECT id FROM res_file_info WHERE is_deleted != 0
         );
     </select>
 
     <!-- 根据图片查询出缩略图Id -->
     <select id="selectThumbnailIdByIds" resultType="java.lang.Long">
-        SELECT thumbnail_id FROM biz_image_info WHERE thumbnail_id IS NOT NULL AND id IN (
+        SELECT thumbnail_id FROM res_image_info WHERE thumbnail_id IS NOT NULL AND id IN (
         <foreach item="item" index="index" collection="ids" separator=",">
             #{item}
         </foreach>
@@ -52,7 +52,7 @@
 
     <!-- 根据图片Id查询出数据Id -->
     <select id="selectFileIdByIds" resultType="java.lang.Long">
-        SELECT file_id FROM biz_image_info WHERE id IN (
+        SELECT file_id FROM res_image_info WHERE id IN (
         <foreach item="item" index="index" collection="ids" separator=",">
             #{item}
         </foreach>
@@ -61,7 +61,7 @@
 
     <!-- 根据图片Id删除图片数据 -->
     <delete id="deletedByIds">
-        DELETE FROM biz_image_info WHERE is_deleted != 0 AND id IN (
+        DELETE FROM res_image_info WHERE is_deleted != 0 AND id IN (
         <foreach item="item" index="index" collection="ids" separator=",">
             #{item}
         </foreach>
