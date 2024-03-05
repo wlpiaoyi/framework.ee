@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +26,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,8 +103,8 @@ public class FileImageHandle {
                     .textfont(new Font(this.fontName, Font.BOLD, waterFontSize))
                     .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
                     .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
-                    .textShadowOffsetX(Math.max(1, waterFontSize.intValue() / 25))
-                    .textShadowOffsetY(Math.max(1, waterFontSize.intValue() / 25))
+                    .textShadowOffsetX(Math.max(1, waterFontSize / 25))
+                    .textShadowOffsetY(Math.max(1, waterFontSize / 25))
                     .textAlpha(1.f)
                     .imageWidth(1400)
                     .imageHeight(500)
@@ -114,7 +115,7 @@ public class FileImageHandle {
                     ImageWriteModel.builder().build(),
                     ImageWriteModel.builder().angle(45.f).opacity(0.5f).build());
             tempFilePath = FileUtils.createTempFilePath(this.fileConfig.getTempPath());
-            OutputStream outputStream = new FileOutputStream(tempFilePath);
+            OutputStream outputStream = Files.newOutputStream(Paths.get(tempFilePath));
             write(waterImage, entity.getSuffix(), 1, 0, 1, outputStream);
             outputStream.flush();
             outputStream.close();
@@ -126,7 +127,7 @@ public class FileImageHandle {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map funcMap){
+    boolean afterSaveHandle(FileServiceImpl fileService, FileInfo entity, Map<?, ?> funcMap){
         if(!FileImageHandle.isSupportSuffix(entity.getSuffix())){
             return false;
         }
@@ -175,7 +176,7 @@ public class FileImageHandle {
         return true;
     }
 
-    private static final Map<String, Integer> imageSuffixeMap = new HashMap(){{
+    private static final Map<String, Integer> imageSuffixeMap = new HashMap<String, Integer>(){{
         put("jpg", BufferedImage.TYPE_INT_RGB);
         put("jpeg", BufferedImage.TYPE_INT_RGB);
         put("png", BufferedImage.TYPE_INT_ARGB);
@@ -248,7 +249,7 @@ public class FileImageHandle {
         int tLine = 0;
         for(String txt : texts){
             tLine ++;
-            float offset = (modelParams.imageWidth - fontMetrics.stringWidth(txt)) / 2;
+            float offset = (float) (modelParams.imageWidth - fontMetrics.stringWidth(txt)) / 2;
             float y = (modelParams.imageHeight + lineMetrics.getAscent() - lineMetrics.getDescent() - lineMetrics.getLeading()) / 2 - offsetY
                     + (lineMetrics.getAscent() + lineMetrics.getDescent() + lineMetrics.getLeading()) * (tLine - 1);
 

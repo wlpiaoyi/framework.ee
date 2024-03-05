@@ -2,7 +2,6 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.Charsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -52,11 +51,11 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public String save(Object fileIo, FileInfo entity, Map funcMap){
+    public String save(Object fileIo, FileInfo entity, Map<?, ?> funcMap){
         return this.fileInfoService.save(fileIo, entity, funcMap, this);
     }
 
-    private static Map<String, String> contentTypeMap = new HashMap(){{
+    private static final Map<String, String> contentTypeMap = new HashMap<String, String>(){{
         put("jpg", "image/jpeg");
         put("jpeg", "image/jpeg");
         put("png", "image/png");
@@ -79,7 +78,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @SneakyThrows
     @Override
-    public void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(String token, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         Object[] eToken = this.fileConfig.decodeToken(token);
         Long id = (Long) eToken[0];
         String fingerprint = (String) eToken[1];
@@ -102,7 +101,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     private FileVideoHandle fileVideoHandle;
 
     @Override
-    public void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         List<OutputStream> outputStreams = new ArrayList<>();
         List<InputStream> inputStreams = new ArrayList<>();
         try{
@@ -135,7 +134,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 contentType = contentTypeMap.get("default");
             }
             response.setContentType(contentType);
-            response.setCharacterEncoding(Charsets.UTF_8.name());
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
             String filename = entity.getName();
             if(!filename.contains(".")){
@@ -168,13 +167,12 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             }
             throw new SystemException("文件读取异常", e);
         }finally {
-
             if(ValueUtils.isNotBlank(outputStreams)){
                 for (OutputStream outputStream : outputStreams){
                     try {
                         outputStream.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("FileServiceImpl.download close outputStream failed", e);
                     }
                 }
             }
@@ -183,7 +181,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                     try {
                         inputStream.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("FileServiceImpl.download close inputStream failed", e);
                     }
                 }
             }
@@ -195,11 +193,15 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     public List<String> cleanFile() {
         File tempPath = new File(this.fileConfig.getTempPath());
         if(!tempPath.exists()){
-            tempPath.mkdirs();
+            if(!tempPath.mkdirs()){
+                log.warn("FileServiceImpl.cleanFile mkdirs failed for tempPath:{}", tempPath);
+            }
         }
         File dataPath = new File(this.fileConfig.getDataPath());
         if(!dataPath.exists()){
-            dataPath.mkdirs();
+            if(!dataPath.mkdirs()){
+                log.warn("FileServiceImpl.cleanFile mkdirs failed for dataPath:{}", dataPath);
+            }
         }
         List<Long> fileIds = this.videoInfoService.cleanVideo();
         if(ValueUtils.isNotBlank(fileIds)){
@@ -217,8 +219,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         }else{
             log.info("file cleanImage fileIds empty");
         }
-        List<String> fingerprints = this.fileInfoService.cleanFile();
-        return fingerprints;
+        return this.fileInfoService.cleanFile();
     }
 
 

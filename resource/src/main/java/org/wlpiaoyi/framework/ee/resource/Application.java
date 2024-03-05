@@ -1,5 +1,6 @@
 package org.wlpiaoyi.framework.ee.resource;
 
+import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -38,11 +39,11 @@ public class Application implements ApplicationContextAware, BeanFactoryPostProc
     }
 
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    public void postProcessBeanFactory(@NotNull ConfigurableListableBeanFactory beanFactory) throws BeansException {
         ApplicationInitializer.SpringUtilsBuilder.build().setBeanFactory(beanFactory);
     }
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
         ApplicationInitializer.SpringUtilsBuilder.build().setApplicationContext(applicationContext);
     }
 

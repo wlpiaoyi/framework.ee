@@ -30,10 +30,10 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 
 
 /**
- * {@code @author:} 		wlpia:WLPIAOYI-DELL
- * {@code @description:} 	文件信息 控制器
- * {@code @date:} 			2023-12-08 16:48:27
- * {@code @version:}: 		1.0
+ * <p><b>{@code @description:}</b>  文件信息 控制器</p>
+ * <p><b>{@code @date:}</b>         2023/12/08 16:48</p>
+ * <p><b>{@code @author:}</b>       wlpiaoyi</p>
+ * <p><b>{@code @version:}</b>      1.0</p>
  */
 @RestController
 @AllArgsConstructor
@@ -123,7 +123,7 @@ public class FileInfoController {
 	@GetMapping("/remove")
 	@ApiOperationSupport(order = 40)
 	@Operation(summary = "文件信息 逻辑删除")
-	public R remove(@Parameter(description = "id集合", required = true) @RequestParam String ids) {
+	public R<Boolean> remove(@Parameter(description = "id集合", required = true) @RequestParam String ids) {
 		return R.success(fileInfoService.deleteLogic(ValueUtils.toLongList(ids)));
 	}
 

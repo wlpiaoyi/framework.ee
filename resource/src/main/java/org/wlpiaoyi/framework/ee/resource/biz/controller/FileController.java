@@ -12,14 +12,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileService;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.response.R;
-import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import javax.annotation.security.PermitAll;
@@ -30,11 +28,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
- * {@code @author:}         wlpiaoyi
- * {@code @description:}    TODO
- * {@code @date:}           2023/9/16 15:38
- * {@code @version:}:       1.0
+ * <p><b>{@code @description:}</b>
+ * 文件上传控制器</p>
+ * <p><b>{@code @date:}</b>         2024/2/20 10:31</p>
+ * <p><b>{@code @author:}</b>       wlpiaoyi</p>
+ * <p><b>{@code @version:}</b>      1.0</p>
  */
 @Slf4j
 @Controller
@@ -66,7 +66,6 @@ public class FileController {
         }
         return R.success(existFile);
     }
-    //application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 
     @SneakyThrows
     @PostMapping("/upload")
@@ -94,13 +93,13 @@ public class FileController {
             fileInfo.setName(file.getOriginalFilename());
         }
         if(ValueUtils.isBlank(fileInfo.getSuffix())){
-            if(file.getOriginalFilename().contains(".")){
+            if(ValueUtils.isNotBlank(file.getOriginalFilename()) && file.getOriginalFilename().contains(".")){
                 fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
-            }else if(fileInfo.getName().contains(".")){
+            }else if(ValueUtils.isNotBlank(fileInfo.getName()) && fileInfo.getName().contains(".")){
                 fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
             }
         }
-        Map funcMap = new HashMap<>();
+        Map<String, Object> funcMap = new HashMap<>();
         if(ValueUtils.isNotBlank(thumbnailSize)){
             funcMap.put("thumbnailSize", thumbnailSize);
         }
@@ -153,7 +152,7 @@ public class FileController {
     @GetMapping("/remove")
     @ApiOperationSupport(order = 40)
     @Operation(summary = "文件信息 逻辑删除")
-    public R remove(@Parameter(description = "token", required = true) @RequestParam String token) {
+    public R<Boolean> remove(@Parameter(description = "token", required = true) @RequestParam String token) {
         Object[] res = this.fileConfig.decodeToken(token);
         Long id = (Long) res[0];
         return R.success(fileDataService.deleteLogic(new ArrayList(){{

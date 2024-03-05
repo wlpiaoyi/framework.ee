@@ -16,19 +16,19 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * {@code @author:}         wlpiaoyi
- * {@code @description:}    TODO
- * {@code @date:}           2023/9/16 12:26
- * {@code @version:}:       1.0
+ * <p><b>{@code @description:}</b>  基础服务类</p>
+ * <p><b>{@code @date:}</b>         2023/9/16 12:26</p>
+ * <p><b>{@code @author:}</b>       wlpiaoyi</p>
+ * <p><b>{@code @version:}</b>      1.0</p>
  */
 public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> extends ServiceImpl<M, T> implements IBaseService<T> {
 
     protected Class<M> currentMapperClass() {
-        return (Class)this.getResolvableType().as(BaseServiceImpl.class).getGeneric(new int[]{0}).getType();
+        return (Class<M>) this.getResolvableType().as(BaseServiceImpl.class).getGeneric(new int[]{0}).getType();
     }
 
     protected Class<T> currentModelClass() {
-        return (Class)this.getResolvableType().as(BaseServiceImpl.class).getGeneric(new int[]{1}).getType();
+        return (Class<T>) this.getResolvableType().as(BaseServiceImpl.class).getGeneric(new int[]{1}).getType();
     }
 
     protected ResolvableType getResolvableType() {
@@ -68,14 +68,12 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteLogic(List<Long> ids) {
-        List<T> list = new ArrayList();
+        List<T> list = new ArrayList<>();
         ids.forEach((id) -> {
             T entity;
             try {
                 entity = this.currentModelClass().newInstance();
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
             entity.setIsDeleted(1);
@@ -89,15 +87,12 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean changeStatus(List<Long> ids, Integer status) {
-
-        List<T> list = new ArrayList();
+        List<T> list = new ArrayList<>();
         ids.forEach((id) -> {
             T entity;
             try {
                 entity = this.currentModelClass().newInstance();
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
 
@@ -110,27 +105,21 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
     }
 
     private void resolveEntityForSave(T entity) {
-        try {
-            if(ValueUtils.isBlank(entity.getId())){
-                entity.setId(IdUtils.nextId());
-            }
-            if(entity.getCreateTime() == null)
-                entity.setCreateTime(new Date());
-        } catch (Throwable var8) {
-            throw var8;
+        if(ValueUtils.isBlank(entity.getId())){
+            entity.setId(IdUtils.nextId());
+        }
+        if(entity.getCreateTime() == null){
+            entity.setCreateTime(new Date());
         }
     }
 
     private void resolveEntityForMerge(T entity) {
-        try {
-            if(ValueUtils.isBlank(entity.getId())){
-                this.resolveEntityForSave(entity);
-            }else{
-                if(entity.getUpdateTime() == null)
-                    entity.setUpdateTime(new Date());
+        if(ValueUtils.isBlank(entity.getId())){
+            this.resolveEntityForSave(entity);
+        }else{
+            if(entity.getUpdateTime() == null){
+                entity.setUpdateTime(new Date());
             }
-        } catch (Throwable var8) {
-            throw var8;
         }
     }
 

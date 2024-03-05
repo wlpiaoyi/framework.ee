@@ -25,7 +25,7 @@ public interface IFileService {
      * @author: wlpia
      * @date: 2023/12/30 15:51
      */
-    String save(Object fileIo, FileInfo entity, Map funcMap);
+    String save(Object fileIo, FileInfo entity, Map<?, ?> funcMap);
 
     /**
      * 下载文件
@@ -34,8 +34,8 @@ public interface IFileService {
      * @param request
      * @param response
      */
-    void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response);
-    void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(String token, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
     /**

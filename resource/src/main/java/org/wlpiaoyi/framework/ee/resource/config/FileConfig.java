@@ -12,6 +12,7 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 import org.wlpiaoyi.framework.utils.security.SignVerify;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -94,8 +95,7 @@ public class FileConfig {
     @SneakyThrows
     public byte[] dataDecode(String str){
         str = str.replaceAll("_", "/");
-        byte[] bytes = DataUtils.base64Decode(str.getBytes());
-        return bytes;
+        return DataUtils.base64Decode(str.getBytes());
     }
 
     public String parseFingerprintToHex(String fingerprint){
@@ -111,7 +111,7 @@ public class FileConfig {
         byte[] idBytes = ValueUtils.toBytes(id);
         String idEncode = this.dataEncode(idBytes);
         String argStr = idEncode + ":" + fingerprint;
-        return this.dataEncode(this.getSignVerify().sign(argStr.getBytes()));
+        return this.dataEncode(FileConfig.getSignVerify().sign(argStr.getBytes()));
     }
 
     @SneakyThrows
@@ -119,7 +119,7 @@ public class FileConfig {
         byte[] idBytes = ValueUtils.toBytes(id);
         String idEncode = this.dataEncode(idBytes);
         String argStr = idEncode + ":" + fingerprint;
-        return this.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
+        return FileConfig.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
     }
 
     @SneakyThrows
@@ -162,9 +162,8 @@ public class FileConfig {
         while (vti < fL){
             fBytes[vti ++] = valueBytes[vi ++];
         }
-        Long id = ValueUtils.toLong(idBytes);
         String fingerprint = new String(fBytes);
-        return new Object[]{id, fingerprint};
+        return new Object[]{ValueUtils.toLong(idBytes), fingerprint};
     }
 
 }
