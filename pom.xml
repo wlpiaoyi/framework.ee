@@ -93,6 +93,7 @@
         <module>utils</module>
         <module>activiti</module>
         <module>resource</module>
+        <module>fileScan</module>
     </modules>
 
     <dependencyManagement>

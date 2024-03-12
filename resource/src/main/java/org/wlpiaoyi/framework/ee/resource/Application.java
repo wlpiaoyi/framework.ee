@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ComponentScan;
 import org.wlpiaoyi.framework.ee.resource.domain.entity.BaseEntity;
+import org.wlpiaoyi.framework.utils.data.DataUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;

@@ -102,6 +102,8 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Autowired
     private FileVideoHandle fileVideoHandle;
 
+
+
     @Override
     public void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         String dataType = MapUtils.getString(funcMap, "dataType", "general");
@@ -142,6 +144,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
 
+
     private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         List<Closeable> closeables = new ArrayList<>();
         try{
@@ -150,73 +153,99 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             if(ValueUtils.isBlank(contentType)){
                 contentType = contentTypeMap.get("default");
             }
+            OutputStream out = response.getOutputStream();
+            response.reset();
             response.setContentType(contentType);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
 
-            OutputStream outputStream = response.getOutputStream();
-            response.reset();
-            closeables.add(outputStream);
-            RandomAccessFile randomAccessFile  = new RandomAccessFile(file, "r");
-            closeables.add(randomAccessFile);
-            long fileLength = randomAccessFile.length();
-            long requestSize = (int) fileLength;
-            //获取请求头中Range的值
-            String rangeString = request.getHeader(HttpHeaders.RANGE);
-            //从Range中提取需要获取数据的开始和结束位置
-            long requestStart = 0, requestEnd = 0;
+            long fileLength = file.length();
+            InputStream ins = new FileInputStream(file);
 
-            if (ValueUtils.isNotBlank(rangeString) && !"null".equals(rangeString)) {
-                //断点传输下载返回206
+            long point = 0L;
+            int rangeSwitch = 0;
+            long contentLength;
+
+            BufferedInputStream bis = new BufferedInputStream(ins);
+            // tell the client to allow accept-ranges
+//            response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+
+            // client requests a file block download start byte
+            String range = request.getHeader(HttpHeaders.RANGE);
+            if (ValueUtils.isNotBlank(range) && !"null".equals(range)) {
                 response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                response.setHeader("Content-disposition", "inline" + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
-                String[] ranges = rangeString.split("=");
-                if (ranges.length > 1) {
-                    String[] rangeDatas = ranges[1].split("-");
-                    requestStart = Integer.parseInt(rangeDatas[0]);
-                    if (rangeDatas.length > 1) {
-                        requestEnd = Integer.parseInt(rangeDatas[1]);
-                    }
+                String rangBytes = range.replaceFirst("bytes=", "");
+                if (rangBytes.endsWith("-")) { // bytes=270000-
+                    rangeSwitch = 1;
+                    point = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
+                    contentLength = Math.min(fileLength - point, fileLength / 10); // 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节）
+                } else { // bytes=270000-320000
+                    rangeSwitch = 2;
+                    String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
+                    String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
+                    point = Long.parseLong(startIndex);
+                    // 客户端请求的是 270000-320000 之间的字节
+                    contentLength = Math.min(Long.parseLong(endIndex) - point + 1 - point, fileLength / 10);
                 }
-                if (requestEnd != 0 && requestEnd > requestStart) {
-                    requestSize = requestEnd - requestStart + 1;
-                } //断点传输下载视频返回206
-                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                //设置targetFile，从自定义位置开始读取数据
-                randomAccessFile.seek(requestStart);
-                //根据协议设置请求头
-                response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-            }else{
-                response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
-                // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
-
+                readType = "inline";
+            } else {
+                response.setStatus(HttpServletResponse.SC_OK);
+                contentLength = fileLength;
             }
+
+            // 如果设设置了Content-Length，则客户端会自动进行多线程下载。如果不希望支持多线程，则不要设置这个参数。
+            // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
+            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength));
+
+            // 断点开始
+            // 响应的格式是:
+            // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+            if (rangeSwitch == 1) {
+                String contentRange = new StringBuffer("bytes ").append(new Long(point).toString()).append("-")
+                        .append(new Long(fileLength - 1).toString()).append("/")
+                        .append(new Long(fileLength).toString()).toString();
+                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+                bis.skip(point);
+            } else if (rangeSwitch == 2) {
+                String contentRange = range.replace("=", " ") + "/" + new Long(fileLength).toString();
+                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+                bis.skip(point);
+            } else {
+                String contentRange = new StringBuffer("bytes ").append("0-").append(fileLength - 1).append("/")
+                        .append(fileLength).toString();
+                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+            }
+            response.setContentType(contentType);
             //设置文件长度
-//            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(requestSize));
+            response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
 
-            //从磁盘读取数据流返回
-            byte[] cache = new byte[1024];
-            while (requestSize > 0) {
-                int len = randomAccessFile.read(cache);
-                if (requestSize < cache.length) {
-                    outputStream.write(cache, 0, (int) requestSize);
-                    outputStream.flush();
-                } else {
-                    outputStream.write(cache, 0, len);
-                    outputStream.flush();
-                    if (len < cache.length) {
-                        break;
-                    }
+            closeables.add(out);
+            int n = 0;
+            long readLength = 0;
+            int bsize = 1024;
+            byte[] bytes = new byte[bsize];
+            if (rangeSwitch == 2) {
+                // 针对 bytes=27000-39000 的请求，从27000开始写数据
+                while (readLength <= contentLength - bsize) {
+                    n = bis.read(bytes);
+                    readLength += n;
+                    out.write(bytes, 0, n);
                 }
-                Thread.sleep(10);
-                requestSize -= cache.length;
+                if (readLength <= contentLength) {
+                    n = bis.read(bytes, 0, (int) (contentLength - readLength));
+                    out.write(bytes, 0, n);
+                }
+            } else {
+                while ((n = bis.read(bytes)) != -1) {
+                    out.write(bytes, 0, n);
+                }
             }
+            out.flush();
+            out.close();
+            bis.close();
+            closeables.remove(out);
+            closeables.remove(bis);
 
-            outputStream.flush();
-            outputStream.close();
-            randomAccessFile.close();
-            closeables.remove(outputStream);
-            closeables.remove(randomAccessFile);
         }catch (Exception e){
             if(e instanceof BusinessException){
                 throw (BusinessException)e;
@@ -237,6 +266,104 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             }
         }
     }
+//
+//    private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
+//        List<Closeable> closeables = new ArrayList<>();
+//        try{
+//            String contentType = MapUtils.getString(funcMap, "contentType");
+//            String fileName = MapUtils.getString(funcMap, "fileName");
+//            if(ValueUtils.isBlank(contentType)){
+//                contentType = contentTypeMap.get("default");
+//            }
+//            response.setContentType(contentType);
+//            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+//            String readType = MapUtils.getString(funcMap, "readType", "inline");
+//
+//            OutputStream outputStream = response.getOutputStream();
+//            response.reset();
+//            closeables.add(outputStream);
+//            RandomAccessFile randomAccessFile  = new RandomAccessFile(file, "r");
+//            closeables.add(randomAccessFile);
+//            long fileLength = randomAccessFile.length();
+//            long requestSize = (int) (fileLength / 100);
+//            //获取请求头中Range的值
+//            String rangeString = request.getHeader(HttpHeaders.RANGE);
+//            //从Range中提取需要获取数据的开始和结束位置
+//            long requestStart = 0, requestEnd = 0;
+//
+//            if (ValueUtils.isNotBlank(rangeString) && !"null".equals(rangeString)) {
+//                //断点传输下载返回206
+//                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+//                response.setHeader("Content-disposition", "inline" + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+//                String[] ranges = rangeString.split("=");
+//                if (ranges.length > 1) {
+//                    String[] rangeDatas = ranges[1].split("-");
+//                    requestStart = Integer.parseInt(rangeDatas[0]);
+//                    if (rangeDatas.length > 1) {
+//                        requestEnd = Integer.parseInt(rangeDatas[1]);
+//                    }
+//                }
+//                if (requestEnd != 0 && requestEnd > requestStart) {
+//                    requestSize = requestEnd - requestStart + 1;
+//                } //断点传输下载视频返回206
+//                //设置targetFile，从自定义位置开始读取数据
+//                randomAccessFile.seek(requestStart);
+//                //根据协议设置请求头
+//                // 断点开始
+//                // 响应的格式是:
+//                // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+//                response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes " + requestStart + "-" + (fileLength - 1) + "/" + fileLength);
+//            }else{
+//                response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+//                // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
+//
+//            }
+//            //设置文件长度
+//            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileLength));
+//            response.setContentType("application/octet-stream");
+//
+//            //从磁盘读取数据流返回
+//            byte[] cache = new byte[1024];
+//            while (requestSize > 0) {
+//                int len = randomAccessFile.read(cache);
+//                if (requestSize < cache.length) {
+//                    outputStream.write(cache, 0, (int) requestSize);
+//                    outputStream.flush();
+//                } else {
+//                    outputStream.write(cache, 0, len);
+//                    outputStream.flush();
+//                    if (len < cache.length) {
+//                        break;
+//                    }
+//                }
+//                requestSize -= cache.length;
+//            }
+//
+//            outputStream.flush();
+//            outputStream.close();
+//            randomAccessFile.close();
+//            closeables.remove(outputStream);
+//            closeables.remove(randomAccessFile);
+//        }catch (Exception e){
+//            if(e instanceof BusinessException){
+//                throw (BusinessException)e;
+//            }
+//            if(e instanceof SystemException){
+//                throw (SystemException)e;
+//            }
+//            throw new SystemException("文件读取异常", e);
+//        }finally {
+//            if(ValueUtils.isNotBlank(closeables)){
+//                for (Closeable closeable : closeables){
+//                    try {
+//                        closeable.close();
+//                    } catch (IOException e) {
+//                        log.error("FileServiceImpl.download close obj failed", e);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
