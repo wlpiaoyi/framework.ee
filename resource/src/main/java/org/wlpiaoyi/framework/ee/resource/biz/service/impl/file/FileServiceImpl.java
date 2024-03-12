@@ -2,6 +2,8 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHeaders;
+import org.bytedeco.javacv.FrameFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -102,62 +104,119 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @Override
     public void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
-        List<OutputStream> outputStreams = new ArrayList<>();
-        List<InputStream> inputStreams = new ArrayList<>();
-        try{
-            String dataType = MapUtils.getString(funcMap, "dataType", "general");
-            if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
-                entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
-            }else if(this.fileVideoHandle.canDownloadByScreenshot(entity.getSuffix(), dataType)){
-                entity = this.fileVideoHandle.getScreenshotFileInfo(this, entity);
+        String dataType = MapUtils.getString(funcMap, "dataType", "general");
+        if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
+            entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
+        }else if(this.fileVideoHandle.canDownloadByScreenshot(entity.getSuffix(), dataType)){
+            entity = this.fileVideoHandle.getScreenshotFileInfo(this, entity);
+        }
+        if(entity.getIsVerifySign() == 1){
+            String fileSign = MapUtils.getString(funcMap, "fileSign");
+            if(ValueUtils.isBlank(fileSign)){
+                throw new SystemException("无权访问文件");
             }
-            String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
-            if(entity.getIsVerifySign() == 1){
-                String fileSign = MapUtils.getString(funcMap, "fileSign");
-                if(ValueUtils.isBlank(fileSign)){
+            try{
+                if(!this.fileConfig.verifyFile(entity.getId(), entity.getFingerprint(), fileSign)){
                     throw new SystemException("无权访问文件");
                 }
-               try{
-                   if(!this.fileConfig.verifyFile(entity.getId(), entity.getFingerprint(), fileSign)){
-                       throw new SystemException("无权访问文件");
-                   }
-               }catch (Exception e){
-                   throw new SystemException("无权访问文件", e);
-               }
+            }catch (Exception e){
+                throw new SystemException("无权访问文件", e);
             }
-            String ft = entity.getSuffix();
-            if(ValueUtils.isNotBlank(ft)){
-                ft = ft.toLowerCase(Locale.ROOT);
-            }
-            String contentType = contentTypeMap.get(ft);
+        }
+        String ft = entity.getSuffix();
+        if(ValueUtils.isNotBlank(ft)){
+            ft = ft.toLowerCase(Locale.ROOT);
+        }
+        String contentType = contentTypeMap.get(ft);
+        if(ValueUtils.isBlank(contentType)){
+            contentType = contentTypeMap.get("default");
+        }
+        ((Map) funcMap).put("contentType", contentType);
+        String fileName = entity.getName();
+        if(!fileName.contains(".")){
+            fileName += "." + entity.getSuffix();
+        }
+        ((Map) funcMap).put("fileName", fileName);
+        String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
+        this.download(new File(ogPath), funcMap, request, response);
+    }
+
+
+    private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
+        List<Closeable> closeables = new ArrayList<>();
+        try{
+            String contentType = MapUtils.getString(funcMap, "contentType");
+            String fileName = MapUtils.getString(funcMap, "fileName");
             if(ValueUtils.isBlank(contentType)){
                 contentType = contentTypeMap.get("default");
             }
             response.setContentType(contentType);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
-            String filename = entity.getName();
-            if(!filename.contains(".")){
-                filename += "." + entity.getSuffix();
-            }
-            response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
-//            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
 
-            response.setStatus(200);
-            ServletOutputStream sos = response.getOutputStream();
-            outputStreams.add(sos);
-            FileInputStream fis = new FileInputStream(ogPath);
-            inputStreams.add(fis);
-            int nRead;
-            byte[] data = new byte[1024];
-            while ((nRead = fis.read(data, 0, data.length)) != -1) {
-                sos.write(data, 0, nRead);
-                sos.flush();
+            OutputStream outputStream = response.getOutputStream();
+            response.reset();
+            closeables.add(outputStream);
+            RandomAccessFile randomAccessFile  = new RandomAccessFile(file, "r");
+            closeables.add(randomAccessFile);
+            long fileLength = randomAccessFile.length();
+            long requestSize = (int) fileLength;
+            //获取请求头中Range的值
+            String rangeString = request.getHeader(HttpHeaders.RANGE);
+            //从Range中提取需要获取数据的开始和结束位置
+            long requestStart = 0, requestEnd = 0;
+
+            if (ValueUtils.isNotBlank(rangeString) && !"null".equals(rangeString)) {
+                //断点传输下载返回206
+                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                response.setHeader("Content-disposition", "inline" + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+                String[] ranges = rangeString.split("=");
+                if (ranges.length > 1) {
+                    String[] rangeDatas = ranges[1].split("-");
+                    requestStart = Integer.parseInt(rangeDatas[0]);
+                    if (rangeDatas.length > 1) {
+                        requestEnd = Integer.parseInt(rangeDatas[1]);
+                    }
+                }
+                if (requestEnd != 0 && requestEnd > requestStart) {
+                    requestSize = requestEnd - requestStart + 1;
+                } //断点传输下载视频返回206
+                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                //设置targetFile，从自定义位置开始读取数据
+                randomAccessFile.seek(requestStart);
+                //根据协议设置请求头
+                response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+            }else{
+                response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+                // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
+
             }
-            sos.close();
-            outputStreams.remove(sos);
-            fis.close();
-            inputStreams.remove(fis);
+            //设置文件长度
+//            response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(requestSize));
+
+            //从磁盘读取数据流返回
+            byte[] cache = new byte[1024];
+            while (requestSize > 0) {
+                int len = randomAccessFile.read(cache);
+                if (requestSize < cache.length) {
+                    outputStream.write(cache, 0, (int) requestSize);
+                    outputStream.flush();
+                } else {
+                    outputStream.write(cache, 0, len);
+                    outputStream.flush();
+                    if (len < cache.length) {
+                        break;
+                    }
+                }
+                Thread.sleep(10);
+                requestSize -= cache.length;
+            }
+
+            outputStream.flush();
+            outputStream.close();
+            randomAccessFile.close();
+            closeables.remove(outputStream);
+            closeables.remove(randomAccessFile);
         }catch (Exception e){
             if(e instanceof BusinessException){
                 throw (BusinessException)e;
@@ -167,21 +226,12 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             }
             throw new SystemException("文件读取异常", e);
         }finally {
-            if(ValueUtils.isNotBlank(outputStreams)){
-                for (OutputStream outputStream : outputStreams){
+            if(ValueUtils.isNotBlank(closeables)){
+                for (Closeable closeable : closeables){
                     try {
-                        outputStream.close();
+                        closeable.close();
                     } catch (IOException e) {
-                        log.error("FileServiceImpl.download close outputStream failed", e);
-                    }
-                }
-            }
-            if(ValueUtils.isNotBlank(inputStreams)){
-                for (InputStream inputStream : inputStreams){
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        log.error("FileServiceImpl.download close inputStream failed", e);
+                        log.error("FileServiceImpl.download close obj failed", e);
                     }
                 }
             }

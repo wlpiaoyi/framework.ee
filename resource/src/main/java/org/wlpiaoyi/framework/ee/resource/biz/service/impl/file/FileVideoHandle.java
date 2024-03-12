@@ -269,11 +269,9 @@ public class FileVideoHandle {
             Frame frame;
             int length = grabber.getLengthInVideoFrames();
             int cur = 0;
-            new Thread(() -> Progress.singleInstance().begin("转化进度")).start();
             while ((frame = grabber.grab()) != null) {
                 // 从视频帧中获取图片
                 if (frame.image != null) {
-                    Progress.singleInstance().setRate((((float) (++ cur) * 100.0f) / ((float) length)));
                     BufferedImage bufferedImage = converter.getBufferedImage(frame);
 
                     // 对图片进行文本合入
@@ -289,8 +287,6 @@ public class FileVideoHandle {
                     recorder.record(frame);
                 }
             }
-            Progress.singleInstance().end();
-            System.out.println();
 
         }catch (Exception e){
             e.printStackTrace();
