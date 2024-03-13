@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.http.HttpHeaders;
 import org.bytedeco.javacv.FrameFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 
@@ -102,8 +104,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Autowired
     private FileVideoHandle fileVideoHandle;
 
-
-
     @Override
     public void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         String dataType = MapUtils.getString(funcMap, "dataType", "general");
@@ -143,8 +143,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         this.download(new File(ogPath), funcMap, request, response);
     }
 
-
-
     private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
         List<Closeable> closeables = new ArrayList<>();
         try{
@@ -153,22 +151,22 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             if(ValueUtils.isBlank(contentType)){
                 contentType = contentTypeMap.get("default");
             }
-            OutputStream out = response.getOutputStream();
+            OutputStream dataOutput = response.getOutputStream();
             response.reset();
             response.setContentType(contentType);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             String readType = MapUtils.getString(funcMap, "readType", "inline");
 
-            long fileLength = file.length();
-            InputStream ins = new FileInputStream(file);
+            final long fileLength = file.length();
 
-            long point = 0L;
             int rangeSwitch = 0;
+            long point = 0L;
             long contentLength;
 
-            BufferedInputStream bis = new BufferedInputStream(ins);
+            BufferedInputStream dataInput = new BufferedInputStream(Files.newInputStream(file.toPath()));
+            closeables.add(dataInput);
             // tell the client to allow accept-ranges
-//            response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+            response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 
             // client requests a file block download start byte
             String range = request.getHeader(HttpHeaders.RANGE);
@@ -178,14 +176,15 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 if (rangBytes.endsWith("-")) { // bytes=270000-
                     rangeSwitch = 1;
                     point = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
-                    contentLength = Math.min(fileLength - point, fileLength / 10); // 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节）
+                    /* 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节） */
+                    contentLength = fileLength - point;
                 } else { // bytes=270000-320000
                     rangeSwitch = 2;
                     String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
                     String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
                     point = Long.parseLong(startIndex);
-                    // 客户端请求的是 270000-320000 之间的字节
-                    contentLength = Math.min(Long.parseLong(endIndex) - point + 1 - point, fileLength / 10);
+                    /* 客户端请求的是 270000-320000 之间的字节 */
+                    contentLength = Long.parseLong(endIndex) - point + 1 - point;
                 }
                 readType = "inline";
             } else {
@@ -193,58 +192,62 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 contentLength = fileLength;
             }
 
-            // 如果设设置了Content-Length，则客户端会自动进行多线程下载。如果不希望支持多线程，则不要设置这个参数。
-            // Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
+            /*
+             如果设设置了Content-Length，则客户端会自动进行多线程下载。如果不希望支持多线程，则不要设置这个参数。
+             Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
+             */
             response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength));
 
-            // 断点开始
-            // 响应的格式是:
-            // Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+            /*
+             断点开始
+             响应的格式
+             Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+             */
             if (rangeSwitch == 1) {
-                String contentRange = new StringBuffer("bytes ").append(new Long(point).toString()).append("-")
-                        .append(new Long(fileLength - 1).toString()).append("/")
-                        .append(new Long(fileLength).toString()).toString();
+                String contentRange = "bytes " + Long.toString(point) + "-" +
+                        Long.toString(fileLength - 1) + "/" +
+                        Long.toString(fileLength);
                 response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                bis.skip(point);
-            } else if (rangeSwitch == 2) {
-                String contentRange = range.replace("=", " ") + "/" + new Long(fileLength).toString();
+                dataInput.skip(point);
+            }else if(rangeSwitch == 2) {
+                String contentRange = range.replace("=", " ") + "/" + Long.toString(fileLength);
                 response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                bis.skip(point);
-            } else {
-                String contentRange = new StringBuffer("bytes ").append("0-").append(fileLength - 1).append("/")
-                        .append(fileLength).toString();
-                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+                dataInput.skip(point);
             }
             response.setContentType(contentType);
             //设置文件长度
             response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
+            // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
 
-            closeables.add(out);
-            int n = 0;
+            closeables.add(dataOutput);
             long readLength = 0;
-            int bsize = 1024;
-            byte[] bytes = new byte[bsize];
+            int bSize = 1024;
+            byte[] bytes = new byte[bSize];
             if (rangeSwitch == 2) {
-                // 针对 bytes=27000-39000 的请求，从27000开始写数据
-                while (readLength <= contentLength - bsize) {
-                    n = bis.read(bytes);
+                int n;
+                while (readLength <= contentLength - bSize) {
+                    n = dataInput.read(bytes);
                     readLength += n;
-                    out.write(bytes, 0, n);
+                    dataOutput.write(bytes, 0, n);
+                    dataOutput.flush();
                 }
                 if (readLength <= contentLength) {
-                    n = bis.read(bytes, 0, (int) (contentLength - readLength));
-                    out.write(bytes, 0, n);
+                    n = dataInput.read(bytes, 0, (int) (contentLength - readLength));
+                    dataOutput.write(bytes, 0, n);
+                    dataOutput.flush();
                 }
             } else {
-                while ((n = bis.read(bytes)) != -1) {
-                    out.write(bytes, 0, n);
+                int n;
+                while ((n = dataInput.read(bytes)) != -1) {
+                    dataOutput.write(bytes, 0, n);
+                    dataOutput.flush();
                 }
             }
-            out.flush();
-            out.close();
-            bis.close();
-            closeables.remove(out);
-            closeables.remove(bis);
+            dataOutput.flush();
+            dataOutput.close();
+            dataInput.close();
+            closeables.remove(dataOutput);
+            closeables.remove(dataInput);
 
         }catch (Exception e){
             if(e instanceof BusinessException){
@@ -253,20 +256,27 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             if(e instanceof SystemException){
                 throw (SystemException)e;
             }
+            if (e instanceof ClientAbortException){
+                log.warn("write data error:{}", e.getCause().toString());
+                return;
+            }
             throw new SystemException("文件读取异常", e);
         }finally {
             if(ValueUtils.isNotBlank(closeables)){
                 for (Closeable closeable : closeables){
                     try {
+                        if(closeable instanceof Flushable){
+                            ((Flushable) closeable).flush();
+                        }
                         closeable.close();
                     } catch (IOException e) {
-                        log.error("FileServiceImpl.download close obj failed", e);
+                        log.warn("download close obj failed:{}", e.getCause().toString());
                     }
                 }
             }
         }
     }
-//
+
 //    private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
 //        List<Closeable> closeables = new ArrayList<>();
 //        try{

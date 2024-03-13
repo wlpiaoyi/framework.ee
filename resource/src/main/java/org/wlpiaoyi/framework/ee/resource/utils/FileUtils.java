@@ -23,8 +23,7 @@ public class FileUtils extends DataUtils{
     private static final Random random = new Random();
 
     public static String createTempFilePath(String targetPath){
-        String filePath= targetPath + "/" + DateUtils.formatToString(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
-        return filePath;
+        return targetPath + "/" + DateUtils.formatDate(new Date(), "yyyyMMddHHmmss_SSSSSS") + "." + Math.abs(random.nextInt() % 10000);
 
     }
 
