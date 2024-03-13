@@ -143,7 +143,67 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         this.download(new File(ogPath), funcMap, request, response);
     }
 
-    private void download(File file, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
+    private boolean handlePartDownload(BufferedInputStream dataInput, Map funcMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String range = request.getHeader(HttpHeaders.RANGE);
+        if (ValueUtils.isNotBlank(range) && !"null".equals(range)) {
+            long point = 0L;
+            // tell the client to allow accept-ranges
+            response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            int writerType = MapUtils.getInteger(funcMap, "writerType");
+            long contentLength = MapUtils.getLong(funcMap, "contentLength");
+            long fileLength = MapUtils.getLong(funcMap, "fileLength");
+            String readType = MapUtils.getString(funcMap, "readType");
+            String rangBytes = range.replaceFirst("bytes=", "");
+            if (rangBytes.endsWith("-")) { // bytes=270000-
+                writerType = 1;
+                point = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
+                /* 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节） */
+                contentLength = fileLength - point;
+            } else { // bytes=270000-320000
+                writerType = 2;
+                String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
+                String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
+                point = Long.parseLong(startIndex);
+                /* 客户端请求的是 270000-320000 之间的字节 */
+                contentLength = Long.parseLong(endIndex) - point + 1 - point;
+            }
+            readType = "inline";
+
+            /*
+             断点开始
+             响应的格式
+             Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+             */
+            switch (writerType){
+                case 1:{
+                    String contentRange = "bytes " + Long.toString(point) + "-" +
+                            Long.toString(fileLength - 1) + "/" +
+                            Long.toString(fileLength);
+                    response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+                    dataInput.skip(point);
+                }
+                break;
+                case 2:{
+                    String contentRange = range.replace("=", " ") + "/" + Long.toString(fileLength);
+                    response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+                    dataInput.skip(point);
+                }
+                break;
+                default:
+                    throw new BusinessException("not support switch:" + writerType);
+            }
+
+            funcMap.put("writerType", writerType);
+            funcMap.put("contentLength", contentLength);
+            funcMap.put("fileLength", fileLength);
+            funcMap.put("readType", readType);
+            return true;
+        }
+        return false;
+    }
+
+    private void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<Closeable> closeables = new ArrayList<>();
         try{
             String contentType = MapUtils.getString(funcMap, "contentType");
@@ -159,35 +219,27 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
             final long fileLength = file.length();
 
-            int rangeSwitch = 0;
-            long point = 0L;
-            long contentLength;
+            /*
+             0: 下载全部数据
+             1: 分片下载(start-)
+             2: 分片下载(start-end)
+             */
+            int writerType = 0;
+            long contentLength = 0L;
 
             BufferedInputStream dataInput = new BufferedInputStream(Files.newInputStream(file.toPath()));
             closeables.add(dataInput);
-            // tell the client to allow accept-ranges
-            response.setHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 
-            // client requests a file block download start byte
-            String range = request.getHeader(HttpHeaders.RANGE);
-            if (ValueUtils.isNotBlank(range) && !"null".equals(range)) {
+            funcMap.put("writerType", writerType);
+            funcMap.put("contentLength", contentLength);
+            funcMap.put("fileLength", fileLength);
+            funcMap.put("readType", readType);
+            if(this.handlePartDownload(dataInput, funcMap, request, response)){
+                writerType = MapUtils.getInteger(funcMap, "writerType");
+                contentLength = MapUtils.getLong(funcMap, "contentLength");
+                readType = MapUtils.getString(funcMap, "readType");
                 response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                String rangBytes = range.replaceFirst("bytes=", "");
-                if (rangBytes.endsWith("-")) { // bytes=270000-
-                    rangeSwitch = 1;
-                    point = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
-                    /* 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节） */
-                    contentLength = fileLength - point;
-                } else { // bytes=270000-320000
-                    rangeSwitch = 2;
-                    String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
-                    String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
-                    point = Long.parseLong(startIndex);
-                    /* 客户端请求的是 270000-320000 之间的字节 */
-                    contentLength = Long.parseLong(endIndex) - point + 1 - point;
-                }
-                readType = "inline";
-            } else {
+            }else{
                 response.setStatus(HttpServletResponse.SC_OK);
                 contentLength = fileLength;
             }
@@ -197,23 +249,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
              Content-Length: [文件的总大小] - [客户端请求的下载的文件块的开始字节]
              */
             response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength));
-
-            /*
-             断点开始
-             响应的格式
-             Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
-             */
-            if (rangeSwitch == 1) {
-                String contentRange = "bytes " + Long.toString(point) + "-" +
-                        Long.toString(fileLength - 1) + "/" +
-                        Long.toString(fileLength);
-                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                dataInput.skip(point);
-            }else if(rangeSwitch == 2) {
-                String contentRange = range.replace("=", " ") + "/" + Long.toString(fileLength);
-                response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                dataInput.skip(point);
-            }
             response.setContentType(contentType);
             //设置文件长度
             response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
@@ -223,7 +258,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             long readLength = 0;
             int bSize = 1024;
             byte[] bytes = new byte[bSize];
-            if (rangeSwitch == 2) {
+            if (writerType == 2) {
                 int n;
                 while (readLength <= contentLength - bSize) {
                     n = dataInput.read(bytes);
