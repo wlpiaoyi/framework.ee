@@ -3,8 +3,12 @@ server:
     basedir: D:/upload/temp/
 #dev环境  mysql8.0
 resource:
+  ethName:
+#    eth2
+    wlan0
   fileMenu:
-    E:/Videos/
+#    E:/Videos/
+    D:\wlpia\Documents\Temp\suffix\
 
 # mongodb 日志级别
 logging:

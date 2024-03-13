@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.http.HttpHeaders;
-import org.bytedeco.javacv.FrameFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -46,6 +44,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
 
     @Autowired
     IFileInfoService fileInfoService;
+
     @Autowired
     IImageInfoService imageInfoService;
 
@@ -73,7 +72,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         put("xls", "application/vnd.ms-excel");
 
         put("mp4", "video/mp4");
-        put("wmv", "video/wmv");
         put("mp3", "audio/mp3");
 
         put("default", "application/octet-stream");
@@ -180,12 +178,12 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(ValueUtils.isBlank(contentType)){
             contentType = contentTypeMap.get("default");
         }
-        ((Map) funcMap).put("contentType", contentType);
+        funcMap.put("contentType", contentType);
         String fileName = entity.getName();
         if(!fileName.contains(".")){
             fileName += "." + entity.getSuffix();
         }
-        ((Map) funcMap).put("fileName", fileName);
+        funcMap.put("fileName", fileName);
         String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
         this.download(new File(ogPath), funcMap, request, response);
     }
@@ -227,11 +225,20 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             long fileLength = MapUtils.getLong(funcMap, "fileLength");
             String readType = MapUtils.getString(funcMap, "readType");
             String rangBytes = range.replaceFirst("bytes=", "");
+            String contentRange;
             if (rangBytes.endsWith("-")) { // bytes=270000-
                 writerType = 1;
                 point = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
                 /* 客户端请求的是270000之后的字节（包括bytes下标索引为270000的字节） */
                 contentLength = fileLength - point;
+                /*
+                 断点开始
+                 响应的格式
+                 Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+                 */
+                contentRange = "bytes " + Long.toString(point) + "-" +
+                        Long.toString(fileLength - 1) + "/" +
+                        Long.toString(fileLength);
             } else { // bytes=270000-320000
                 writerType = 2;
                 String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
@@ -239,32 +246,15 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                 point = Long.parseLong(startIndex);
                 /* 客户端请求的是 270000-320000 之间的字节 */
                 contentLength = Long.parseLong(endIndex) - point + 1 - point;
+                /*
+                 断点开始
+                 响应的格式
+                 Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
+                 */
+                contentRange = range.replace("=", " ") + "/" + Long.toString(fileLength);
             }
-            readType = "inline";
-
-            /*
-             断点开始
-             响应的格式
-             Content-Range: bytes [文件块的开始字节]-[文件的总大小 - 1]/[文件的总大小]
-             */
-            switch (writerType){
-                case 1:{
-                    String contentRange = "bytes " + Long.toString(point) + "-" +
-                            Long.toString(fileLength - 1) + "/" +
-                            Long.toString(fileLength);
-                    response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                    dataInput.skip(point);
-                }
-                break;
-                case 2:{
-                    String contentRange = range.replace("=", " ") + "/" + Long.toString(fileLength);
-                    response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
-                    dataInput.skip(point);
-                }
-                break;
-                default:
-                    throw new BusinessException("not support switch:" + writerType);
-            }
+            response.setHeader(HttpHeaders.CONTENT_RANGE, contentRange);
+            dataInput.skip(point);
 
             funcMap.put("writerType", writerType);
             funcMap.put("contentLength", contentLength);
@@ -381,7 +371,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             dataInput.close();
             closeables.remove(dataOutput);
             closeables.remove(dataInput);
-
         }catch (Exception e){
             if(e instanceof BusinessException){
                 throw (BusinessException)e;
@@ -397,10 +386,14 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         }finally {
             if(ValueUtils.isNotBlank(closeables)){
                 for (Closeable closeable : closeables){
-                    try {
-                        if(closeable instanceof Flushable){
+                    if(closeable instanceof Flushable){
+                        try {
                             ((Flushable) closeable).flush();
+                        } catch (IOException e) {
+                            log.warn("download flush obj failed:{}", e.getCause().toString());
                         }
+                    }
+                    try {
                         closeable.close();
                     } catch (IOException e) {
                         log.warn("download close obj failed:{}", e.getCause().toString());

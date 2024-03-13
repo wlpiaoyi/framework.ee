@@ -8,8 +8,6 @@ resource:
     D:/upload/data/
   tempPath:
     D:/upload/temp/
-  fileMenu:
-    E:/Videos/
 
 # mongodb 日志级别
 logging:

@@ -3,3 +3,4 @@ utils/target/**
 activiti/target/*
 .idea/*
 resource/target/**
+fileScan/target/**
