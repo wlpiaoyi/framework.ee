@@ -9,38 +9,105 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * {@code @author:}         wlpiaoyi
- * {@code @description:}    TODO
- * {@code @date:}           2023/9/16 16:00
- * {@code @version:}:       1.0
+ * <p><b>{@code @description:}</b>  文件下载</p>
+ * <p><b>{@code @date:}</b>         2023/9/16 16:00</p>
+ * <p><b>{@code @author:}</b>       wlpiaoyi</p>
+ * <p><b>{@code @version:}</b>      1.0</p>
  */
 public interface IFileService {
 
     /**
+     * <p><b>{@code @description:}</b>
      * 保存文件
-     * @param fileIo 文件IO
-     * @param entity 文件实体信息
-     * @param funcMap 拓展字段
-     * @return: java.lang.String file-sign
-     * @author: wlpia
-     * @date: 2023/12/30 15:51
+     * </p>
+     *
+     * <p><b>@param</b> <b>fileIo</b>
+     * {@link Object}
+     * 文件IO
+     * </p>
+     *
+     * <p><b>@param</b> <b>entity</b>
+     * {@link FileInfo}
+     * 文件实体信息
+     * </p>
+     *
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * 拓展字段
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/13 13:24</p>
+     * <p><b>{@code @return:}</b>{@link String}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
      */
-    String save(Object fileIo, FileInfo entity, Map<?, ?> funcMap);
+    String save(Object fileIo, FileInfo entity, Map funcMap);
+
 
     /**
-     * 下载文件
-     * @param token
-     * @param funcMap
-     * @param request
-     * @param response
+     * <p><b>{@code @description:}</b>
+     * 根据token下载文件
+     * </p>
+     *
+     * <p><b>@param</b> <b>token</b>
+     * {@link String}
+     * </p>
+     *
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     *
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     *
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2023/12/30 15:51</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
      */
-    void download(String token, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response);
-    void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * <p><b>{@code @description:}</b>
+     * 根据文件信息对象下载文件
+     * </p>
+     *
+     * <p><b>@param</b> <b>entity</b>
+     * {@link FileInfo}
+     * </p>
+     *
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     *
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     *
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2023/12/30 15:51</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
+    void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
     /**
+     * <p><b>{@code @description:}</b>
      * 清理文件
-     * @return
+     * </p>
+     *
+     * <p><b>@param</b> <b></b>
+     * {@link }
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2023/12/30 15:51</p>
+     * <p><b>{@code @return:}</b>{@link List<String>}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
      */
     List<String> cleanFile();
 

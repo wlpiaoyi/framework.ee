@@ -31,10 +31,10 @@ import java.util.*;
 import java.util.List;
 
 /**
- * {@code @author:}         wlpiaoyi
- * {@code @description:}    TODO
- * {@code @date:}           2023/12/8 16:51
- * {@code @version:}:       1.0
+ * <p><b>{@code @description:}</b>  文件下载</p>
+ * <p><b>{@code @date:}</b>         2024/3/13 13:27</p>
+ * <p><b>{@code @author:}</b>       wlpiaoyi</p>
+ * <p><b>{@code @version:}</b>      1.0</p>
  */
 @Slf4j
 @Primary
@@ -55,7 +55,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public String save(Object fileIo, FileInfo entity, Map<?, ?> funcMap){
+    public String save(Object fileIo, FileInfo entity, Map funcMap){
         return this.fileInfoService.save(fileIo, entity, funcMap, this);
     }
 
@@ -79,10 +79,33 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         put("default", "application/octet-stream");
     }};
 
-
+    /**
+     * <p><b>{@code @description:}</b> 
+     * 根据token下载文件
+     * </p>
+     * 
+     * <p><b>@param</b> <b>token</b>
+     * {@link String}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/13 13:23</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
     @SneakyThrows
     @Override
-    public void download(String token, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         Object[] eToken = this.fileConfig.decodeToken(token);
         Long id = (Long) eToken[0];
         String fingerprint = (String) eToken[1];
@@ -104,8 +127,32 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Autowired
     private FileVideoHandle fileVideoHandle;
 
+    /**
+     * <p><b>{@code @description:}</b> 
+     * 根据文件信息对象下载文件
+     * </p>
+     * 
+     * <p><b>@param</b> <b>entity</b>
+     * {@link FileInfo}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/13 13:22</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
     @Override
-    public void download(FileInfo entity, Map<String, ?> funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         String dataType = MapUtils.getString(funcMap, "dataType", "general");
         if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
             entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
@@ -143,6 +190,31 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         this.download(new File(ogPath), funcMap, request, response);
     }
 
+    /**
+     * <p><b>{@code @description:}</b> 
+     * 分片下载任务处理
+     * </p>
+     * 
+     * <p><b>@param</b> <b>dataInput</b>
+     * {@link BufferedInputStream}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/13 13:19</p>
+     * <p><b>{@code @return:}</b>{@link boolean}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
     private boolean handlePartDownload(BufferedInputStream dataInput, Map funcMap, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String range = request.getHeader(HttpHeaders.RANGE);
         if (ValueUtils.isNotBlank(range) && !"null".equals(range)) {
@@ -203,6 +275,30 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         return false;
     }
 
+    /**
+     * <p><b>{@code @description:}</b> 
+     * 根据文件对象下载数据
+     * </p>
+     * 
+     * <p><b>@param</b> <b>file</b>
+     * {@link File}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>funcMap</b>
+     * {@link Map}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>request</b>
+     * {@link HttpServletRequest}
+     * </p>
+     * 
+     * <p><b>@param</b> <b>response</b>
+     * {@link HttpServletResponse}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/13 13:20</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
     private void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<Closeable> closeables = new ArrayList<>();
         try{
@@ -259,22 +355,24 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             int bSize = 1024;
             byte[] bytes = new byte[bSize];
             if (writerType == 2) {
-                int n;
-                while (readLength <= contentLength - bSize) {
-                    n = dataInput.read(bytes);
-                    readLength += n;
-                    dataOutput.write(bytes, 0, n);
+                int l;
+                long clb = contentLength - bSize;
+                while (readLength <= clb) {
+                    l = dataInput.read(bytes);
+                    readLength += l;
+                    dataOutput.write(bytes, 0, l);
                     dataOutput.flush();
                 }
-                if (readLength <= contentLength) {
-                    n = dataInput.read(bytes, 0, (int) (contentLength - readLength));
-                    dataOutput.write(bytes, 0, n);
+                clb = contentLength - readLength;
+                if (clb > 0) {
+                    l = dataInput.read(bytes, 0, (int) clb);
+                    dataOutput.write(bytes, 0, l);
                     dataOutput.flush();
                 }
             } else {
-                int n;
-                while ((n = dataInput.read(bytes)) != -1) {
-                    dataOutput.write(bytes, 0, n);
+                int l;
+                while ((l = dataInput.read(bytes)) != -1) {
+                    dataOutput.write(bytes, 0, l);
                     dataOutput.flush();
                 }
             }
