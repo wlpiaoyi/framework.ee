@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.Charsets;
 import org.apache.http.HttpHeaders;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -425,12 +426,12 @@ public class FileServiceImpl implements IFileService {
         String ip = "127.0.0.1";
         while (nifs.hasMoreElements()) {
             NetworkInterface nif = nifs.nextElement();
+            System.out.println("网卡接口名称：" + nif.getName());
             // 获得与该网络接口绑定的 IP 地址，一般只有一个
             Enumeration<InetAddress> addresses = nif.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 InetAddress addr = addresses.nextElement();
                 if (addr instanceof Inet4Address) { // 只关心 IPv4 地址
-                    System.out.println("网卡接口名称：" + nif.getName());
                     System.out.println("网卡接口地址：" + addr.getHostAddress());
                     System.out.println();
                     if(nif.getName().equals(ethName)){
@@ -442,31 +443,12 @@ public class FileServiceImpl implements IFileService {
 
         List<OutputStream> outputStreams = new ArrayList<>();
         try{
-            StringBuilder sb = new StringBuilder();
-            for(FileInfo fi : fileInfo.getChildren()){
-                String url = "http://" + ip + ":8080/file";
-                if(fi.isDict()){
-                    url += "/info-tree-href/";
-                }else {
-                    url += "/download/";
-                }
-                url += fi.getFingerprint();
-                sb.append("<a href='");
-                sb.append(url);
-                sb.append("'>");
-                sb.append(fi.getPath());
-                sb.append("</a>");
-                if(!fi.isDict()){
-                    sb.append("&nbsp;<a href=\"#\" onclick=\"alert('已经复制Url');window.clipboardData.setData('Text','" + url + "');\">复制Url</a>");
-                }
-                sb.append("\n<hr/>\n");
-            }
             response.setContentType("text/html");
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setStatus(200);
             ServletOutputStream sos = response.getOutputStream();
             outputStreams.add(sos);
-            ByteArrayInputStream is = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
+            ByteArrayInputStream is = new ByteArrayInputStream(createHtml(fileInfo, ip).getBytes(StandardCharsets.UTF_8));
             int nRead;
             byte[] data = new byte[1024];
             while ((nRead = is.read(data, 0, data.length)) != -1) {
@@ -483,10 +465,10 @@ public class FileServiceImpl implements IFileService {
             }
             throw new SystemException("文件读取异常", e);
         }finally {
-
             if(ValueUtils.isNotBlank(outputStreams)){
                 for (OutputStream outputStream : outputStreams){
                     try {
+                        outputStream.flush();
                         outputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -494,6 +476,30 @@ public class FileServiceImpl implements IFileService {
                 }
             }
         }
+    }
+
+    @NotNull
+    private static String createHtml(FileInfo fileInfo, String ip) {
+        StringBuilder sb = new StringBuilder();
+        for(FileInfo fi : fileInfo.getChildren()){
+            String url = "http://" + ip + ":8080/file";
+            if(fi.isDict()){
+                url += "/info-tree-href/";
+            }else {
+                url += "/download/";
+            }
+            url += fi.getFingerprint();
+            sb.append("<a href='");
+            sb.append(url);
+            sb.append("'>");
+            sb.append(fi.getPath());
+            sb.append("</a>");
+            if(!fi.isDict()){
+                sb.append("&nbsp;<a href=\"#\" onclick=\"alert('已经复制Url');window.clipboardData.setData('Text','" + url + "');\">复制Url</a>");
+            }
+            sb.append("\n<hr/>\n");
+        }
+        return sb.toString();
     }
 
 }

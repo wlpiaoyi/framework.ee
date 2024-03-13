@@ -90,7 +90,6 @@ public class FileController {
         this.fileService.resHtml(fileInfo, response);
     }
 
-
     @SneakyThrows
     @GetMapping("/download/{fingerprint}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
