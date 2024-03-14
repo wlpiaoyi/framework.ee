@@ -258,7 +258,7 @@ public class FileServiceImpl implements IFileService {
                 String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
                 point = Long.parseLong(startIndex);
                 /* 客户端请求的是 270000-320000 之间的字节 */
-                contentLength = Long.parseLong(endIndex) - point + 1 - point;
+                contentLength = Long.parseLong(endIndex) - Long.parseLong(startIndex);
                 /*
                  断点开始
                  响应的格式
@@ -485,17 +485,22 @@ public class FileServiceImpl implements IFileService {
             String url = "http://" + ip + ":8080/file";
             if(fi.isDict()){
                 url += "/info-tree-href/";
+                url += fi.getFingerprint();
+                url += "?1=1";
             }else {
-                url += "/download/";
+                url += "/download/" + fi.getFingerprint();
+                url += "/" + fi.getName();
+                if(!fi.getName().contains(".")){
+                    url += "." + fi.getSuffix();
+                }
             }
-            url += fi.getFingerprint();
             sb.append("<a href='");
             sb.append(url);
             sb.append("'>");
             sb.append(fi.getPath());
             sb.append("</a>");
-            if(!fi.isDict()){
-                sb.append("&nbsp;<a href=\"#\" onclick=\"alert('已经复制Url');window.clipboardData.setData('Text','" + url + "');\">复制Url</a>");
+            if(fi.isDict()){
+                sb.append("&nbsp;>>");
             }
             sb.append("\n<hr/>\n");
         }
