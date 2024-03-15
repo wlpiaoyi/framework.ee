@@ -97,7 +97,7 @@ public class FileController {
     @PermitAll
     public void download(@Validated @Parameter(description = "fingerprint") @PathVariable String fingerprint,
                          @Validated @Parameter(description = "fileName") @PathVariable String fileName,
-                         @RequestParam(required = false, defaultValue = "attachment") String readType,
+                         @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
         this.fileService.download(fingerprint, new HashMap(){{

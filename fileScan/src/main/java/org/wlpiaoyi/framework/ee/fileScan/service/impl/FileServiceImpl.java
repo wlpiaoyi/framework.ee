@@ -427,14 +427,11 @@ public class FileServiceImpl implements IFileService {
         String ip = "127.0.0.1";
         while (nifs.hasMoreElements()) {
             NetworkInterface nif = nifs.nextElement();
-            System.out.println("网卡接口名称：" + nif.getName());
             // 获得与该网络接口绑定的 IP 地址，一般只有一个
             Enumeration<InetAddress> addresses = nif.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 InetAddress addr = addresses.nextElement();
-                if (addr instanceof Inet4Address) { // 只关心 IPv4 地址
-                    System.out.println("网卡接口地址：" + addr.getHostAddress());
-                    System.out.println();
+                if (addr instanceof Inet4Address) {
                     if(nif.getName().equals(ethName)){
                         ip = addr.getHostAddress();
                     }
