@@ -189,22 +189,22 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
     /**
-     * <p><b>{@code @description:}</b> 
+     * <p><b>{@code @description:}</b>
      * 分片下载任务处理
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>dataInput</b>
      * {@link BufferedInputStream}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>funcMap</b>
      * {@link Map}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>request</b>
      * {@link HttpServletRequest}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>response</b>
      * {@link HttpServletResponse}
      * </p>
@@ -241,11 +241,12 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
                         Long.toString(fileLength);
             } else { // bytes=270000-320000
                 writerType = 2;
-                String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
-                String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
-                point = Long.parseLong(startIndex);
+                long startIndex = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
+                long endIndex = Long.parseLong(rangBytes.substring(rangBytes.indexOf("-") + 1));
+                point = startIndex;
                 /* 客户端请求的是 270000-320000 之间的字节 */
-                contentLength = Long.parseLong(endIndex) - point + 1 - point;
+                contentLength = endIndex - startIndex;
+                contentLength ++;
                 /*
                  断点开始
                  响应的格式
@@ -266,22 +267,22 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
     /**
-     * <p><b>{@code @description:}</b> 
+     * <p><b>{@code @description:}</b>
      * 根据文件对象下载数据
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>file</b>
      * {@link File}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>funcMap</b>
      * {@link Map}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>request</b>
      * {@link HttpServletRequest}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>response</b>
      * {@link HttpServletResponse}
      * </p>

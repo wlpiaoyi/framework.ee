@@ -1,12 +1,14 @@
 package org.wlpiaoyi.framework.ee.utils.response;
 
 import lombok.NonNull;
+import org.apache.http.HttpHeaders;
 import org.jetbrains.annotations.Nullable;
 import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author wlpia
@@ -39,6 +41,7 @@ public class ResponseUtils {
             repStr = "";
         }
         response.setStatus(code);
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(repStr.getBytes(StandardCharsets.UTF_8).length));
         response.getWriter().write(repStr);
     }
 }

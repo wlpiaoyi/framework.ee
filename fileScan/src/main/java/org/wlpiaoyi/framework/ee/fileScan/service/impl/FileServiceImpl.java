@@ -254,11 +254,12 @@ public class FileServiceImpl implements IFileService {
                         Long.toString(fileLength);
             } else { // bytes=270000-320000
                 writerType = 2;
-                String startIndex = rangBytes.substring(0, rangBytes.indexOf("-"));
-                String endIndex = rangBytes.substring(rangBytes.indexOf("-") + 1);
-                point = Long.parseLong(startIndex);
+                long startIndex = Long.parseLong(rangBytes.substring(0, rangBytes.indexOf("-")));
+                long endIndex = Long.parseLong(rangBytes.substring(rangBytes.indexOf("-") + 1));
+                point = startIndex;
                 /* 客户端请求的是 270000-320000 之间的字节 */
-                contentLength = Long.parseLong(endIndex) - Long.parseLong(startIndex);
+                contentLength = endIndex - startIndex;
+                contentLength ++;
                 /*
                  断点开始
                  响应的格式
