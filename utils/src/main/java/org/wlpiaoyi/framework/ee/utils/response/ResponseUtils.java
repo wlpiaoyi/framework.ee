@@ -1,18 +1,31 @@
 package org.wlpiaoyi.framework.ee.utils.response;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.http.HttpHeaders;
 import org.jetbrains.annotations.Nullable;
+import org.wlpiaoyi.framework.utils.MapUtils;
+import org.wlpiaoyi.framework.utils.ValueUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
+import org.wlpiaoyi.framework.utils.exception.SystemException;
 import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author wlpia
  */
+@Slf4j
 public class ResponseUtils {
 
     private static final String CONTENT_TYPE_KEY = "content-type";

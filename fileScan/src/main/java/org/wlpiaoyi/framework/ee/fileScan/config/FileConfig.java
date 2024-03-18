@@ -16,18 +16,17 @@ import java.io.File;
  * {@code @date:}           2023-12-27 16:40:59
  * {@code @version:}:       1.0
  */
+@Getter
 @Component
 @Scope("singleton")
 public class FileConfig {
 
 
-    @Getter
     @Value("${resource.fileMenu}")
     private String fileMenu;
 
 
-    @Getter
-    private AesCipher aesCipher;
+    private final AesCipher aesCipher;
     {
         try {
             aesCipher = AesCipher.build().setKey(

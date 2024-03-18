@@ -23,13 +23,11 @@ import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
+import org.wlpiaoyi.framework.utils.data.FileType;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -106,6 +104,35 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                 }
             }
 
+
+
+            //文件格式校验
+
+            if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("TXT")) {
+                FileType realFileType = org.wlpiaoyi.framework.utils.data.FileUtils.getType(tempFilePath);
+                if(realFileType == null){
+                    throw new BusinessException("不支持的文件格式");
+                }
+                if(!realFileType.checkType(entity.getSuffix())){
+                    throw new BusinessException("文件显示格式和真实格式不一致");
+                }
+
+                if (realFileType == FileType.ZIP) {
+                    if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("DOCX")) {
+                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeDocx(tempFilePath)) {
+                            throw new BusinessException("文件显示格式和真实格式不一致");
+                        }
+                    } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("XLSX")) {
+                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeXlsx(tempFilePath)) {
+                            throw new BusinessException("文件显示格式和真实格式不一致");
+                        }
+                    } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("APK")) {
+                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeApk(tempFilePath)) {
+                            throw new BusinessException("文件显示格式和真实格式不一致");
+                        }
+                    }
+                }
+            }
             if(interceptor != null){
                 funcMap.put("tempFilePath", tempFilePath);
                 interceptor.beforeSave(funcMap, entity);

@@ -36,11 +36,6 @@ public class FileConfig {
     private String dataPath;
 
     @Getter
-    @Value("${resource.fileMenu}")
-    private String fileMenu;
-
-
-    @Getter
     private AesCipher aesCipher;
     {
         try {

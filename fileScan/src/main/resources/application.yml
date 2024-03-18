@@ -14,7 +14,7 @@ server :
     #xx 报错修改的地方
     max-connections: 200000
     max-http-form-post-size: 9000000
-    keep-alive-timeout: 12000000
+    keep-alive-timeout: 60000
     threads:
       max: 128
       min-spare: 5
