@@ -43,7 +43,7 @@ public class JacksonCustomizerConfig {
         public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers)
                 throws IOException {
             if (value != null) {
-                long timestamp = DateUtils.toTimestamp(value);
+                long timestamp = DateUtils.parseToTimestamp(value);
                 gen.writeNumber(timestamp);
             }
         }
@@ -59,7 +59,7 @@ public class JacksonCustomizerConfig {
                 throws IOException {
             long timestamp = p.getValueAsLong();
             if (timestamp > 0) {
-                return DateUtils.toLocalDateTime(timestamp);
+                return DateUtils.parseToLocalDateTime(timestamp);
             } else {
                 return null;
             }

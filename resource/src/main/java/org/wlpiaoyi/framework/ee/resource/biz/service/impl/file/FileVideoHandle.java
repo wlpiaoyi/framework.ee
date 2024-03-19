@@ -304,25 +304,25 @@ public class FileVideoHandle {
         }
     }
 
-    @SneakyThrows
-    public static void main(String[] args) {
-        String basePath = "C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\";
-//        String basePath = "D:\\wlpia\\Documents\\Temp\\";
-        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
-        FileImageHandle.ParseTextToImageModel imageModel = FileImageHandle.ParseTextToImageModel.builder()
-                .textfont(new Font("微软雅黑", Font.BOLD, 50))
-                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
-                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
-                .textShadowOffsetX(4)
-                .textShadowOffsetY(4)
-                .textAlpha(1.f)
-                .imageWidth(1400)
-                .imageHeight(500)
-                .build();
-        BufferedImage waterImage = FileImageHandle.parseTextToImage(text, imageModel);
-        FileImageHandle.ImageWriteModel waterModel = FileImageHandle.ImageWriteModel.builder().angle(45.f).build();
-        FileVideoHandle.watermark(new File("D:\\upload\\temp\\20240116230119_000863.8926.done.temp"),
-                "jpg", waterImage,waterModel, new File(basePath + "1.temp"));
-
-    }
+//    @SneakyThrows
+//    public static void main(String[] args) {
+//        String basePath = "C:\\Users\\wlpia\\Desktop\\Temp\\test_file\\";
+////        String basePath = "D:\\wlpia\\Documents\\Temp\\";
+//        String text = "仅用于某某平台认证,\n复印打印无效\n如果用于其他场景本人概不负责";
+//        FileImageHandle.ParseTextToImageModel imageModel = FileImageHandle.ParseTextToImageModel.builder()
+//                .textfont(new Font("微软雅黑", Font.BOLD, 50))
+//                .textPaint(new GradientPaint(20, 20, Color.WHITE, 100,120, Color.LIGHT_GRAY, true))
+//                .textShadowPaint(new GradientPaint(20, 20, Color.BLACK, 100,120, Color.GRAY, true))
+//                .textShadowOffsetX(4)
+//                .textShadowOffsetY(4)
+//                .textAlpha(1.f)
+//                .imageWidth(1400)
+//                .imageHeight(500)
+//                .build();
+//        BufferedImage waterImage = FileImageHandle.parseTextToImage(text, imageModel);
+//        FileImageHandle.ImageWriteModel waterModel = FileImageHandle.ImageWriteModel.builder().angle(45.f).build();
+//        FileVideoHandle.watermark(new File("D:\\upload\\temp\\20240116230119_000863.8926.done.temp"),
+//                "jpg", waterImage,waterModel, new File(basePath + "1.temp"));
+//
+//    }
 }

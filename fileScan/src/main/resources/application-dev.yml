@@ -4,11 +4,11 @@ server:
 #dev环境  mysql8.0
 resource:
   ethName:
-#    eth2
-    wlan0
+    eth2
+#    wlan0
   fileMenu:
-#    E:/Videos/
-    D:\wlpia\Documents\Temp\suffix\
+    E:/Videos/
+#    D:\wlpia\Documents\Temp\suffix\
 
 # mongodb 日志级别
 logging:

@@ -74,10 +74,7 @@ public class FileInfo {
         if(this.getParent() == null || this.getParent().get() == null){
             return this.getName();
         }
-        if(this.getParent().get().isRoot){
-            return this.getName();
-        }
-        return this.getParent().get().toString() + "/" + this.getName();
+        return this.getPath();
     }
 
 }

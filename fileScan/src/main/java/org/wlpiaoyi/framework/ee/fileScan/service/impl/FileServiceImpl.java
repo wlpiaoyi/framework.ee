@@ -86,7 +86,11 @@ public class FileServiceImpl implements IFileService {
         fileInfo.setParent(new WeakReference<>(parent));
         parent.getChildren().add(fileInfo);
         fileInfo.setName(childFile.getName());
-        fileInfo.setPath(fileInfo.toString());
+        if(parent.isRoot()){
+            fileInfo.setPath(childFile.getName());
+        }else {
+            fileInfo.setPath(parent.getPath() + "/" + childFile.getName());
+        }
         fileInfo.setDeep(parent.getDeep() + 1);
         fileInfo.setFingerprint(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.toString().getBytes(StandardCharsets.UTF_8))));
         if(childFile.isFile()){
@@ -133,9 +137,10 @@ public class FileServiceImpl implements IFileService {
         if(baseFile == null){
             baseFile = new File(this.fileConfig.getFileMenu());
             fileInfo.setRoot(true);
+        }else {
+            fileInfo.setPath(baseFile.getPath().substring(this.fileConfig.getFileMenu().length()));
         }
         fileInfo.setName(baseFile.getName());
-        fileInfo.setPath(fileInfo.toString());
         fileInfo.setDeep(0);
         fileInfo.setFingerprint(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.toString().getBytes(StandardCharsets.UTF_8))));
         if(baseFile.isFile()){
