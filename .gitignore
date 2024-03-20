@@ -4,3 +4,5 @@ activiti/target/*
 .idea/*
 resource/target/**
 fileScan/target/**
+openai/azure/target/**
+proxy/target/**
