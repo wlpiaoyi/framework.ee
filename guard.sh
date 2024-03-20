@@ -64,7 +64,7 @@ done
 function view_log() {
     server_name=$1
     cd ${DEPLOY_PATH}/${LOG_DIR}
-    tail -f ${server_name}.log
+    tail -200f ${server_name}.log
 }
 
 # 启动单个服务
@@ -125,27 +125,31 @@ function stop_server() {
 #检查服务 1:run 0:not run
 function check_server() {
     server_name=$1
-    exec_stop=$2
     PID=$(ps -ef | grep ${JAR_DIR}/${server_name}.jar | grep -v "grep" | awk '{print $2}')
     #centos 使用这个
     if [ -n "$PID" ]; then
-        echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
-        if [ ${exec_stop} == 1 ]; then
-            exit 1
-        fi
+#        if [ ${exec_stop} == 1 ]; then
+#            exit 1
+#        fi
+      echo "1"
     else
-        echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
+      echo "0"
     fi
-    return 0
 }
 
 # 检查和启动服务
 function check_start() {
     server_name=$1
-    check_server ${server_name} 1
+    result=$(check_server ${server_name})
+    if [[ $result == 0 ]]; then
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
+    else
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] 不需要再次启动 RES [1]"
+      return 0
+    fi
+    start_server ${server_name}
 #    jar_file=${jar_name}.jar
 #    jar_name=$(echo ${jar_file} | awk -F "/"  '{print $NF}'  | awk -F ".jar" '{print $1}')
-    start_server ${server_name}
     temp_res=$?
     if [ ${temp_res} = 0 ]; then
         return 0
@@ -158,7 +162,9 @@ function help() {
     echo -e "${COLOR_YELLOW}帮助: ${COLOR_CLOSE}\t\t\t\tsh ${BASE_PATH}/guard.sh -t 0"
     echo -e "${COLOR_YELLOW}检查和启动服务: ${COLOR_CLOSE}\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 1"
     echo -e "${COLOR_YELLOW}查看服务日志: ${COLOR_CLOSE}\t\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 2"
-    echo -e "${COLOR_YELLOW}检查服务状态: ${COLOR_CLOSE}\t\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 3"
+    echo -e "${COLOR_YELLOW}重启和查看服务日志: ${COLOR_CLOSE}\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 3"
+    echo -e "${COLOR_YELLOW}检查、启动和查看服务日志: ${COLOR_CLOSE}\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 4"
+    echo -e "${COLOR_YELLOW}检查服务状态: ${COLOR_CLOSE}\t\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 9"
     echo -e "${COLOR_YELLOW}停止单个服务: ${COLOR_CLOSE}\t\t\tsh ${BASE_PATH}/guard.sh -s proxy.socket -d /root/proxy/ -t 10"
 }
 
@@ -167,9 +173,38 @@ if [ "$OPTION_TYPE" = "0" ]; then
 elif [ "$OPTION_TYPE" = "1" ]; then
     check_start ${SERVER_NAME}
 elif [ "$OPTION_TYPE" = "2" ]; then
+    echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_PURPLE}[view]${COLOR_CLOSE} ${COLOR_STAR}开始查看日志${COLOR_CLOSE}"
     view_log ${SERVER_NAME}
 elif [ "$OPTION_TYPE" = "3" ]; then
-    check_server ${SERVER_NAME} 0
+    result=$(check_server $SERVER_NAME)
+    if [[ $result == 0 ]]; then
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
+    else
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+      stop_server ${SERVER_NAME}
+    fi
+    start_server ${SERVER_NAME}
+    echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_PURPLE}[view]${COLOR_CLOSE} ${COLOR_STAR}开始查看日志${COLOR_CLOSE}"
+    sleep 3
+    view_log ${SERVER_NAME}
+elif [ "$OPTION_TYPE" = "4" ]; then
+    result=$(check_server $SERVER_NAME)
+    if [[ $result == 0 ]]; then
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
+      start_server ${SERVER_NAME}
+    else
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+    fi
+    echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_PURPLE}[view]${COLOR_CLOSE} ${COLOR_STAR}开始查看日志${COLOR_CLOSE}"
+    sleep 3
+    view_log ${SERVER_NAME}
+elif [ "$OPTION_TYPE" = "9" ]; then
+    result=$(check_server $SERVER_NAME)
+    if [[ $result == 0 ]]; then
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
+    else
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+    fi
 elif [ "$OPTION_TYPE" = "10"  ]; then
     stop_server ${SERVER_NAME}
 else
