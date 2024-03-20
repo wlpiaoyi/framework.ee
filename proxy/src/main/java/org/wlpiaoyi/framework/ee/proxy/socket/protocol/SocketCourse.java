@@ -1,7 +1,7 @@
-package org.wlpiaoyi.framework.proxy.socket.protocol;
+package org.wlpiaoyi.framework.ee.proxy.socket.protocol;
 
 
-import org.wlpiaoyi.framework.proxy.socket.SocketThread;
+import org.wlpiaoyi.framework.ee.proxy.socket.SocketThread;
 
 import java.util.Map;
 

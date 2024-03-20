@@ -1,13 +1,13 @@
-package org.wlpiaoyi.framework.proxy;
+package org.wlpiaoyi.framework.ee.proxy;
 
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.wlpiaoyi.framework.proxy.socket.SocketThread;
-import org.wlpiaoyi.framework.proxy.socket.protocol.SocketCourse;
-import org.wlpiaoyi.framework.proxy.stream.StreamThread;
-import org.wlpiaoyi.framework.proxy.stream.protocol.StreamCourse;
+import org.wlpiaoyi.framework.ee.proxy.socket.SocketThread;
+import org.wlpiaoyi.framework.ee.proxy.socket.protocol.SocketCourse;
+import org.wlpiaoyi.framework.ee.proxy.stream.StreamThread;
+import org.wlpiaoyi.framework.ee.proxy.stream.protocol.StreamCourse;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import java.io.IOException;

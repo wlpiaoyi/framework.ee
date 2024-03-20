@@ -95,6 +95,7 @@
         <module>resource</module>
         <module>fileScan</module>
         <module>proxy</module>
+        <module>openai</module>
     </modules>
 
     <dependencyManagement>

@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.proxy.rule;
+package org.wlpiaoyi.framework.ee.proxy.rule;
 
 import java.io.IOException;
 import java.io.InputStream;

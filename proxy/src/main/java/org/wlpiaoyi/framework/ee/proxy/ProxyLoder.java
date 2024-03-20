@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.proxy;
+package org.wlpiaoyi.framework.ee.proxy;
 
 import com.google.gson.Gson;
 import org.wlpiaoyi.framework.utils.StringUtils;

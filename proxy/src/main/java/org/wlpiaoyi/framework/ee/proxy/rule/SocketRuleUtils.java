@@ -1,9 +1,6 @@
-package org.wlpiaoyi.framework.proxy.rule;
+package org.wlpiaoyi.framework.ee.proxy.rule;
 
 import lombok.Getter;
-
-import static org.wlpiaoyi.framework.proxy.rule.SocketRule.SOCKET4_VERSION;
-import static org.wlpiaoyi.framework.proxy.rule.SocketRule.SOCKET5_VERSION;
 
 /**
  * <p><b>{@code @description:}</b>  </p>
@@ -117,10 +114,10 @@ public class SocketRuleUtils {
 
     public static SocketRule getSocketRule(int version){
         switch (version){
-            case SOCKET4_VERSION:{
+            case SocketRule.SOCKET4_VERSION:{
                 return new Socket4Rule();
             }
-            case SOCKET5_VERSION:{
+            case SocketRule.SOCKET5_VERSION:{
                 return new Socket5Rule();
             }
         }

@@ -1,9 +1,8 @@
-package org.wlpiaoyi.framework.proxy.stream.protocol;
+package org.wlpiaoyi.framework.ee.proxy.stream.protocol;
 
 
-import org.wlpiaoyi.framework.proxy.stream.StreamThread;
+import org.wlpiaoyi.framework.ee.proxy.stream.StreamThread;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public interface StreamCourse {
