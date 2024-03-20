@@ -7,7 +7,7 @@ import org.wlpiaoyi.framework.utils.data.DataUtils;
 import java.util.List;
 import java.util.Map;
 
-public class ProxyLoder {
+public class ProxyLoader {
 
     private static List<Map> configurations;
 
@@ -15,7 +15,7 @@ public class ProxyLoder {
 
         String PATH = System.getProperty("user.dir") + "/proxy.json";
         String jsonStr = DataUtils.readFile(PATH);
-        ProxyLoder.configurations = new Gson().fromJson(jsonStr, List.class);
+        ProxyLoader.configurations = new Gson().fromJson(jsonStr, List.class);
 
         byte[][] encryptionDatas = new byte[2][];
         for(Map configuration : configurations){
@@ -40,11 +40,8 @@ public class ProxyLoder {
             socketStreamProxy.asynStart();
         }
 
-        try {
-            Thread.sleep(5 * 60 * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        while (true) Thread.sleep(5 * 60 * 1000);
+
     }
 
 }

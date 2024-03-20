@@ -53,7 +53,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>org.wlpiaoyi.framework.ee.proxy.ProxyLoder</mainClass>
+                            <mainClass>org.wlpiaoyi.framework.ee.proxy.ProxyLoader</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
