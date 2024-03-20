@@ -17,7 +17,7 @@ JAVA_CMD="java"
 # JVM 参数
 GC="-XX:+UseBiasedLocking -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewRatio=2 -XX:+CMSIncrementalMode -XX:-ReduceInitialCardMarks -XX:CMSInitiatingOccupancyFraction=70 -XX:+UseCMSInitiatingOccupancyOnly"
 EX="-XX:+OptimizeStringConcat -XX:+DoEscapeAnalysis -XX:+UseNUMA"
-HEAP=" -Xms128M -Xmx256M -XX:CompressedClassSpaceSize=512m -XX:MetaspaceSize=800m -XX:MaxMetaspaceSize=800m -XX:MaxDirectMemorySize=512m"
+HEAP=" -Xms128M -Xmx256M -XX:CompressedClassSpaceSize=20m -XX:MetaspaceSize=50m -XX:MaxMetaspaceSize=50m -XX:MaxDirectMemorySize=20m"
 JAVA_OPTIONS="${GC} ${EX} ${HEAP}"
 
 
@@ -131,7 +131,7 @@ function check_server() {
 #        if [ ${exec_stop} == 1 ]; then
 #            exit 1
 #        fi
-      echo "1"
+      echo "${PID}"
     else
       echo "0"
     fi
@@ -144,7 +144,7 @@ function check_start() {
     if [[ $result == 0 ]]; then
       echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
     else
-      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] 不需要再次启动 RES [1]"
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${result}] 不需要再次启动 RES [1]"
       return 0
     fi
     start_server ${server_name}
@@ -172,6 +172,10 @@ if [ "$OPTION_TYPE" = "0" ]; then
     help
 elif [ "$OPTION_TYPE" = "1" ]; then
     check_start ${SERVER_NAME}
+    result=$(check_server $SERVER_NAME)
+    if [[ $result != 0 ]]; then
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${result}] RES [1]"
+    fi
 elif [ "$OPTION_TYPE" = "2" ]; then
     echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_PURPLE}[view]${COLOR_CLOSE} ${COLOR_STAR}开始查看日志${COLOR_CLOSE}"
     view_log ${SERVER_NAME}
@@ -180,7 +184,7 @@ elif [ "$OPTION_TYPE" = "3" ]; then
     if [[ $result == 0 ]]; then
       echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
     else
-      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${result}] RES [1]"
       stop_server ${SERVER_NAME}
     fi
     start_server ${SERVER_NAME}
@@ -193,7 +197,7 @@ elif [ "$OPTION_TYPE" = "4" ]; then
       echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
       start_server ${SERVER_NAME}
     else
-      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${result}] RES [1]"
     fi
     echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_PURPLE}[view]${COLOR_CLOSE} ${COLOR_STAR}开始查看日志${COLOR_CLOSE}"
     sleep 3
@@ -203,7 +207,7 @@ elif [ "$OPTION_TYPE" = "9" ]; then
     if [[ $result == 0 ]]; then
       echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 未启动, RES [0]"
     else
-      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${PID}] RES [1]"
+      echo -e "${COLOR_SKY}[wlpiaoyi]-$(date "+%Y.%m.%d-%H.%M.%S")${COLOR_CLOSE} ${COLOR_BLUE}[check]${COLOR_CLOSE} ${server_name} 运行中，PID [${result}] RES [1]"
     fi
 elif [ "$OPTION_TYPE" = "10"  ]; then
     stop_server ${SERVER_NAME}
