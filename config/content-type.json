@@ -1,7 +1,7 @@
 {
 
-  "text": "text/plain",
-  "html": "text/html",
+  "text":     "text/plain",
+  "html":     "text/html",
 
   "jpg":      "image/jpeg",
   "jpeg":     "image/jpeg",

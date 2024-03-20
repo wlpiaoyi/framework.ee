@@ -94,6 +94,7 @@
         <module>activiti</module>
         <module>resource</module>
         <module>fileScan</module>
+        <module>proxy</module>
     </modules>
 
     <dependencyManagement>

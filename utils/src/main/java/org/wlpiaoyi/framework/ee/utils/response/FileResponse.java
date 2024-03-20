@@ -48,11 +48,8 @@ public class FileResponse {
             put("gif",      "image/gif");
 
             put("pdf",      "application/pdf");
-
             put("docx",     "application/msword");
-            put("doc",      "application/msword");
             put("xlsx",     "application/vnd.ms-excel");
-            put("xls",      "application/vnd.ms-excel");
 
             put("mp4",      "video/mp4");
             put("mp3",      "audio/mp3");
@@ -166,6 +163,7 @@ public class FileResponse {
      */
     public void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response){
         List<Closeable> closeables = new ArrayList<>();
+        List<Flushable> flushables = new ArrayList<>();
         try{
             String contentType = MapUtils.getString(funcMap, "contentType");
             String fileName = MapUtils.getString(funcMap, "fileName");
@@ -173,6 +171,8 @@ public class FileResponse {
                 contentType = contentTypeMap.get("default");
             }
             OutputStream dataOutput = response.getOutputStream();
+            closeables.add(dataOutput);
+            flushables.add(dataOutput);
             response.reset();
             response.setContentType(contentType);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -215,7 +215,6 @@ public class FileResponse {
             response.setHeader("Content-disposition", readType + ";filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
             // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
 
-            closeables.add(dataOutput);
             long readLength = 0;
             int bSize = 1024;
             byte[] bytes = new byte[bSize];
@@ -245,6 +244,7 @@ public class FileResponse {
             dataOutput.close();
             dataInput.close();
             closeables.remove(dataOutput);
+            flushables.remove(dataOutput);
             closeables.remove(dataInput);
         }catch (Exception e){
             if(e instanceof BusinessException){
@@ -259,18 +259,16 @@ public class FileResponse {
             }
             throw new SystemException("文件读取异常", e);
         }finally {
+            if(ValueUtils.isNotBlank(flushables)){
+                for (Flushable flushable : flushables){
+                    try { flushable.flush(); } catch (IOException e) {
+                        log.warn("download flush obj failed:{}", e.getCause().toString());
+                    }
+                }
+            }
             if(ValueUtils.isNotBlank(closeables)){
                 for (Closeable closeable : closeables){
-                    if(closeable instanceof Flushable){
-                        try {
-                            ((Flushable) closeable).flush();
-                        } catch (IOException e) {
-                            log.warn("download flush obj failed:{}", e.getCause().toString());
-                        }
-                    }
-                    try {
-                        closeable.close();
-                    } catch (IOException e) {
+                    try { closeable.close(); } catch (IOException e) {
                         log.warn("download close obj failed:{}", e.getCause().toString());
                     }
                 }
