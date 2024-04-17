@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>登录</title>
+        
+        <meta charSet="utf-8"/>
+        <style>
+            body {
+                text-align: center
+            }
+        </style>
+        <script>
+            function setAuthCookie(){
+                let auth_username = document.forms["auth"].auth_username.value;
+                let auth_password = document.forms["auth"].auth_password.value;
+                document.cookie = 'auth_password=' + auth_password + ";";
+                document.cookie = 'auth_username=' + auth_username + ";";
+                alert(document.cookie)
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Author：Wlpiaoyi</h1>
+        <h2>欢迎登录本系统</h2>
+        <hr>
+        <form name="auth" action="#" onsubmit="setAuthCookie()" method="post">
+            <h3>用户名：<input type="text" name="auth_username"></h3>
+            <h3>密&nbsp;&nbsp;码：<input type="password" name="auth_password"></h3>
+            <input type="submit" value="登录">
+            <input type="reset" value="重置">
+        </form>
+    </body>
+</html>

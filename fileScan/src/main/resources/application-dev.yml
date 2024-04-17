@@ -4,7 +4,8 @@ server:
 #dev环境  mysql8.0
 resource:
   ethName:
-    eth2
+    wireless_32768
+#    eth2
 #    wlan0
   remoteIp:
   fileMenu:

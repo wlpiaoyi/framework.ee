@@ -42,7 +42,7 @@ public class FileController {
 
 
     @SneakyThrows
-    @GetMapping("/info-tree")
+    @RequestMapping("/info-tree")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public R<FileInfo> infoTree(@RequestParam(required = false, defaultValue = "1") Integer deepCount) {
@@ -50,7 +50,7 @@ public class FileController {
         return R.success(this.fileService.scanFileInfo(null, deepCount));
     }
     @SneakyThrows
-    @GetMapping("/info-tree-href")
+    @RequestMapping("/info-tree-href")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public void infoTreeHref(@RequestParam(required = false, defaultValue = "1") Integer deepCount,
@@ -61,7 +61,7 @@ public class FileController {
 
 
     @SneakyThrows
-    @GetMapping("/info-tree/{fingerprint}")
+    @RequestMapping("/info-tree/{fingerprint}")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public R<FileInfo> infoTree(@Validated @Parameter(description = "fingerprint", required = false) @PathVariable String fingerprint,
@@ -75,7 +75,7 @@ public class FileController {
 
 
     @SneakyThrows
-    @GetMapping("/info-tree-href/{fingerprint}")
+    @RequestMapping("/info-tree-href/{fingerprint}")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public void infoTreeHref(@Validated @Parameter(description = "fingerprint", required = false) @PathVariable String fingerprint,
@@ -91,7 +91,7 @@ public class FileController {
     }
 
     @SneakyThrows
-    @GetMapping("/download/{fingerprint}/{fileName}")
+    @RequestMapping("/download/{fingerprint}/{fileName}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll

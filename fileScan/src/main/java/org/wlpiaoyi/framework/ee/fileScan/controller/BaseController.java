@@ -25,7 +25,7 @@ public class BaseController {
     private IFileService fileService;
 
     @SneakyThrows
-    @GetMapping("/")
+    @RequestMapping("/")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public void infoTreeHref(@RequestParam(required = false, defaultValue = "1") Integer deepCount,
