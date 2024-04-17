@@ -187,7 +187,7 @@ public class FileServiceImpl implements IFileService {
     ));
 
     @Override
-    public void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response) {
+    public void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response) throws SystemException {
 
         try{
             String fileName = MapUtils.getString(funcMap, "fileName");
@@ -216,20 +216,30 @@ public class FileServiceImpl implements IFileService {
     @Value("${resource.ethName}")
     private String ethName;
 
+    @Value("${resource.remoteIp}")
+    private String remoteIp;
+
+    @Value("${server.port}")
+    private int port;
+
     @SneakyThrows
     @Override
     public void resHtml(FileInfo fileInfo, HttpServletResponse response) {
         Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
         String ip = "127.0.0.1";
-        while (nifs.hasMoreElements()) {
-            NetworkInterface nif = nifs.nextElement();
-            // 获得与该网络接口绑定的 IP 地址，一般只有一个
-            Enumeration<InetAddress> addresses = nif.getInetAddresses();
-            while (addresses.hasMoreElements()) {
-                InetAddress addr = addresses.nextElement();
-                if (addr instanceof Inet4Address) {
-                    if(nif.getName().equals(ethName)){
-                        ip = addr.getHostAddress();
+        if(ValueUtils.isNotBlank(remoteIp)){
+            ip = this.remoteIp;
+        }else{
+            while (nifs.hasMoreElements()) {
+                NetworkInterface nif = nifs.nextElement();
+                // 获得与该网络接口绑定的 IP 地址，一般只有一个
+                Enumeration<InetAddress> addresses = nif.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if (addr instanceof Inet4Address) {
+                        if(nif.getName().equals(ethName)){
+                            ip = addr.getHostAddress();
+                        }
                     }
                 }
             }
@@ -242,7 +252,7 @@ public class FileServiceImpl implements IFileService {
             response.setStatus(200);
             ServletOutputStream sos = response.getOutputStream();
             outputStreams.add(sos);
-            ByteArrayInputStream is = new ByteArrayInputStream(createHtml(fileInfo, ip).getBytes(StandardCharsets.UTF_8));
+            ByteArrayInputStream is = new ByteArrayInputStream(createHtml(fileInfo, ip, this.port).getBytes(StandardCharsets.UTF_8));
             int nRead;
             byte[] data = new byte[1024];
             while ((nRead = is.read(data, 0, data.length)) != -1) {
@@ -273,10 +283,10 @@ public class FileServiceImpl implements IFileService {
     }
 
     @NotNull
-    private static String createHtml(FileInfo fileInfo, String ip) {
+    private static String createHtml(FileInfo fileInfo, String ip, int port) {
         StringBuilder sb = new StringBuilder();
         for(FileInfo fi : fileInfo.getChildren()){
-            String url = "http://" + ip + ":8080/file";
+            String url = "http://" + ip + ":" + port + "/file";
             if(fi.isDict()){
                 url += "/info-tree-href/";
                 url += fi.getFingerprint();

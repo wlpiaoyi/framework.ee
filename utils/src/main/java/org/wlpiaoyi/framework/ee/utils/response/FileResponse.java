@@ -30,6 +30,7 @@ import java.util.Map;
 @Slf4j
 public class FileResponse {
 
+    private static final int BUFFER_SIZE = 1024;
     private final Map<String, String> contentTypeMap;
 
     private FileResponse(Map<String, String> contentTypeMap){
@@ -161,7 +162,7 @@ public class FileResponse {
      * <p><b>{@code @date:}</b>2024/3/13 13:20</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    public void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response) throws SystemException {
         List<Closeable> closeables = new ArrayList<>();
         List<Flushable> flushables = new ArrayList<>();
         try{
@@ -216,11 +217,10 @@ public class FileResponse {
             // response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileInfo.getName(), Charsets.UTF_8.name()));
 
             long readLength = 0;
-            int bSize = 1024;
-            byte[] bytes = new byte[bSize];
+            byte[] bytes = new byte[BUFFER_SIZE];
             if (writerType == 2) {
                 int l;
-                long clb = contentLength - bSize;
+                long clb = contentLength - BUFFER_SIZE;
                 while (readLength <= clb) {
                     l = dataInput.read(bytes);
                     readLength += l;
@@ -257,7 +257,7 @@ public class FileResponse {
                 log.warn("write data error:{}", e.getCause().toString());
                 return;
             }
-            throw new SystemException("文件读取异常", e);
+            throw new SystemException("file read error", e);
         }finally {
             if(ValueUtils.isNotBlank(flushables)){
                 for (Flushable flushable : flushables){

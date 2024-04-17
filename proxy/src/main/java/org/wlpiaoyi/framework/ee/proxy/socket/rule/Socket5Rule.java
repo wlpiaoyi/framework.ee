@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.proxy.rule;
+package org.wlpiaoyi.framework.ee.proxy.socket.rule;
 
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
@@ -359,16 +359,31 @@ public class Socket5Rule implements SocketRule {
     }
 
     /**
+     * <p><b>{@code @description:}</b>
      * 解析Domain
-     * @param buffer
-     * @param len
-     * @return
+     * </p>
+     *
+     * <p><b>@param</b> <b>buffer</b>
+     * {@link byte}
+     * </p>
+     *
+     * <p><b>@param</b> <b>len</b>
+     * {@link int}
+     * </p>
+     *
+     * <p><b>@param</b> <b>proxyType</b>
+     * {@link SocketRuleUtils.ProxyType}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/21 16:52</p>
+     * <p><b>{@code @return:}</b>{@link String}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
      */
     String getDomain(byte[] buffer, int len, SocketRuleUtils.ProxyType proxyType){
         if(len<8){
             return null;
         }
-        StringBuffer domain =new StringBuffer();
+        StringBuilder domain = new StringBuilder();
         switch (getAddressType(buffer)){
             case IP:{
                 if(proxyType == SocketRuleUtils.ProxyType.Anonymity){
@@ -404,10 +419,21 @@ public class Socket5Rule implements SocketRule {
     }
 
     /**
+     * <p><b>{@code @description:}</b>
      * 解析Port
-     * @param buffer
-     * @param len
-     * @return
+     * </p>
+     *
+     * <p><b>@param</b> <b>buffer</b>
+     * {@link byte}
+     * </p>
+     *
+     * <p><b>@param</b> <b>len</b>
+     * {@link int}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/3/21 16:52</p>
+     * <p><b>{@code @return:}</b>{@link int}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
      */
     int getPort(byte[] buffer,int len){
         if(len<4){

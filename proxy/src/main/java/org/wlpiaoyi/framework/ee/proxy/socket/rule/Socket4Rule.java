@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.proxy.rule;
+package org.wlpiaoyi.framework.ee.proxy.socket.rule;
 
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
@@ -66,9 +66,10 @@ public class Socket4Rule implements SocketRule{
             userMap.put("responseDomain", responseDomain);
         }
         byte[] ipBytes = new byte[4];
-        for(int i = 4; i < 8; i++){
-            ipBytes[i - 4] = buffer[i];
-        }
+//        for(int i = 4; i < 8; i++){
+//            ipBytes[i - 4] = buffer[i];
+//        }
+        System.arraycopy(buffer, 4, ipBytes, 0, 4);
         userMap.put("ipBytes", ipBytes);
 
         byte[] portBytes = new byte[2];
@@ -99,7 +100,7 @@ public class Socket4Rule implements SocketRule{
         if(len<8){
             return null;
         }
-        StringBuffer domain =new StringBuffer();
+        StringBuilder domain =new StringBuilder();
         //说明是ip地址
         for(int i = 4; i < 8; i++){
             int A = buffer[i];
@@ -107,7 +108,7 @@ public class Socket4Rule implements SocketRule{
             domain.append(".");
             domain.append(A);
         }
-        return domain.toString().substring(1);
+        return domain.substring(1);
     }
 
     /**
@@ -129,8 +130,5 @@ public class Socket4Rule implements SocketRule{
             port = (256 + port);
         }
         return 256 * thod + port;
-    }
-    byte getHostLength(byte[] buffer){
-        return buffer[4];
     }
 }

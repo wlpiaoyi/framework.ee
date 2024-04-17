@@ -1,8 +1,7 @@
-package org.wlpiaoyi.framework.ee.proxy.stream;
+package org.wlpiaoyi.framework.ee.proxy.socket.stream;
 
 import lombok.Getter;
-import org.wlpiaoyi.framework.ee.proxy.rule.SocketRule;
-import org.wlpiaoyi.framework.ee.proxy.stream.protocol.StreamCourse;
+import org.wlpiaoyi.framework.ee.proxy.socket.rule.SocketRule;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -111,7 +110,7 @@ public class StreamThread extends Thread{
                 }
             }
         } catch (Exception e) {
-            if(this.streamInterface != null && !this.streamInterface.isEnqueued()) this.streamInterface.get().streamErro(this, e, userMap);
+            if(this.streamInterface != null && !this.streamInterface.isEnqueued()) this.streamInterface.get().streamError(this, e, userMap);
         } finally {
             this.close();
             if(this.streamInterface != null && !this.streamInterface.isEnqueued()) this.streamInterface.get().streamEnd(this, userMap);

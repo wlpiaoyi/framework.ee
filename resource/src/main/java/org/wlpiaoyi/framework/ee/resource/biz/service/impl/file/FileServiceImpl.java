@@ -148,14 +148,14 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         if(entity.getIsVerifySign() == 1){
             String fileSign = MapUtils.getString(funcMap, "fileSign");
             if(ValueUtils.isBlank(fileSign)){
-                throw new SystemException("无权访问文件");
+                throw new BusinessException("无权访问文件");
             }
             try{
                 if(!this.fileConfig.verifyFile(entity.getId(), entity.getFingerprint(), fileSign)){
-                    throw new SystemException("无权访问文件");
+                    throw new BusinessException("无权访问文件");
                 }
             }catch (Exception e){
-                throw new SystemException("无权访问文件", e);
+                throw new BusinessException("无权访问文件", e);
             }
         }
         String ft = entity.getSuffix();
@@ -173,7 +173,12 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         }
         funcMap.put("fileName", fileName);
         String ogPath = this.fileConfig.getFilePathByFingerprint(entity.getFingerprint());
-        this.fileResponse.download(new File(ogPath), funcMap, request, response);
+        try {
+            this.fileResponse.download(new File(ogPath), funcMap, request, response);
+        } catch (SystemException e) {
+            log.error("download file error", e);
+            throw new BusinessException(e.getMessage());
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)

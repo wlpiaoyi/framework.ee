@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -30,10 +31,14 @@ public class ApplicationListens implements CommandLineRunner, DisposableBean {
             Enumeration<InetAddress> addresses = nif.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 InetAddress addr = addresses.nextElement();
-                if (!(addr instanceof Inet4Address)) {
+                if (addr instanceof Inet4Address) {
+                    log.info("ethName[{}] Host.ipv4[{}:{}]", nif.getName(),  addr.getHostAddress(), this.port);
                     continue;
                 }
-                log.info("Host[{}:{}]", addr.getHostAddress(), this.port);
+                if (addr instanceof Inet6Address) {
+                    log.info("ethName[{}] Host.ipv6[{}:{}]", nif.getName(),  addr.getHostAddress(), this.port);
+                    continue;
+                }
             }
         }
     }

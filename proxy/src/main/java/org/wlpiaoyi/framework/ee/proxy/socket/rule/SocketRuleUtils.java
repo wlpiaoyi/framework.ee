@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.proxy.rule;
+package org.wlpiaoyi.framework.ee.proxy.socket.rule;
 
 import lombok.Getter;
 

@@ -1,13 +1,13 @@
-package org.wlpiaoyi.framework.ee.proxy;
+package org.wlpiaoyi.framework.ee.proxy.socket;
 
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.wlpiaoyi.framework.ee.proxy.socket.SocketThread;
-import org.wlpiaoyi.framework.ee.proxy.socket.protocol.SocketCourse;
-import org.wlpiaoyi.framework.ee.proxy.stream.StreamThread;
-import org.wlpiaoyi.framework.ee.proxy.stream.protocol.StreamCourse;
+import org.wlpiaoyi.framework.ee.proxy.socket.thread.SocketThread;
+import org.wlpiaoyi.framework.ee.proxy.socket.thread.SocketCourse;
+import org.wlpiaoyi.framework.ee.proxy.socket.stream.StreamThread;
+import org.wlpiaoyi.framework.ee.proxy.socket.stream.StreamCourse;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import java.io.IOException;
@@ -233,7 +233,7 @@ class SocketStreamProxy implements SocketCourse, StreamCourse {
     }
 
     @Override
-    public void streamErro(StreamThread stream, Exception e, Map<Object, Object> userMap) {
+    public void streamError(StreamThread stream, Exception e, Map<Object, Object> userMap) {
 
     }
 }

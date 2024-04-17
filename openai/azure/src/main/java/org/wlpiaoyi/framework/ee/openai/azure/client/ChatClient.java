@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.openai.azure.client;
 
 import com.google.gson.annotations.Expose;
 import lombok.Data;
+import lombok.Getter;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.http.HttpClient;
@@ -37,12 +38,10 @@ public class ChatClient {
         private String content;
         @Expose
         private int waitTimer;
+        @Getter
         @Expose
         private boolean waitFlagEnd;
 
-        public boolean isWaitFlagEnd() {
-            return waitFlagEnd;
-        }
     }
 
     public static ChatMessage req(ChatBody body, String tag) {

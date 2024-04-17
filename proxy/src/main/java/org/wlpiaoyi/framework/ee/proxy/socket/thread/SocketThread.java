@@ -1,13 +1,12 @@
-package org.wlpiaoyi.framework.ee.proxy.socket;
+package org.wlpiaoyi.framework.ee.proxy.socket.thread;
 
 
 import lombok.Getter;
 import lombok.Setter;
-import org.wlpiaoyi.framework.ee.proxy.rule.SocketRuleUtils;
-import org.wlpiaoyi.framework.ee.proxy.rule.SocketRule;
-import org.wlpiaoyi.framework.ee.proxy.socket.protocol.SocketCourse;
-import org.wlpiaoyi.framework.ee.proxy.stream.StreamThread;
-import org.wlpiaoyi.framework.ee.proxy.stream.protocol.StreamCourse;
+import org.wlpiaoyi.framework.ee.proxy.socket.rule.SocketRuleUtils;
+import org.wlpiaoyi.framework.ee.proxy.socket.rule.SocketRule;
+import org.wlpiaoyi.framework.ee.proxy.socket.stream.StreamThread;
+import org.wlpiaoyi.framework.ee.proxy.socket.stream.StreamCourse;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
@@ -23,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.wlpiaoyi.framework.ee.proxy.rule.SocketRule.BUFFER_LEN;
+import static org.wlpiaoyi.framework.ee.proxy.socket.rule.SocketRule.BUFFER_LEN;
 
 
 public class SocketThread extends Thread{

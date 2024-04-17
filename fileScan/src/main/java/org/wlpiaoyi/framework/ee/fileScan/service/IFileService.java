@@ -1,6 +1,7 @@
 package org.wlpiaoyi.framework.ee.fileScan.service;
 
 import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
+import org.wlpiaoyi.framework.utils.exception.SystemException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -79,7 +80,7 @@ public interface IFileService {
      * <p><b>{@code @date:}</b>2024/3/11 22:17</p>
      * <p><b>{@code @author:}</b>wlpiaoyi</p>
      */
-    void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(File file, Map funcMap, HttpServletRequest request, HttpServletResponse response) throws SystemException;
 
 
     void resHtml(FileInfo fileInfo, HttpServletResponse response);

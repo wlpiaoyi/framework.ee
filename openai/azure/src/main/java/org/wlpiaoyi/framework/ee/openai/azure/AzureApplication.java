@@ -9,6 +9,7 @@ import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 
 import static org.wlpiaoyi.framework.ee.openai.azure.client.Utils.RUN_LIST;
@@ -27,7 +28,7 @@ public class AzureApplication {
 
         File configFile = new File(Utils.PROJECT_ROOT_DIRECTORY + "/config");
         if(configFile.exists() && configFile.isFile()){
-            Map configMap = Utils.GSON.fromJson(ReaderUtils.loadString(new FileInputStream(configFile), StandardCharsets.UTF_8), Map.class);
+            Map configMap = Utils.GSON.fromJson(ReaderUtils.loadString(Files.newInputStream(configFile.toPath()), StandardCharsets.UTF_8), Map.class);
             value = MapUtils.getInteger(configMap, "server_index", 0);
         }
         while (true){
