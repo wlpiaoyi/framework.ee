@@ -51,6 +51,10 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         if(!this.authCheck(request)){
+            String uri = request.getRequestURI();
+            if(!uri.equals("/")){
+                return false;
+            }
             response.setHeader("content-type", "text/html; charset=utf-8");
             response.setContentType("text/html; charset=utf-8");
             InputStream md5JsIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("md5.js");
@@ -66,9 +70,9 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
         return true;
     }
 
-    @Value("${resource.auth.userName:}")
+    @Value("${fileScan.auth.userName:}")
     private String userName;
-    @Value("${resource.auth.password:}")
+    @Value("${fileScan.auth.password:}")
     private String password;
 
     @SneakyThrows

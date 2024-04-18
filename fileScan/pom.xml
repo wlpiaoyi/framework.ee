@@ -79,7 +79,8 @@
 
     <build>
         <!-- 打包不带版本号 -->
-        <finalName>fileScan-${system.env}</finalName>
+<!--        <finalName>fileScan-${system.env}</finalName>-->
+        <finalName>file.scan</finalName>
         <plugins>
             <!-- JUnit 配置 -->
             <plugin>

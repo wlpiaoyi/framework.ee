@@ -1,5 +1,3 @@
-# nohup java -Dfile.encoding=utf-8 -jar file.scan.jar --spring.config.location=config/application.file.scan.yml >> ./file.scan.log &
-
 #tomcat config
 server :
   port : 28080
@@ -50,7 +48,9 @@ sa-token:
   # 是否输出操作日志
   is-log: false
 #dev环境  mysql8.0
-resource:
+fileScan:
+  version:
+    1.0.0
   auth:
     userName:
       wlpiaoyi

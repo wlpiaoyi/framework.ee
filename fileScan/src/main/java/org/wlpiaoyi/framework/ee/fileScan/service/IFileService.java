@@ -85,4 +85,7 @@ public interface IFileService {
 
     void resHtml(FileInfo fileInfo, HttpServletResponse response);
 
+
+    String getFingerprint(String base64Md5FingerprintStr);
+
 }

@@ -47,6 +47,21 @@
 
             ${md5.js}
 
+            function readCookie(name) {
+                var cookieValue = "";
+                var search = name + "=";
+                if (document.cookie.length > 0) {
+                    offset = document.cookie.indexOf(search);
+                    if (offset != -1) {
+                        offset += search.length;
+                        end = document.cookie.indexOf(";", offset);
+                        if (end == -1) end = document.cookie.length;
+                        cookieValue = unescape(document.cookie.substring(offset, end))
+                    }
+                }
+                return cookieValue;
+            }
+
             function setAuthCookie(){
                 let auth_username = document.forms["auth"].auth_username.value;
                 let auth_password = document.forms["auth"].auth_password.value;

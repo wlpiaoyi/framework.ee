@@ -22,7 +22,7 @@ import java.io.File;
 public class FileConfig {
 
 
-    @Value("${resource.fileMenu}")
+    @Value("${fileScan.fileMenu}")
     private String fileMenu;
 
 

@@ -28,8 +28,10 @@ import java.lang.ref.WeakReference;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p><b>{@code @author:}</b>         wlpiaoyi</p>
@@ -210,10 +212,10 @@ public class FileServiceImpl implements IFileService {
         }
     }
 
-    @Value("${resource.ethName}")
+    @Value("${fileScan.ethName}")
     private String ethName;
 
-    @Value("${resource.remoteIp}")
+    @Value("${fileScan.remoteIp}")
     private String remoteIp;
 
     @Value("${server.port}")
@@ -279,9 +281,9 @@ public class FileServiceImpl implements IFileService {
         }
     }
 
-    @Value("${resource.auth.userName:}")
+    @Value("${fileScan.auth.userName:}")
     private String userName;
-    @Value("${resource.auth.password:}")
+    @Value("${fileScan.auth.password:}")
     private String password;
 
     @SneakyThrows
@@ -316,6 +318,14 @@ public class FileServiceImpl implements IFileService {
         }
         sb.append("</a>&nbsp;");
         return sb.toString();
+    }
+
+    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap();
+
+    public String getFingerprint(String base64Md5FingerprintStr){
+        byte[] md5FingerprintBytes = DataUtils.base64Decode(base64Md5FingerprintStr.getBytes());
+        String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+        return PATH_MAP.get(md5FingerprintHex);
     }
 
 
@@ -362,9 +372,15 @@ public class FileServiceImpl implements IFileService {
                 url += fi.getFingerprint();
                 url += "?1=1";
             }else {
-                url += "/download/" + fi.getFingerprint();
+                byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
+                String base64Md5FingerprintStr = new String(DataUtils.base64Encode(md5FingerprintBytes));
+                String md5FingerprintStr = ValueUtils.bytesToHex(md5FingerprintBytes);
+                if(!PATH_MAP.containsKey(md5FingerprintStr)){
+                    PATH_MAP.putIfAbsent(md5FingerprintStr, fi.getFingerprint());
+                }
+                url += "/download/" + base64Md5FingerprintStr;
                 url += "/" +authKeyBase64Str;
-                url += "/" + fi.getName();
+                url += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
                 if(!fi.getName().contains(".")){
                     url += "." + fi.getSuffix();
                 }
@@ -380,7 +396,6 @@ public class FileServiceImpl implements IFileService {
                 sb.append("&nbsp;<strong>▶</strong>");
             }
             sb.append("</a>&nbsp;&nbsp;");
-//            sb.append("<text onclick=\"clipboardForUri('").append(url).append("')\">复制URL</text>");
             sb.append("<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
             sb.append("</div>");
             sb.append("<hr/>");

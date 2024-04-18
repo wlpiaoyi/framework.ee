@@ -90,16 +90,34 @@ public class FileController {
         this.fileService.resHtml(fileInfo, response);
     }
 
+
     @SneakyThrows
-    @RequestMapping("/download/{fingerprint}/{authKey}/{fileName}")
+    @RequestMapping("/download/{base64Md5FingerprintStr}/{authKey}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "fingerprint") @PathVariable String fingerprint,
+    public void download(@Validated @Parameter(description = "base64Md5FingerprintStr") @PathVariable String base64Md5FingerprintStr,
+                         @Validated @Parameter(description = "authKey") @PathVariable String authKey,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        this.fileService.download(fingerprint, new HashMap(){{
+        this.fileService.download(this.fileService.getFingerprint(base64Md5FingerprintStr), new HashMap(){{
+            put("readType", readType);
+        }},request, response);
+    }
+
+    @SneakyThrows
+    @RequestMapping("/download/{base64Md5FingerprintStr}/{authKey}/{fileName}")
+    @Operation(summary = "下载单个文件 请求", description = "加载文件")
+    @ResponseBody
+    @PermitAll
+    public void download(@Validated @Parameter(description = "base64Md5FingerprintStr") @PathVariable String base64Md5FingerprintStr,
+                         @Validated @Parameter(description = "authKey") @PathVariable String authKey,
+                         @Validated @Parameter(description = "fileName") @PathVariable String fileName,
+                         @RequestParam(required = false, defaultValue = "inline") String readType,
+                         HttpServletRequest request,
+                         HttpServletResponse response) {
+        this.fileService.download(this.fileService.getFingerprint(base64Md5FingerprintStr), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }

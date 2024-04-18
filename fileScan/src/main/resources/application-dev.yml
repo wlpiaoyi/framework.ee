@@ -2,7 +2,9 @@ server:
   tomcat:
     basedir: D:/upload/temp/
 #dev环境  mysql8.0
-resource:
+fileScan:
+  version:
+    1.0.0
   auth:
     userName:
       wlpiaoyi
@@ -14,5 +16,5 @@ resource:
 #    wlan0
   remoteIp:
   fileMenu:
-#    E:/Videos/
-    D:\wlpia\Documents\Temp\suffix\
+    E:/Videos/
+#    D:\wlpia\Documents\Temp\suffix\
