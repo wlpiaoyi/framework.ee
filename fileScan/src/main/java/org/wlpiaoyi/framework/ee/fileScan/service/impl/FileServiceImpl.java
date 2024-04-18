@@ -2,9 +2,6 @@ package org.wlpiaoyi.framework.ee.fileScan.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.connector.ClientAbortException;
-import org.apache.commons.io.Charsets;
-import org.apache.http.HttpHeaders;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +9,13 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.wlpiaoyi.framework.ee.fileScan.config.FileConfig;
 import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
+import org.wlpiaoyi.framework.ee.fileScan.handler.HandlerInterceptor;
 import org.wlpiaoyi.framework.ee.fileScan.service.IFileService;
 import org.wlpiaoyi.framework.ee.utils.response.FileResponse;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
+import org.wlpiaoyi.framework.utils.data.ReaderUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
@@ -29,9 +28,7 @@ import java.lang.ref.WeakReference;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -252,7 +249,7 @@ public class FileServiceImpl implements IFileService {
             response.setStatus(200);
             ServletOutputStream sos = response.getOutputStream();
             outputStreams.add(sos);
-            ByteArrayInputStream is = new ByteArrayInputStream(createHtml(fileInfo, ip, this.port).getBytes(StandardCharsets.UTF_8));
+            ByteArrayInputStream is = new ByteArrayInputStream(this.createHtml(fileInfo).getBytes(StandardCharsets.UTF_8));
             int nRead;
             byte[] data = new byte[1024];
             while ((nRead = is.read(data, 0, data.length)) != -1) {
@@ -282,33 +279,113 @@ public class FileServiceImpl implements IFileService {
         }
     }
 
-    @NotNull
-    private static String createHtml(FileInfo fileInfo, String ip, int port) {
+    @Value("${resource.auth.userName:}")
+    private String userName;
+    @Value("${resource.auth.password:}")
+    private String password;
+
+    @SneakyThrows
+    private String getNavigationElement(String curPath, boolean disable){
         StringBuilder sb = new StringBuilder();
+        String url = "/file";
+        url += "/info-tree-href/";
+        String pathName = curPath;
+        if(curPath.contains("\\")){
+            pathName = curPath.substring(curPath.lastIndexOf("\\") + 1);
+        }
+        if(ValueUtils.isBlank(curPath)){
+            url = pathName = "\\";
+        }else{
+            url += this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(
+                    curPath.getBytes()
+            ));
+        }
+        url += "?1=1";
+        if(disable){
+            sb.append("<a style=\"pointer-events:none; color:#CCC;\" href='");
+        }else{
+            sb.append("<a href='");
+        }
+        sb.append(url);
+        sb.append("'>");
+        sb.append(pathName);
+        if(disable){
+            sb.append("&nbsp;");
+        }else{
+            sb.append("&nbsp;<strong>▼</strong>");
+        }
+        sb.append("</a>&nbsp;");
+        return sb.toString();
+    }
+
+
+    @SneakyThrows
+    @NotNull
+    private String createHtml(FileInfo fileInfo) {
+
+        InputStream fileHtmlIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("file.html");
+        assert fileHtmlIo != null;
+        String fileHtml = ReaderUtils.loadString(fileHtmlIo, StandardCharsets.UTF_8);
+        byte[] authKeyBytes = DataUtils.MD(
+                (DataUtils.MD(this.userName, DataUtils.KEY_MD5)
+                        + DataUtils.MD(this.password, DataUtils.KEY_MD5)).getBytes()
+                , DataUtils.KEY_MD5);
+        byte[] authKeyBase64 = DataUtils.base64Encode(authKeyBytes);
+        String authKeyBase64Str = new String(authKeyBase64);
+        StringBuilder sb = new StringBuilder();
+        if(ValueUtils.isNotBlank(fileInfo.getPath())){
+            sb.append("<div><h1>");
+            String iPath = fileInfo.getPath();
+            String kHeads = "";
+            while (ValueUtils.isNotBlank(iPath)){
+                if(ValueUtils.isBlank(kHeads)){
+                    kHeads = getNavigationElement(iPath, true);
+                }else{
+                    kHeads = getNavigationElement(iPath, false) + "\n" + kHeads;
+                }
+                int index = iPath.lastIndexOf("\\");
+                if(index <= 0){
+                    iPath = "";
+                    kHeads = getNavigationElement(iPath, false) + "\n" + kHeads;
+                    break;
+                }
+                iPath = iPath.substring(0, index);
+            }
+            sb.append(kHeads);
+            sb.append("</h1></div>");
+            sb.append("<hr/>");
+        }
         for(FileInfo fi : fileInfo.getChildren()){
-            String url = "http://" + ip + ":" + port + "/file";
+            String url = "/file";
             if(fi.isDict()){
                 url += "/info-tree-href/";
                 url += fi.getFingerprint();
                 url += "?1=1";
             }else {
                 url += "/download/" + fi.getFingerprint();
+                url += "/" +authKeyBase64Str;
                 url += "/" + fi.getName();
                 if(!fi.getName().contains(".")){
                     url += "." + fi.getSuffix();
                 }
             }
-            sb.append("<a href='");
+            sb.append("<div><a href='");
             sb.append(url);
             sb.append("'>");
-            sb.append(fi.getPath());
-            sb.append("</a>");
-            if(fi.isDict()){
-                sb.append("&nbsp;>>");
+            sb.append(fi.getName());
+            if(!fi.isDict() && !fi.getName().contains(".")){
+                sb.append(".").append(fi.getSuffix());
             }
-            sb.append("\n<hr/>\n");
+            if(fi.isDict()){
+                sb.append("&nbsp;<strong>▶</strong>");
+            }
+            sb.append("</a>&nbsp;&nbsp;");
+//            sb.append("<text onclick=\"clipboardForUri('").append(url).append("')\">复制URL</text>");
+            sb.append("<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
+            sb.append("</div>");
+            sb.append("<hr/>");
         }
-        return sb.toString();
+        return fileHtml.replace("${body}", sb.toString());
     }
 
 }

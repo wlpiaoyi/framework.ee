@@ -1,10 +1,14 @@
 package org.wlpiaoyi.framework.ee.fileScan.handler;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.utils.response.ResponseUtils;
+import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
+import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.data.ReaderUtils;
 
 import javax.servlet.http.Cookie;
@@ -19,6 +23,7 @@ import java.nio.charset.StandardCharsets;
  * <p><b>{@code @author:}</b>       wlpiaoyi</p>
  * <p><b>{@code @version:}</b>      1.0</p>
  */
+@Component
 @Slf4j
 public class HandlerInterceptor implements org.springframework.web.servlet.HandlerInterceptor {
 
@@ -48,16 +53,56 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
         if(!this.authCheck(request)){
             response.setHeader("content-type", "text/html; charset=utf-8");
             response.setContentType("text/html; charset=utf-8");
-            InputStream authIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("login.html");
-            assert authIo != null;
-            String mdContent = ReaderUtils.loadString(authIo, StandardCharsets.UTF_8);
-            ResponseUtils.writeResponseData(200, mdContent, response);
+            InputStream md5JsIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("md5.js");
+            assert md5JsIo != null;
+            String md5JsContent = ReaderUtils.loadString(md5JsIo, StandardCharsets.UTF_8);
+            InputStream loginHtmlIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("login.html");
+            assert loginHtmlIo != null;
+            String loginHtmlContent = ReaderUtils.loadString(loginHtmlIo, StandardCharsets.UTF_8);
+            loginHtmlContent = loginHtmlContent.replace("${md5.js}", md5JsContent);
+            ResponseUtils.writeResponseData(200, loginHtmlContent, response);
             return false;
         }
         return true;
     }
 
-    public boolean authCheck(HttpServletRequest request){
+    @Value("${resource.auth.userName:}")
+    private String userName;
+    @Value("${resource.auth.password:}")
+    private String password;
+
+    @SneakyThrows
+    private boolean authCheckForDownload(HttpServletRequest request){
+        String uri = request.getRequestURI();
+        if(!uri.startsWith("/file/download/")){
+            return false;
+        }
+        String[] uriParts = uri.split("/");
+        if(uriParts.length < 5){
+            return false;
+        }
+        String authKeyBase64Str = uriParts[4];
+        byte[] authKeyBytes1 = DataUtils.base64Decode(authKeyBase64Str.getBytes());
+        byte[] authKeyBytes2 = DataUtils.MD(
+                (DataUtils.MD(this.userName, DataUtils.KEY_MD5) + DataUtils.MD(this.password, DataUtils.KEY_MD5)).getBytes()
+                , DataUtils.KEY_MD5);
+        if(authKeyBytes1.length != authKeyBytes2.length){
+            return false;
+        }
+        for (int i = 0; i < authKeyBytes1.length; i ++){
+            byte b1 = authKeyBytes1[i];
+            byte b2 = authKeyBytes2[i];
+            if(b1 != b2){
+                return false;
+            }
+        }
+        return true;
+    }
+    @SneakyThrows
+    private boolean authCheck(HttpServletRequest request){
+        if(this.authCheckForDownload(request)){
+            return true;
+        }
         if(ValueUtils.isBlank(request.getCookies())){
             return false;
         }
@@ -79,7 +124,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
         if(ValueUtils.isBlank(userName) || ValueUtils.isBlank(password)){
             return false;
         }
-        if(!userName.equals("wlpiaoyi") | !password.equals("0")){
+        if(!userName.equals(DataUtils.MD(this.userName, DataUtils.KEY_MD5)) | !password.equals(DataUtils.MD(this.password, DataUtils.KEY_MD5))){
             return false;
         }
         return true;

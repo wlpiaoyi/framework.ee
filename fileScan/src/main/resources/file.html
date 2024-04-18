@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charSet="utf-8"/>
+    <style>
+        h1 {font-size: 24px;}
+        h2 {font-size: 20px;}
+        a {
+            font-size: 14;
+            color: coral;
+        }
+        a:link {color: blue; text-decoration:none;} 
+        a:active {color: red; }
+        a:visited {color:purple;text-decoration:none;}
+        a:hover {color: red; text-decoration:underline;}
+        div:hover {background-color: antiquewhite;}
+        div {
+            width: calc(100% - 40px);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        hr {
+            padding: 0px;
+            margin: 5px auto;
+            border: 0;
+            height: 4px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.05));
+        }
+        input[type=button] {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            padding: 5px 10px;
+            color: #FFF;
+            border-radius: 4px;
+            background-color: #007bff9f;
+        }
+        input[type=button]:hover {
+            color: #ccc;
+            background-color: #007bffdb;
+        }
+        input[type=button]:active {
+            color: #ccc;
+            background-color: #007bffdb;
+        }
+    </style>
+    <script>
+        function clipboardForUri(uri){
+            let url = window.location.protocol + '://' + window.location.host + ':' + window.location.port + uri;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('已成功复制' + url+ '到剪贴板');
+                console.log('已成功复制' + url+ '到剪贴板');
+            }).catch(err => { 
+                console.error('复制失败:', err); 
+            });
+        }
+        
+        function clipboard(textToCopy) {
+            // navigator clipboard 需要https等安全上下文
+            if (navigator.clipboard && window.isSecureContext) {
+                // navigator clipboard 向剪贴板写文本
+                return navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert('已成功复制[\n' + textToCopy+ '\n]到剪贴板');
+                    console.log('已成功复制' + textToCopy+ '到剪贴板');
+                }).catch(err => { 
+                    console.error('复制失败:', err); 
+                });
+            } else {
+                // 创建text area
+                let textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                // 使text area不在viewport，同时设置不可见
+                textArea.style.position = "absolute";
+                textArea.style.opacity = 0;
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                return new Promise((res, rej) => {
+                    // 执行复制命令并移除文本框
+                    document.execCommand('copy') ? res() : rej();
+                    textArea.remove();
+                    alert('已成功复制[\n' + textToCopy+ '\n]到剪贴板');
+                    console.log('已成功复制' + textToCopy+ '到剪贴板');
+
+                });
+            }
+        }
+
+        function clipboardForUri(uri){
+            let url = window.location.protocol + '//' + window.location.host + uri;
+            clipboard(url)
+        }
+    </script>
+</head>
+<body>
+    ${body}
+</body>
+</html>

@@ -51,6 +51,11 @@ sa-token:
   is-log: false
 #dev环境  mysql8.0
 resource:
+  auth:
+    userName:
+      wlpiaoyi
+    password:
+      0
   ethName:
     wlan0
   remoteIp:

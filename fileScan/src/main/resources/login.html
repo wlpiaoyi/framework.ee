@@ -1,31 +1,72 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>登录</title>
+        <title>Login</title>
         
         <meta charSet="utf-8"/>
         <style>
             body {
                 text-align: center
             }
+            input[type=submit] {
+                cursor: pointer;
+                border: none;
+                outline: none;
+                padding: 5px 10px;
+                color: #FFF;
+                border-radius: 4px;
+                background-color: #222;
+            }
+            input[type=submit]:hover {
+                color: #ccc;
+                background-color: #666;
+            }
+            input[type=submit]:active {
+                color: #ccc;
+                background-color: #686;
+            }
+            input[type=reset] {
+                cursor: pointer;
+                border: none;
+                outline: none;
+                padding: 5px 10px;
+                color: #FFF;
+                border-radius: 4px;
+                background-color: #242;
+            }
+            input[type=reset]:hover {
+                color: #ccc;
+                background-color: #363;
+            }
+            input[type=reset]:active {
+                color: #ccc;
+                background-color: #474;
+            }
         </style>
         <script>
+
+            ${md5.js}
+
             function setAuthCookie(){
                 let auth_username = document.forms["auth"].auth_username.value;
                 let auth_password = document.forms["auth"].auth_password.value;
-                document.cookie = 'auth_password=' + auth_password + ";";
-                document.cookie = 'auth_username=' + auth_username + ";";
-                alert(document.cookie)
+                document.cookie = 'auth_password=' + hex_md5(auth_password) + ";";
+                document.cookie = 'auth_username=' + hex_md5(auth_username) + ";";
             }
+
         </script>
     </head>
     <body>
-        <h1>Author：Wlpiaoyi</h1>
+        <h1>Author: wlpiaoyi</h1>
         <h2>欢迎登录本系统</h2>
         <hr>
         <form name="auth" action="#" onsubmit="setAuthCookie()" method="post">
-            <h3>用户名：<input type="text" name="auth_username"></h3>
-            <h3>密&nbsp;&nbsp;码：<input type="password" name="auth_password"></h3>
+            <h3>用户名:&emsp;<label>
+                <input type="text" name="auth_username">
+            </label></h3>
+            <h3>密<text style="color: white;">.</text>&nbsp;&nbsp;码:&emsp;<label>
+                <input type="password" name="auth_password">
+            </label></h3>
             <input type="submit" value="登录">
             <input type="reset" value="重置">
         </form>

@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.wlpiaoyi.framework.ee.fileScan.handler.HandlerInterceptor;
 
+import javax.annotation.Resource;
+
 /**
  * <p><b>{@code @description:}</b>  </p>
  * <p><b>{@code @date:}</b>         2024-04-17 18:27:39</p>
@@ -13,8 +15,12 @@ import org.wlpiaoyi.framework.ee.fileScan.handler.HandlerInterceptor;
 
 @Configuration
 public class WebMvcConfigurationSupport extends org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport {
+
+    @Resource
+    private HandlerInterceptor handlerInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry interceptor) {
-        interceptor.addInterceptor(new HandlerInterceptor()).addPathPatterns("/**");
+        interceptor.addInterceptor(this.handlerInterceptor).addPathPatterns("/**");
     }
 }

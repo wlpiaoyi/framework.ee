@@ -91,12 +91,11 @@ public class FileController {
     }
 
     @SneakyThrows
-    @RequestMapping("/download/{fingerprint}/{fileName}")
+    @RequestMapping("/download/{fingerprint}/{authKey}/{fileName}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
     public void download(@Validated @Parameter(description = "fingerprint") @PathVariable String fingerprint,
-                         @Validated @Parameter(description = "fileName") @PathVariable String fileName,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {

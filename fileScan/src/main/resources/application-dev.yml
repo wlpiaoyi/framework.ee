@@ -3,6 +3,11 @@ server:
     basedir: D:/upload/temp/
 #dev环境  mysql8.0
 resource:
+  auth:
+    userName:
+      wlpiaoyi
+    password:
+      123456
   ethName:
     wireless_32768
 #    eth2
@@ -11,13 +16,3 @@ resource:
   fileMenu:
 #    E:/Videos/
     D:\wlpia\Documents\Temp\suffix\
-
-# mongodb 日志级别
-logging:
-  level:
-    org:
-      springframework:
-        data:
-          mongodb:
-            core:
-              MongoTemplate: INFO
