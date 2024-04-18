@@ -160,7 +160,6 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
      */
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
                                  @Nullable Exception ex) throws Exception {
-        System.out.println();
     }
 
 }

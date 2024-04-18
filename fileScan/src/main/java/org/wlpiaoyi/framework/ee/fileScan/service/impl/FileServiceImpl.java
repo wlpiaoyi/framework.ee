@@ -167,6 +167,7 @@ public class FileServiceImpl implements IFileService {
     @Override
     public void download(String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response) {
         String path = new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(fingerprint)));
+        log.info("service download fingerprint:{}, path:{}", fingerprint, path);
         File file = new File(this.fileConfig.getFileMenu() + path);
         if(!file.exists()){
             throw new BusinessException("没有找到文件：" + file.getAbsoluteFile());
@@ -322,9 +323,7 @@ public class FileServiceImpl implements IFileService {
 
     private final static Map<String, String> PATH_MAP = new ConcurrentHashMap();
 
-    public String getFingerprint(String base64Md5FingerprintStr){
-        byte[] md5FingerprintBytes = DataUtils.base64Decode(base64Md5FingerprintStr.getBytes());
-        String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+    public String getFingerprint(String md5FingerprintHex){
         return PATH_MAP.get(md5FingerprintHex);
     }
 
@@ -373,12 +372,11 @@ public class FileServiceImpl implements IFileService {
                 url += "?1=1";
             }else {
                 byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
-                String base64Md5FingerprintStr = new String(DataUtils.base64Encode(md5FingerprintBytes));
-                String md5FingerprintStr = ValueUtils.bytesToHex(md5FingerprintBytes);
-                if(!PATH_MAP.containsKey(md5FingerprintStr)){
-                    PATH_MAP.putIfAbsent(md5FingerprintStr, fi.getFingerprint());
+                String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+                if(!PATH_MAP.containsKey(md5FingerprintHex)){
+                    PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getFingerprint());
                 }
-                url += "/download/" + base64Md5FingerprintStr;
+                url += "/download/" + md5FingerprintHex;
                 url += "/" +authKeyBase64Str;
                 url += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
                 if(!fi.getName().contains(".")){
