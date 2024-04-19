@@ -2,7 +2,7 @@ package org.wlpiaoyi.framework.ee.resource.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**

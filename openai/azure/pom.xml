@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.wlpiaoyi.framework.ee</groupId>
         <artifactId>openai</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.0.2-BATA-JDK21</version>
     </parent>
 
     <groupId>org.wlpiaoyi.framework.ee.openai</groupId>
@@ -67,7 +67,7 @@
                             <!--运行方式，控制台-->
                             <headerType>console</headerType>
                             <!--输出的exe文件-->
-                            <outfile>target/azure-1.0.2-SNAPSHOT.exe</outfile>
+                            <outfile>target/azure-1.0.2-BATA-JDK21.exe</outfile>
                             <!--输出的jar-->
                             <jar>${project.build.directory}/${artifactId}-${version}.jar</jar>
                             <!--错误标题-->
@@ -82,7 +82,7 @@
                             <!--配置jre-->
                             <jre>
                                 <minVersion>1.8.0</minVersion>
-                                <maxVersion>1.9.0</maxVersion>
+                                <maxVersion>21</maxVersion>
                                 <initialHeapSize>128</initialHeapSize>
                                 <maxHeapSize>1024</maxHeapSize>
                                 <!--jre路径，将生成的exe文件放到和jre同级目录，并把jre文件夹命名为jre-->

@@ -13,7 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.wlpiaoyi.framework.ee.resource.domain.entity.BaseEntity;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.TimeZone;
 
 /**

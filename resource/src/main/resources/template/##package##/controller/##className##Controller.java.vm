@@ -20,7 +20,7 @@ import ##package##.utils.tools.response.R;
 import org.springframework.web.bind.annotation.*;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 
 /**

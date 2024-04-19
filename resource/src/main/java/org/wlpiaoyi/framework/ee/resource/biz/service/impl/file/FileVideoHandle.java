@@ -24,7 +24,7 @@ import org.wlpiaoyi.framework.utils.Progress;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
-import javax.imageio.ImageIO;
+import jakarta.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;

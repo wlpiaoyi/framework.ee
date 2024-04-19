@@ -3,8 +3,8 @@ package org.wlpiaoyi.framework.ee.utils;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.wlpiaoyi.framework.ee.utils.response.R;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@code @author:}         wlpiaoyi

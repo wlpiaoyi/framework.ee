@@ -6,7 +6,7 @@
     <parent>
         <artifactId>framework.ee</artifactId>
         <groupId>org.wlpiaoyi</groupId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.0.2-BATA-JDK21</version>
     </parent>
 
     <groupId>org.wlpiaoyi.framework.ee</groupId>
@@ -20,8 +20,8 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

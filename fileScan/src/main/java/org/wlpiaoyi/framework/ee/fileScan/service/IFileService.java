@@ -3,8 +3,8 @@ package org.wlpiaoyi.framework.ee.fileScan.service;
 import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;

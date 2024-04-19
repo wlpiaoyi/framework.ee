@@ -7,7 +7,7 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
 import org.wlpiaoyi.framework.ee.resource.domain.entity.BaseEntity;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * {@code @author:} 		wlpia:WLPIAOYI-DELL

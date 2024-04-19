@@ -10,7 +10,7 @@ import org.wlpiaoyi.framework.ee.fileScan.config.FileConfig;
 import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.ee.fileScan.service.IFileService;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Controller

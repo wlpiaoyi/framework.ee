@@ -9,10 +9,10 @@ import org.wlpiaoyi.framework.ee.utils.filter.idempotence.BaseIdempotenceFilter;
 import org.wlpiaoyi.framework.ee.utils.filter.idempotence.IdempotenceMoon;
 import org.wlpiaoyi.framework.utils.encrypt.rsa.Coder;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 

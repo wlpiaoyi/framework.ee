@@ -20,7 +20,7 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import sun.font.FontDesignMetrics;
 
-import javax.imageio.ImageIO;
+import jakarta.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;

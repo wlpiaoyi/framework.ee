@@ -2,8 +2,8 @@ package org.wlpiaoyi.framework.ee.resource.biz.service;
 
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;

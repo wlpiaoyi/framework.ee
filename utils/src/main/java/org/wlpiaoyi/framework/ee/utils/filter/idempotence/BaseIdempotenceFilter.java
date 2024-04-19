@@ -5,7 +5,7 @@ import org.springframework.core.annotation.Order;
 import org.wlpiaoyi.framework.ee.utils.filter.FilterSupport;
 import org.wlpiaoyi.framework.ee.utils.loader.IdempotenceLoader;
 
-import javax.servlet.*;
+import jakarta.servlet.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;

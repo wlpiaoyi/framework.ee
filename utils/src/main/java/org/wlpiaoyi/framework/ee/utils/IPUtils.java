@@ -2,7 +2,7 @@ package org.wlpiaoyi.framework.ee.utils;
 
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class IPUtils {
     /**
