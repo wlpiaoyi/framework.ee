@@ -1,10 +1,11 @@
 utils/target/**
 *.log
 activiti/target/*
-.idea/*
 resource/target/**
 fileScan/target/**
 openai/azure/target/**
 proxy/target/**
 *.jar
+.idea/*
 .idea jdk8/
+.idea jdk21/
