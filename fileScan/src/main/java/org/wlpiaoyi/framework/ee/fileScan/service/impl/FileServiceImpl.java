@@ -287,11 +287,11 @@ public class FileServiceImpl implements IFileService {
         String url = "/file";
         url += "/info-tree-href/";
         String pathName = curPath;
-        if(curPath.contains("\\")){
-            pathName = curPath.substring(curPath.lastIndexOf("\\") + 1);
+        if(curPath.contains("/")){
+            pathName = curPath.substring(curPath.lastIndexOf("/") + 1);
         }
         if(ValueUtils.isBlank(curPath)){
-            url = pathName = "\\";
+            url = pathName = "/";
         }else{
             url += this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(
                     curPath.getBytes()
@@ -340,6 +340,9 @@ public class FileServiceImpl implements IFileService {
         if(ValueUtils.isNotBlank(fileInfo.getPath())){
             sb.append("<div><h1>");
             String iPath = fileInfo.getPath();
+            if(ValueUtils.isNotBlank(iPath)){
+                iPath = iPath.replaceAll("\\\\", "/");
+            }
             String kHeads = "";
             while (ValueUtils.isNotBlank(iPath)){
                 if(ValueUtils.isBlank(kHeads)){
@@ -347,7 +350,7 @@ public class FileServiceImpl implements IFileService {
                 }else{
                     kHeads = getNavigationElement(iPath, false) + "\n" + kHeads;
                 }
-                int index = iPath.lastIndexOf("\\");
+                int index = iPath.lastIndexOf("/");
                 if(index <= 0){
                     iPath = "";
                     kHeads = getNavigationElement(iPath, false) + "\n" + kHeads;
