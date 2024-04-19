@@ -83,18 +83,23 @@ public class FileConfig {
         String fingerprintHex = this.parseFingerprintToHex(fingerprint);
         return this.getFilePathByFingerprintHex(fingerprintHex);
     }
+
     @SneakyThrows
-    public String dataEncode(byte[] bytes){
-        String res = new String(DataUtils.base64Encode(bytes));
-        res = res.replaceAll("\n", "");
-        res = res.replaceAll("\r", "");
-        res = res.replaceAll("/", "_");
-        return res;
+    public String dataEncode(byte[] dataBytes){
+        String base64Str = new String(DataUtils.base64Encode(dataBytes));
+        base64Str = base64Str.replaceAll("[\r\n]", "");
+        base64Str = base64Str.replaceAll("/", "_");
+        base64Str = base64Str.replaceAll("\\+", ".");
+        while (base64Str.endsWith("=")){
+            base64Str = base64Str.substring(0, base64Str.length() - 1);
+        }
+        return base64Str;
     }
     @SneakyThrows
-    public byte[] dataDecode(String str){
-        str = str.replaceAll("_", "/");
-        return DataUtils.base64Decode(str.getBytes());
+    public byte[] dataDecode(String base64Str){
+        base64Str = base64Str.replaceAll("_", "/");
+        base64Str = base64Str.replaceAll("\\.", "+");
+        return DataUtils.base64Decode(base64Str.getBytes());
     }
 
     public String parseFingerprintToHex(String fingerprint){

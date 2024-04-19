@@ -5,12 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.wlpiaoyi.framework.ee.fileScan.config.FileConfig;
 import org.wlpiaoyi.framework.ee.utils.response.ResponseUtils;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.data.ReaderUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -74,6 +76,8 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
     private String userName;
     @Value("${fileScan.auth.password:}")
     private String password;
+    @Resource
+    private FileConfig fileConfig;
 
     @SneakyThrows
     private boolean authCheckForDownload(HttpServletRequest request){
@@ -86,7 +90,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
             return false;
         }
         String authKeyBase64Str = uriParts[4];
-        byte[] authKeyBytes1 = DataUtils.base64Decode(authKeyBase64Str.getBytes());
+        byte[] authKeyBytes1 = this.fileConfig.dataDecode(authKeyBase64Str);
         byte[] authKeyBytes2 = DataUtils.MD(
                 (DataUtils.MD(this.userName, DataUtils.KEY_MD5) + DataUtils.MD(this.password, DataUtils.KEY_MD5)).getBytes()
                 , DataUtils.KEY_MD5);

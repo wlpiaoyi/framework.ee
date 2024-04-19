@@ -48,7 +48,7 @@ public class FileServiceImpl implements IFileService {
     @Autowired
     private FileConfig fileConfig;
 
-    private static Map<String, String> contentTypeMap = new HashMap(){{
+    private static final Map<String, String> contentTypeMap = new HashMap(){{
         put("jpg", "image/jpeg");
         put("jpeg", "image/jpeg");
         put("png", "image/png");
@@ -67,6 +67,27 @@ public class FileServiceImpl implements IFileService {
         put("default", "application/octet-stream");
     }};
 
+    /**
+     * <p><b>{@code @description:}</b>
+     * TODO
+     * </p>
+     *
+     * <p><b>@param</b> <b>childFile</b>
+     * {@link File}
+     * </p>
+     *
+     * <p><b>@param</b> <b>parent</b>
+     * {@link FileInfo}
+     * </p>
+     *
+     * <p><b>@param</b> <b>deepCount</b>
+     * {@link int}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/4/19 11:43</p>
+     * <p><b>{@code @return:}</b>{@link FileInfo}</p>
+     * <p><b>{@code @author:}</b>wlpia</p>
+     */
     @SneakyThrows
     private FileInfo scan(File childFile, FileInfo parent, int deepCount){
         if(parent == null){
@@ -213,37 +234,10 @@ public class FileServiceImpl implements IFileService {
         }
     }
 
-    @Value("${fileScan.ethName}")
-    private String ethName;
-
-    @Value("${fileScan.remoteIp}")
-    private String remoteIp;
-
-    @Value("${server.port}")
-    private int port;
-
     @SneakyThrows
     @Override
     public void resHtml(FileInfo fileInfo, HttpServletResponse response) {
         Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
-        String ip = "127.0.0.1";
-        if(ValueUtils.isNotBlank(remoteIp)){
-            ip = this.remoteIp;
-        }else{
-            while (nifs.hasMoreElements()) {
-                NetworkInterface nif = nifs.nextElement();
-                // 获得与该网络接口绑定的 IP 地址，一般只有一个
-                Enumeration<InetAddress> addresses = nif.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    InetAddress addr = addresses.nextElement();
-                    if (addr instanceof Inet4Address) {
-                        if(nif.getName().equals(ethName)){
-                            ip = addr.getHostAddress();
-                        }
-                    }
-                }
-            }
-        }
 
         List<OutputStream> outputStreams = new ArrayList<>();
         try{
@@ -275,7 +269,7 @@ public class FileServiceImpl implements IFileService {
                         outputStream.flush();
                         outputStream.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.error("data close error", e);
                     }
                 }
             }
@@ -321,9 +315,11 @@ public class FileServiceImpl implements IFileService {
         return sb.toString();
     }
 
-    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap();
+    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
 
-    public String getFingerprint(String md5FingerprintHex){
+    public String getFingerprint(String md5FingerprintBase64Str){
+        byte[] md5FingerprintBytes = this.fileConfig.dataDecode(md5FingerprintBase64Str);
+        String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
         return PATH_MAP.get(md5FingerprintHex);
     }
 
@@ -339,8 +335,7 @@ public class FileServiceImpl implements IFileService {
                 (DataUtils.MD(this.userName, DataUtils.KEY_MD5)
                         + DataUtils.MD(this.password, DataUtils.KEY_MD5)).getBytes()
                 , DataUtils.KEY_MD5);
-        byte[] authKeyBase64 = DataUtils.base64Encode(authKeyBytes);
-        String authKeyBase64Str = new String(authKeyBase64);
+        String authKeyBase64Str = this.fileConfig.dataEncode(authKeyBytes);
         StringBuilder sb = new StringBuilder();
         if(ValueUtils.isNotBlank(fileInfo.getPath())){
             sb.append("<div><h1>");
@@ -364,39 +359,47 @@ public class FileServiceImpl implements IFileService {
             sb.append("</h1></div>");
             sb.append("<hr/>");
         }
-        for(FileInfo fi : fileInfo.getChildren()){
-            String url = "/file";
-            if(fi.isDict()){
-                url += "/info-tree-href/";
-                url += fi.getFingerprint();
-                url += "?1=1";
-            }else {
-                byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
-                String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
-                if(!PATH_MAP.containsKey(md5FingerprintHex)){
-                    PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getFingerprint());
+        if(ValueUtils.isNotBlank(fileInfo.getChildren())){
+            for(FileInfo fi : fileInfo.getChildren()){
+                String url = "/file";
+                if(fi.isDict()){
+                    url += "/info-tree-href/";
+                    url += fi.getFingerprint();
+                    url += "?1=1";
+                }else {
+                    byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
+                    String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+                    String md5FingerprintBase64Str = this.fileConfig.dataEncode(md5FingerprintBytes);
+                    if(!PATH_MAP.containsKey(md5FingerprintHex)){
+                        PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getFingerprint());
+                    }
+                    url += "/download/" + md5FingerprintBase64Str;
+                    url += "/" + authKeyBase64Str;
+                    url += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
+                    if(!fi.getName().contains(".")){
+                        url += "." + fi.getSuffix();
+                    }
                 }
-                url += "/download/" + md5FingerprintHex;
-                url += "/" +authKeyBase64Str;
-                url += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
-                if(!fi.getName().contains(".")){
-                    url += "." + fi.getSuffix();
+                sb.append("<div><a href='");
+                sb.append(url);
+                sb.append("'>");
+                sb.append(fi.getName());
+                if(!fi.isDict() && !fi.getName().contains(".")){
+                    sb.append(".").append(fi.getSuffix());
                 }
+                if(fi.isDict()){
+                    sb.append("&nbsp;<strong>▶</strong>");
+                }
+                sb.append("</a>");
+
+                if(!fi.isDict()){
+                    sb.append("&nbsp;&nbsp;<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
+                }
+                sb.append("</div>");
+                sb.append("<hr/>");
             }
-            sb.append("<div><a href='");
-            sb.append(url);
-            sb.append("'>");
-            sb.append(fi.getName());
-            if(!fi.isDict() && !fi.getName().contains(".")){
-                sb.append(".").append(fi.getSuffix());
-            }
-            if(fi.isDict()){
-                sb.append("&nbsp;<strong>▶</strong>");
-            }
-            sb.append("</a>&nbsp;&nbsp;");
-            sb.append("<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
-            sb.append("</div>");
-            sb.append("<hr/>");
+        }else{
+            sb.append("<div class=\"empty_data\">没有文件</div>");
         }
         return fileHtml.replace("${body}", sb.toString());
     }

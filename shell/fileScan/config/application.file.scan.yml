@@ -56,9 +56,5 @@ fileScan:
       wlpiaoyi
     password:
       123456
-  ethName:
-    wlan0
-  remoteIp:
-    36.138.30.52
   fileMenu:
     E:/Videos/

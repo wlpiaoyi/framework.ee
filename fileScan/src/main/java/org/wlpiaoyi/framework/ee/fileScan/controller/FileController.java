@@ -92,34 +92,34 @@ public class FileController {
 
 
     @SneakyThrows
-    @RequestMapping("/download/{md5FingerprintHex}/{authKey}")
+    @RequestMapping("/download/{md5FingerprintBase64Str}/{authKey}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "md5FingerprintHex") @PathVariable String md5FingerprintHex,
+    public void download(@Validated @Parameter(description = "md5FingerprintBase64Str") @PathVariable String md5FingerprintBase64Str,
                          @Validated @Parameter(description = "authKey") @PathVariable String authKey,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        this.fileService.download(this.fileService.getFingerprint(md5FingerprintHex), new HashMap(){{
+        this.fileService.download(this.fileService.getFingerprint(md5FingerprintBase64Str), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }
 
     @SneakyThrows
-    @RequestMapping("/download/{md5FingerprintHex}/{authKey}/{fileName}")
+    @RequestMapping("/download/{md5FingerprintBase64Str}/{authKey}/{fileName}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "md5FingerprintHex") @PathVariable String md5FingerprintHex,
+    public void download(@Validated @Parameter(description = "md5FingerprintBase64Str") @PathVariable String md5FingerprintBase64Str,
                          @Validated @Parameter(description = "authKey") @PathVariable String authKey,
                          @Validated @Parameter(description = "fileName") @PathVariable String fileName,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        String fingerprint = this.fileService.getFingerprint(md5FingerprintHex);
+        String fingerprint = this.fileService.getFingerprint(md5FingerprintBase64Str);
         log.info("controller download fingerprint:{}, fileName:{}", fingerprint, fileName);
-        this.fileService.download(this.fileService.getFingerprint(md5FingerprintHex), new HashMap(){{
+        this.fileService.download(this.fileService.getFingerprint(md5FingerprintBase64Str), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }
