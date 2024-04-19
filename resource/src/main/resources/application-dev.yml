@@ -58,3 +58,13 @@ spring:
       additional-paths: src/main/java
       #指定目录不更新
       exclude: test/**
+# 在线文档配置
+springdoc:
+  swagger-ui:
+    # 配置swagger-ui界面访问路径
+    path: /swagger-ui.html
+    # 包扫描路径
+  packages-to-scan: org.wlpiaoyi.framework.ee.resource
+  # 默认开启wend
+  api-docs:
+    enabled: true

@@ -23,10 +23,9 @@ import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
-import jakarta.imageio.ImageIO;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

@@ -4,7 +4,7 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
 
-import jakarta.sql.DataSource;
+import javax.sql.DataSource;
 
 /**
  * {@code @author:}         wlpiaoyi

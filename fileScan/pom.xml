@@ -75,7 +75,6 @@
         <dependency>
             <groupId>org.wlpiaoyi.framework.ee</groupId>
             <artifactId>utils</artifactId>
-            <version>${ee.project.version}</version>
         </dependency>
 
     </dependencies>
@@ -86,21 +85,43 @@
 <!--        <finalName>fileScan-${system.env}</finalName>-->
         <finalName>file.scan</finalName>
         <plugins>
+            <!-- jar运行配置 正常打包-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--maven打包-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
             <!-- JUnit 配置 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <!--忽略测试启动类 -->
                 <configuration>
-                    <skip>true</skip>
+                    <skip>${skipTests}</skip>
                 </configuration>
             </plugin>
-            <!-- jar运行配置 正常打包-->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
         </plugins>
+        <defaultGoal>compile</defaultGoal>
     </build>
 
 </project>

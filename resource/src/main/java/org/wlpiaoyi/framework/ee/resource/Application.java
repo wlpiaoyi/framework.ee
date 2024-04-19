@@ -1,5 +1,8 @@
 package org.wlpiaoyi.framework.ee.resource;
 
+import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.BeansException;
@@ -24,10 +27,12 @@ import java.util.TimeZone;
  */
 //Dspring.config.location=/data/config/application-sms.yml
 @SpringBootApplication(scanBasePackages = {
-        "org.wlpiaoyi.framework.ee.resource"
+        "org.wlpiaoyi.framework.ee.resource",
 })
 @ComponentScan(basePackages = {"org.wlpiaoyi.framework.ee.resource"})
 @MapperScan("org.wlpiaoyi.framework.ee.resource")
+@EnableKnife4j
+@OpenAPIDefinition(info = @Info(title = "内容管理系统", description = "对课程相关信息进行管理", version = "1.0.0"))
 public class Application implements ApplicationContextAware, BeanFactoryPostProcessor {
 
     @PostConstruct

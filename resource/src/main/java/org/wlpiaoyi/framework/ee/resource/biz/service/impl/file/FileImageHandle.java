@@ -18,9 +18,8 @@ import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
-import sun.font.FontDesignMetrics;
 
-import jakarta.imageio.ImageIO;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -242,7 +241,9 @@ public class FileImageHandle {
         //计算字体位置：上下左右居中
         FontRenderContext context = g2.getFontRenderContext();
         LineMetrics lineMetrics = modelParams.textfont.getLineMetrics(text, context);
-        FontMetrics fontMetrics = FontDesignMetrics.getMetrics(modelParams.textfont);
+        Graphics graphics = textImage.getGraphics();
+        FontMetrics fontMetrics = graphics.getFontMetrics(modelParams.textfont);
+//        FontMetrics fontMetrics = FontDesignMetrics.getMetrics(modelParams.textfont);
 
         String[] texts = text.split("\n");
         float offsetY =  (lineMetrics.getAscent() + lineMetrics.getDescent() + lineMetrics.getLeading()) * (texts.length - 1) / 2;

@@ -1,7 +1,6 @@
 package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,19 +16,13 @@ import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
 import org.wlpiaoyi.framework.ee.resource.utils.IdUtils;
 import org.wlpiaoyi.framework.ee.utils.tools.ModelWrapper;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
-import jakarta.imageio.ImageIO;
-import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
