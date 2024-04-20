@@ -138,6 +138,45 @@ public class FileResponse {
         return false;
     }
 
+    private boolean flushIO(Flushable flushIO){
+        if(flushIO == null){
+            throw new BusinessException("Flush failed, outputStream is null");
+        }
+        try {
+            flushIO.flush();
+        } catch (IOException e) {
+            log.warn("Flush alert failed:{}", e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private boolean closeOutputStream(OutputStream outputStream){
+        if(outputStream == null){
+            throw new BusinessException("Close output failed, outputStream is null");
+        }
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+            log.warn("Close output failed:{}", e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private boolean closeInputStream(InputStream inputStream){
+        if(inputStream == null){
+            throw new BusinessException("Close input failed, inputStream is null");
+        }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            log.warn("Close input failed:{}", e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
     /**
      * <p><b>{@code @description:}</b>
      * 根据文件对象下载数据
@@ -225,24 +264,28 @@ public class FileResponse {
                     l = dataInput.read(bytes);
                     readLength += l;
                     dataOutput.write(bytes, 0, l);
-                    dataOutput.flush();
+                    if(!flushIO(dataOutput)){
+                        break;
+                    }
                 }
                 clb = contentLength - readLength;
                 if (clb > 0) {
                     l = dataInput.read(bytes, 0, (int) clb);
                     dataOutput.write(bytes, 0, l);
-                    dataOutput.flush();
+                    flushIO(dataOutput);
                 }
             } else {
                 int l;
                 while ((l = dataInput.read(bytes)) != -1) {
                     dataOutput.write(bytes, 0, l);
-                    dataOutput.flush();
+                    if(!flushIO(dataOutput)){
+                        break;
+                    }
                 }
             }
-            dataOutput.flush();
-            dataOutput.close();
-            dataInput.close();
+            flushIO(dataOutput);
+            closeOutputStream(dataOutput);
+            closeInputStream(dataInput);
             closeables.remove(dataOutput);
             flushables.remove(dataOutput);
             closeables.remove(dataInput);
@@ -254,7 +297,7 @@ public class FileResponse {
                 throw (SystemException)e;
             }
             if (e instanceof ClientAbortException){
-                log.warn("write data error:{}", e.getCause().toString());
+                log.warn("write data error:{}", e.toString());
                 return;
             }
             throw new SystemException("file read error", e);
@@ -262,14 +305,14 @@ public class FileResponse {
             if(ValueUtils.isNotBlank(flushables)){
                 for (Flushable flushable : flushables){
                     try { flushable.flush(); } catch (IOException e) {
-                        log.warn("download flush obj failed:{}", e.getCause().toString());
+                        log.warn("download flush obj failed:{}", e.toString());
                     }
                 }
             }
             if(ValueUtils.isNotBlank(closeables)){
                 for (Closeable closeable : closeables){
                     try { closeable.close(); } catch (IOException e) {
-                        log.warn("download close obj failed:{}", e.getCause().toString());
+                        log.warn("download close obj failed:{}", e.toString());
                     }
                 }
             }
