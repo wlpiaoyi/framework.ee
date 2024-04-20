@@ -12,6 +12,7 @@ import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.ee.fileScan.handler.HandlerInterceptor;
 import org.wlpiaoyi.framework.ee.fileScan.service.IFileService;
 import org.wlpiaoyi.framework.ee.utils.response.FileResponse;
+import org.wlpiaoyi.framework.utils.DateUtils;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
@@ -30,6 +31,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -397,6 +400,23 @@ public class FileServiceImpl implements IFileService {
 
                 if(!fi.isDict()){
                     sb.append("&nbsp;&nbsp;<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
+                    File file = new File(this.fileConfig.getFileMenu() + fi.getPath());
+                    BasicFileAttributes bAttributes = null;
+                    try {
+                        bAttributes = Files.readAttributes(file.toPath(),
+                                BasicFileAttributes.class);
+                    } catch (IOException e) {
+                        log.warn("Get file attributes failed:{}", e.getMessage());
+                    }
+                    if(bAttributes != null){
+                        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;<h4>").append("<strong>创建时间:</strong>")
+                                .append(DateUtils.formatLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.creationTime().toMillis()), "YY/MM/dd HH:mm:ss"));
+                        if(bAttributes.lastAccessTime() != null){
+                            sb.append("&nbsp;<strong>上次访问时间:</strong>")
+                                    .append(DateUtils.formatLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.lastAccessTime().toMillis()), "YY/MM/dd HH:mm:ss"));
+                        }
+                        sb.append("</h4>");
+                    }
                 }
                 sb.append("</div>");
                 sb.append("<hr/>");
