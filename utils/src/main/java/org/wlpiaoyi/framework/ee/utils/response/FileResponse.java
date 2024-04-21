@@ -3,6 +3,7 @@ package org.wlpiaoyi.framework.ee.utils.response;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
+import org.apache.catalina.connector.RequestFacade;
 import org.apache.http.HttpHeaders;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
@@ -15,10 +16,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p><b>{@code @description:}</b>  </p>
@@ -265,56 +263,54 @@ public class FileResponse {
                     readLength += l;
                     dataOutput.write(bytes, 0, l);
                     if(!flushIO(dataOutput)){
-                        break;
+                        throw new BusinessException("flush error");
                     }
                 }
                 clb = contentLength - readLength;
                 if (clb > 0) {
                     l = dataInput.read(bytes, 0, (int) clb);
                     dataOutput.write(bytes, 0, l);
-                    flushIO(dataOutput);
+                    if(!flushIO(dataOutput)){
+                        throw new BusinessException("flush error");
+                    }
                 }
             } else {
                 int l;
                 while ((l = dataInput.read(bytes)) != -1) {
                     dataOutput.write(bytes, 0, l);
                     if(!flushIO(dataOutput)){
-                        break;
+                        throw new BusinessException("flush error");
                     }
                 }
             }
-            flushIO(dataOutput);
-            closeOutputStream(dataOutput);
-            closeInputStream(dataInput);
-            closeables.remove(dataOutput);
-            flushables.remove(dataOutput);
-            closeables.remove(dataInput);
         }catch (Exception e){
             if(e instanceof BusinessException){
-                throw (BusinessException)e;
+                throw new BusinessException("biz error for localPath:" + file.getAbsolutePath(), e);
             }
             if(e instanceof SystemException){
-                throw (SystemException)e;
+                throw new SystemException("biz error for localPath:" + file.getAbsolutePath(), e);
             }
             if (e instanceof ClientAbortException){
-                log.warn("write data error:{}", e.toString());
+                log.warn("write data error for localPath:{} message:{}", file.getAbsoluteFile(), e.toString());
                 return;
             }
-            throw new SystemException("file read error", e);
+            throw new SystemException("file read error for localPath:" + file.getAbsolutePath(), e);
         }finally {
             if(ValueUtils.isNotBlank(flushables)){
                 for (Flushable flushable : flushables){
                     try { flushable.flush(); } catch (IOException e) {
-                        log.warn("download flush obj failed:{}", e.toString());
+                        log.warn("download flush obj failed message:{}", e.toString());
                     }
                 }
+                flushables.clear();
             }
             if(ValueUtils.isNotBlank(closeables)){
                 for (Closeable closeable : closeables){
                     try { closeable.close(); } catch (IOException e) {
-                        log.warn("download close obj failed:{}", e.toString());
+                        log.warn("download close obj failed message:{}", e.toString());
                     }
                 }
+                closeables.clear();
             }
         }
     }

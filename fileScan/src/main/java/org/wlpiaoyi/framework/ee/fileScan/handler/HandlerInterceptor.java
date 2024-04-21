@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.fileScan.config.FileConfig;
+import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.ee.utils.response.ResponseUtils;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
@@ -18,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Enumeration;
 
 /**
  * <p><b>{@code @description:}</b>  </p>
@@ -29,6 +32,57 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class HandlerInterceptor implements org.springframework.web.servlet.HandlerInterceptor {
 
+    protected void printRequestLog(HttpServletRequest req) {
+        StringBuffer rqrpInfoSb = new StringBuffer();
+        rqrpInfoSb.append("Request:");
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("URI:");
+        rqrpInfoSb.append(req.getRequestURI());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Method:");
+        rqrpInfoSb.append(req.getMethod());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("ContentType:");
+        rqrpInfoSb.append(req.getContentType());
+        rqrpInfoSb.append("\n");
+        rqrpInfoSb.append("ClientInfo:");
+        rqrpInfoSb.append("\n\tRemoteHost:");
+        rqrpInfoSb.append(req.getRemoteHost());
+        rqrpInfoSb.append("\n\tRemoteAddress:");
+        rqrpInfoSb.append(req.getRemoteAddr());
+        rqrpInfoSb.append("\n\tRemotePort:");
+        rqrpInfoSb.append(req.getRemotePort());
+        log.info("Request hashcode:{}, in: \n{}", req.hashCode(), rqrpInfoSb);
+    }
+
+    protected void printResponseLog(HttpServletRequest req,
+                                 HttpServletResponse resp) {
+        StringBuffer rqrpInfoSb = new StringBuffer();
+        rqrpInfoSb.append("Request:");
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("URI:");
+        rqrpInfoSb.append(req.getRequestURI());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Method:");
+        rqrpInfoSb.append(req.getMethod());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("ContentType:");
+        rqrpInfoSb.append(req.getContentType());
+        rqrpInfoSb.append("\n");
+        rqrpInfoSb.append("Response:");
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Status:");
+        rqrpInfoSb.append(resp.getStatus());
+        rqrpInfoSb.append("\n");
+        rqrpInfoSb.append("ClientInfo:");
+        rqrpInfoSb.append("\n\tRemoteHost:");
+        rqrpInfoSb.append(req.getRemoteHost());
+        rqrpInfoSb.append("\n\tRemoteAddress:");
+        rqrpInfoSb.append(req.getRemoteAddr());
+        rqrpInfoSb.append("\n\tRemotePort:");
+        rqrpInfoSb.append(req.getRemotePort());
+        log.info("Response hashCode:{}, Request hashcode:{}, in: \n{}" , resp.hashCode(), req.hashCode(), rqrpInfoSb);
+    }
     /**
      * <p><b>{@code @description:}</b>
      * TODO
@@ -52,6 +106,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
+        printRequestLog(request);
         if(!this.authCheck(request)){
             String uri = request.getRequestURI();
             if(!uri.equals("/")){
@@ -164,6 +219,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
      */
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
                                  @Nullable Exception ex) throws Exception {
+        printResponseLog(request, response);
     }
 
 }
