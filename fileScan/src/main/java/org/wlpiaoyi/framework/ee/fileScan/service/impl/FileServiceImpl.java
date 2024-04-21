@@ -33,6 +33,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -363,15 +365,16 @@ public class FileServiceImpl implements IFileService {
             }
             sb.append(kHeads);
             sb.append("</h1></div>");
-            sb.append("<hr/>");
+            sb.append("<hr/>\n");
         }
         if(ValueUtils.isNotBlank(fileInfo.getChildren())){
             for(FileInfo fi : fileInfo.getChildren()){
-                String url = "/file";
+                final String url;
                 if(fi.isDict()){
-                    url += "/info-tree-href/";
-                    url += fi.getFingerprint();
-                    url += "?1=1";
+                    String urlDir = "/file";
+                    urlDir += "/info-tree-href/";
+                    urlDir += fi.getFingerprint();
+                    url = urlDir;
                 }else {
                     byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
                     String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
@@ -379,12 +382,14 @@ public class FileServiceImpl implements IFileService {
                     if(!PATH_MAP.containsKey(md5FingerprintHex)){
                         PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getFingerprint());
                     }
-                    url += "/download/" + md5FingerprintBase64Str;
-                    url += "/" + authKeyBase64Str;
-                    url += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
+                    String urlFile = "/file";
+                    urlFile += "/download/" + md5FingerprintBase64Str;
+                    urlFile += "/" + authKeyBase64Str;
+                    urlFile += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
                     if(!fi.getName().contains(".")){
-                        url += "." + fi.getSuffix();
+                        urlFile += "." + fi.getSuffix();
                     }
+                    url = urlFile;
                 }
                 sb.append("<div><a href='");
                 sb.append(url);
@@ -410,21 +415,22 @@ public class FileServiceImpl implements IFileService {
                     }
                     if(bAttributes != null){
                         sb.append("&nbsp;&nbsp;&nbsp;&nbsp;<h4>").append("<strong>创建时间:</strong>")
-                                .append(DateUtils.formatLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.creationTime().toMillis()), "YY/MM/dd HH:mm:ss"));
+                                .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.creationTime().toMillis())));
                         if(bAttributes.lastAccessTime() != null){
                             sb.append("&nbsp;<strong>上次访问时间:</strong>")
-                                    .append(DateUtils.formatLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.lastAccessTime().toMillis()), "YY/MM/dd HH:mm:ss"));
+                                    .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.lastAccessTime().toMillis())));
                         }
                         sb.append("</h4>");
                     }
                 }
                 sb.append("</div>");
-                sb.append("<hr/>");
+                sb.append("<hr/>\n");
             }
         }else{
             sb.append("<div class=\"empty_data\">没有文件</div>");
         }
         return fileHtml.replace("${body}", sb.toString());
     }
+
 
 }

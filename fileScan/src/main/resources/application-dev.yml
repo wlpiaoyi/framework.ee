@@ -1,7 +1,21 @@
 server:
   tomcat:
     basedir: D:/upload/temp/
-#dev环境  mysql8.0
+#spring:
+#  datasource:
+#    url:
+#      jdbc:sqlite:config/db/fileScan.db
+#    username:
+#    password:
+#    driver-class-name:
+#      org.sqlite.JDBC
+
+mybatis:
+  typeAliasesPackage:
+    org.wlpiaoyi.framework.ee.fileScan.domain.**.entity
+  mapperLocations:
+    classpath*:**/mapper/**/*Mapper.xml
+
 fileScan:
   version:
     1.0.0

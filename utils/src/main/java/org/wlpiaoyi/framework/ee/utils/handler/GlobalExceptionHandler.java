@@ -27,20 +27,80 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 @Slf4j
 //@RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    protected void printErrorLog(int code, R r,
+                                 HttpServletRequest req,
+                                 HttpServletResponse resp,
+                                 Exception exception) {
+        StringBuffer rqrpInfoSb = new StringBuffer();
+        rqrpInfoSb.append("Request:");
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("URI:");
+        rqrpInfoSb.append(req.getRequestURI());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Method:");
+        rqrpInfoSb.append(req.getMethod());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("ContentType:");
+        rqrpInfoSb.append(req.getContentType());
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Headers:");
+        Enumeration<String> reqHeaderNames = req.getHeaderNames();
+        while (reqHeaderNames.hasMoreElements()){
+            String headerName = reqHeaderNames.nextElement();
+            String headerValue = req.getHeader(headerName);
+            if(ValueUtils.isBlank(headerValue)){
+                continue;
+            }
+            rqrpInfoSb.append("\n\t\t");
+            rqrpInfoSb.append(headerName);
+            rqrpInfoSb.append(":");
+            rqrpInfoSb.append(headerValue);
+        }
+        rqrpInfoSb.append("\n");
+        rqrpInfoSb.append("Response:");
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Code:");
+        rqrpInfoSb.append(code);
+        rqrpInfoSb.append("\n\t");
+        rqrpInfoSb.append("Headers:");
+        Collection<String> respHeaderNames = resp.getHeaderNames();
+        for (String headerName : respHeaderNames){
+            String headerValue = req.getHeader(headerName);
+            if(ValueUtils.isBlank(headerValue)){
+                continue;
+            }
+            rqrpInfoSb.append("\n\t\t");
+            rqrpInfoSb.append(headerName);
+            rqrpInfoSb.append(":");
+            rqrpInfoSb.append(headerValue);
+        }
+        rqrpInfoSb.append("\n");
+        rqrpInfoSb.append("ClientInfo:");
+        rqrpInfoSb.append("\n\tRemoteHost:");
+        rqrpInfoSb.append(req.getRemoteHost());
+        rqrpInfoSb.append("\n\tRemoteAddress:");
+        rqrpInfoSb.append(req.getRemoteAddr());
+        rqrpInfoSb.append("\n\tRemotePort:");
+        rqrpInfoSb.append(req.getRemotePort());
+        log.error("Request hashcode:{}, Response hashCode:{}, error: \n{}" , req.hashCode(), resp.hashCode(), rqrpInfoSb, exception);
+    }
+
     protected void doResponse(int code, R r,
                               HttpServletRequest req,
-                              HttpServletResponse response,
+                              HttpServletResponse resp,
                               Exception exception) throws IOException {
         try{
-            ResponseUtils.writeResponseJson(code, r, response);
+            ResponseUtils.writeResponseJson(code, r, resp);
         }finally {
-            log.error("Response warn api:(" + req.getRequestURI() + ") code:(" + code +  ")", exception);
+            printErrorLog(code, r, req, resp, exception);
         }
     }
 
@@ -230,7 +290,26 @@ public class GlobalExceptionHandler {
             doResponse(code, R.data(code, exception.getMessage()), req, resp, exception);
             return;
         }
+        Object[] res = httpErrorHandler(req, resp, exception);
+        if(res != null){
+            code = (int) res[0];
+            message = res[1].toString();
+            doResponse(code, R.data(code, message), req, resp, exception);
+        }
+        res = expandErrorHandler(req, resp, exception);
+        if(res != null){
+            code = (int) res[0];
+            message = res[1].toString();
+            doResponse(code, R.data(code, message), req, resp, exception);
+        }
+        code = 500;
+        message = "服务器错误[500]";
+        doResponse(code, R.data(code, message), req, resp, exception);
+    }
 
+    protected Object[] httpErrorHandler(HttpServletRequest req, HttpServletResponse resp, Exception exception) {
+        int code = 0;
+        String message = null;
         if (exception instanceof CatchException) {
             code = ((CatchException) exception).getCode();
             message = exception.getMessage();
@@ -249,10 +328,7 @@ public class GlobalExceptionHandler {
         } else if (exception instanceof MethodArgumentTypeMismatchException) {
             code = 413;
             message = "参数错误:" + exception.getMessage();
-        }  else if (exception instanceof BadSqlGrammarException) {
-            code = 500;
-            message = "服务器错误[sql error]";
-        } else if (exception instanceof MethodArgumentNotValidException) {
+        }else if (exception instanceof MethodArgumentNotValidException) {
             BindingResult br = ((MethodArgumentNotValidException)exception).getBindingResult();
             StringBuilder errorMsg = new StringBuilder();
             if (br.hasErrors()) {
@@ -262,11 +338,26 @@ public class GlobalExceptionHandler {
             }
             code = 500;
             message = errorMsg.toString();
-        } else{
-            code = 500;
-            message = "服务器错误[500]";
         }
-        doResponse(code, R.data(code, message), req, resp, exception);
+        if(message == null){
+            return null;
+        }
+        Object[] res = {code, message};
+        return res;
+    }
+
+    protected Object[] expandErrorHandler(HttpServletRequest req, HttpServletResponse resp, Exception exception){
+        int code = 0;
+        String message = null;
+        if (exception instanceof BadSqlGrammarException) {
+            code = 500;
+            message = "服务器错误[sql error]:";
+        }
+        if(message == null){
+            return null;
+        }
+        Object[] res = {code, message};
+        return res;
     }
 }
 
