@@ -1,16 +1,15 @@
 package org.wlpiaoyi.framework.ee.fileScan.config;
 
-import com.google.gson.Gson;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
-import org.wlpiaoyi.framework.utils.exception.BusinessException;
-import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
+import org.wlpiaoyi.framework.utils.data.ReaderUtils;
+import org.wlpiaoyi.framework.utils.data.WriterUtils;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 
 import java.io.File;
@@ -33,9 +32,6 @@ public class FileConfig {
     @Value("${fileScan.fileMenu}")
     private String fileMenu;
 
-    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
-
-
     private final AesCipher aesCipher;
     {
         try {
@@ -47,6 +43,11 @@ public class FileConfig {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @PostConstruct
+    void init(){
+
     }
 
     @SneakyThrows
@@ -67,16 +68,62 @@ public class FileConfig {
         return DataUtils.base64Decode(base64Str.getBytes());
     }
 
-
     @SneakyThrows
     public String synPathInMap(String path){
         byte[] shaBytes = DataUtils.MD(path.getBytes(), DataUtils.KEY_SHA);
-        PATH_MAP.putIfAbsent(ValueUtils.bytesToHex(shaBytes), path);
+        String fingerprint = ValueUtils.bytesToHex(shaBytes);
+        String res = PATH_MAP.putIfAbsent(fingerprint, path);
+        if(ValueUtils.isBlank(res)){
+            String absolutePath = CACHE_BASE_PATH + this.getFingerprintPath(fingerprint);
+            File absoluteFile = new File(absolutePath);
+            absoluteFile.mkdirs();
+            absolutePath += ".dat";
+            absoluteFile = new File(absolutePath);
+            if(!absoluteFile.exists()){
+                WriterUtils.overwrite(absoluteFile, path, StandardCharsets.UTF_8);
+            }
+        }
         return this.dataEncode(shaBytes);
     }
+    private String getFingerprintPath(String fingerprint){
+        StringBuilder fingerprintPath = new StringBuilder();
+        for (int i = 0; i < fingerprint.length(); i+=2) {
+            String fn = fingerprint.substring(i, i+2);
+            fingerprintPath.append(fn).append("/");
+        }
+        return fingerprintPath.toString();
+    }
 
-    public String getPathByMd5Value(String buffer){
+    @SneakyThrows
+    public String getPathByBuffer(String buffer){
         byte[] shaBytes = this.dataDecode(buffer);
-        return PATH_MAP.get(ValueUtils.bytesToHex(shaBytes));
+        String fingerprint = ValueUtils.bytesToHex(shaBytes);
+        String path = PATH_MAP.get(ValueUtils.bytesToHex(shaBytes));
+        if(ValueUtils.isBlank(path)){
+            String absolutePath = CACHE_BASE_PATH + this.getFingerprintPath(fingerprint) + ".dat";
+            path = ReaderUtils.loadString(absolutePath, StandardCharsets.UTF_8);
+            if(ValueUtils.isBlank(path)){
+                return null;
+            }
+            PATH_MAP.put(fingerprint, path);
+        }
+        return path;
+    }
+
+
+    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
+    private final static String CACHE_BASE_PATH;
+
+    static {
+        String cacheBasePath = DataUtils.USER_DIR.replaceAll("\\\\", "/");
+        if(!cacheBasePath.endsWith("/")){
+            cacheBasePath = cacheBasePath + "/";
+        }
+        cacheBasePath += "cache/fileScan/";
+        CACHE_BASE_PATH = cacheBasePath;
+        File cacheBaseFile = new File(CACHE_BASE_PATH);
+        if(!cacheBaseFile.exists()){
+            cacheBaseFile.mkdirs();
+        }
     }
 }

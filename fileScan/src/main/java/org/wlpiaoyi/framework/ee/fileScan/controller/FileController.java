@@ -14,17 +14,17 @@ import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.ee.fileScan.service.IFileService;
 import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.utils.ValueUtils;
-import org.wlpiaoyi.framework.utils.exception.BusinessException;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import jakarta.annotation.security.PermitAll;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @Slf4j
@@ -68,7 +68,7 @@ public class FileController {
                                 @RequestParam(required = false, defaultValue = "1") Integer deepCount) {
         String basePath = "";
         if(ValueUtils.isNotBlank(pathBuffer)){
-            basePath = this.fileConfig.getPathByMd5Value(pathBuffer);
+            basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
         return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount));
     }
@@ -83,7 +83,7 @@ public class FileController {
                              HttpServletResponse response) {
         String basePath = "";
         if(ValueUtils.isNotBlank(pathBuffer)){
-            basePath = this.fileConfig.getPathByMd5Value(pathBuffer);
+            basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
         FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount);
 
@@ -101,7 +101,7 @@ public class FileController {
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        this.fileService.download(this.fileConfig.getPathByMd5Value(pathBuffer), new HashMap(){{
+        this.fileService.download(this.fileConfig.getPathByBuffer(pathBuffer), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }
@@ -118,7 +118,7 @@ public class FileController {
                          HttpServletRequest request,
                          HttpServletResponse response) {
         log.info("controller download fingerprint:{}, fileName:{}", pathBuffer, fileName);
-        this.fileService.download(this.fileConfig.getPathByMd5Value(pathBuffer), new HashMap(){{
+        this.fileService.download(this.fileConfig.getPathByBuffer(pathBuffer), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }

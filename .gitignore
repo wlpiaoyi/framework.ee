@@ -9,3 +9,4 @@ proxy/target/**
 .idea/*
 .idea jdk8/
 .idea jdk21/
+cache/
