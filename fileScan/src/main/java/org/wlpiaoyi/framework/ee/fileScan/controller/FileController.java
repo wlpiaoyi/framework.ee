@@ -16,13 +16,8 @@ import org.wlpiaoyi.framework.ee.utils.response.R;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 
 import javax.annotation.security.PermitAll;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import jakarta.annotation.security.PermitAll;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.util.HashMap;
