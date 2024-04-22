@@ -54,10 +54,18 @@ public class FileInfo {
     @Schema(description = "文件路径")
     private String path;
 
-    /** 文件指纹 **/
-    @Schema(description = "文件指纹")
-    @NotBlank(message = "文件指纹不能为空")
-    private String fingerprint;
+    public void setPath(String path) {
+        if(ValueUtils.isNotBlank(path)){
+            path = path.replaceAll("\\\\", "/");
+        }
+        this.path = path;
+    }
+
+    /** 文件路径流 **/
+    @Schema(description = "文件路径流")
+    @NotBlank(message = "文件路径流不能为空")
+    private String pathBuffer;
+
 
     public int hashCode(){
         String str = this.toString();
@@ -72,9 +80,9 @@ public class FileInfo {
             return "";
         }
         if(this.getParent() == null || this.getParent().get() == null){
-            return this.getName();
+            return this.getName().replaceAll("\\\\", "/");
         }
-        return this.getPath();
+        return this.getPath().replaceAll("\\\\", "/");
     }
 
 }

@@ -61,29 +61,29 @@ public class FileController {
 
 
     @SneakyThrows
-    @RequestMapping("/info-tree/{fingerprint}")
+    @RequestMapping("/info-tree/{pathBuffer}")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
-    public R<FileInfo> infoTree(@Validated @Parameter(description = "fingerprint", required = false) @PathVariable String fingerprint,
+    public R<FileInfo> infoTree(@Validated @Parameter(description = "pathBuffer", required = false) @PathVariable String pathBuffer,
                                 @RequestParam(required = false, defaultValue = "1") Integer deepCount) {
         String basePath = "";
-        if(ValueUtils.isNotBlank(fingerprint)){
-            basePath = new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(fingerprint)));
+        if(ValueUtils.isNotBlank(pathBuffer)){
+            basePath = this.fileConfig.getPathByMd5Value(pathBuffer);
         }
         return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount));
     }
 
 
     @SneakyThrows
-    @RequestMapping("/info-tree-href/{fingerprint}")
+    @RequestMapping("/info-tree-href/{pathBuffer}")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
-    public void infoTreeHref(@Validated @Parameter(description = "fingerprint", required = false) @PathVariable String fingerprint,
+    public void infoTreeHref(@Validated @Parameter(description = "pathBuffer", required = false) @PathVariable String pathBuffer,
                              @RequestParam(required = false, defaultValue = "1") Integer deepCount,
                              HttpServletResponse response) {
         String basePath = "";
-        if(ValueUtils.isNotBlank(fingerprint)){
-            basePath = new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(fingerprint)));
+        if(ValueUtils.isNotBlank(pathBuffer)){
+            basePath = this.fileConfig.getPathByMd5Value(pathBuffer);
         }
         FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount);
 
@@ -92,34 +92,33 @@ public class FileController {
 
 
     @SneakyThrows
-    @RequestMapping("/download/{md5FingerprintBase64Str}/{authKey}")
+    @RequestMapping("/download/{pathBuffer}/{authKey}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "md5FingerprintBase64Str") @PathVariable String md5FingerprintBase64Str,
+    public void download(@Validated @Parameter(description = "pathBuffer") @PathVariable String pathBuffer,
                          @Validated @Parameter(description = "authKey") @PathVariable String authKey,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        this.fileService.download(this.fileService.getFingerprint(md5FingerprintBase64Str), new HashMap(){{
+        this.fileService.download(this.fileConfig.getPathByMd5Value(pathBuffer), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }
 
     @SneakyThrows
-    @RequestMapping("/download/{md5FingerprintBase64Str}/{authKey}/{fileName}")
+    @RequestMapping("/download/{pathBuffer}/{authKey}/{fileName}")
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "md5FingerprintBase64Str") @PathVariable String md5FingerprintBase64Str,
+    public void download(@Validated @Parameter(description = "pathBuffer") @PathVariable String pathBuffer,
                          @Validated @Parameter(description = "authKey") @PathVariable String authKey,
                          @Validated @Parameter(description = "fileName") @PathVariable String fileName,
                          @RequestParam(required = false, defaultValue = "inline") String readType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
-        String fingerprint = this.fileService.getFingerprint(md5FingerprintBase64Str);
-        log.info("controller download fingerprint:{}, fileName:{}", fingerprint, fileName);
-        this.fileService.download(this.fileService.getFingerprint(md5FingerprintBase64Str), new HashMap(){{
+        log.info("controller download fingerprint:{}, fileName:{}", pathBuffer, fileName);
+        this.fileService.download(this.fileConfig.getPathByMd5Value(pathBuffer), new HashMap(){{
             put("readType", readType);
         }},request, response);
     }
