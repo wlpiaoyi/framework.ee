@@ -1,14 +1,22 @@
 package org.wlpiaoyi.framework.ee.fileScan.config;
 
+import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
+import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
+import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@code @author:}         wlpia
@@ -24,6 +32,8 @@ public class FileConfig {
 
     @Value("${fileScan.fileMenu}")
     private String fileMenu;
+
+    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
 
 
     private final AesCipher aesCipher;
@@ -57,4 +67,16 @@ public class FileConfig {
         return DataUtils.base64Decode(base64Str.getBytes());
     }
 
+
+    @SneakyThrows
+    public String synPathInMap(String path){
+        byte[] shaBytes = DataUtils.MD(path.getBytes(), DataUtils.KEY_SHA);
+        PATH_MAP.putIfAbsent(ValueUtils.bytesToHex(shaBytes), path);
+        return this.dataEncode(shaBytes);
+    }
+
+    public String getPathByMd5Value(String buffer){
+        byte[] shaBytes = this.dataDecode(buffer);
+        return PATH_MAP.get(ValueUtils.bytesToHex(shaBytes));
+    }
 }

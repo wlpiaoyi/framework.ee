@@ -26,15 +26,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -117,7 +113,7 @@ public class FileServiceImpl implements IFileService {
             fileInfo.setPath(parent.getPath() + "/" + childFile.getName());
         }
         fileInfo.setDeep(parent.getDeep() + 1);
-        fileInfo.setFingerprint(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.toString().getBytes(StandardCharsets.UTF_8))));
+        fileInfo.setPathBuffer(this.fileConfig.synPathInMap(fileInfo.toString()));
         if(childFile.isFile()){
             fileInfo.setSuffix(fileInfo.getName().substring(childFile.getName().lastIndexOf(".") + 1));
             fileInfo.setLeaf(true);
@@ -167,7 +163,7 @@ public class FileServiceImpl implements IFileService {
         }
         fileInfo.setName(baseFile.getName());
         fileInfo.setDeep(0);
-        fileInfo.setFingerprint(this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(fileInfo.toString().getBytes(StandardCharsets.UTF_8))));
+        fileInfo.setPathBuffer(this.fileConfig.synPathInMap(fileInfo.toString()));
         if(baseFile.isFile()){
             fileInfo.setSuffix(fileInfo.getName().substring(baseFile.getName().lastIndexOf(".") + 1));
             fileInfo.setLeaf(true);
@@ -191,9 +187,8 @@ public class FileServiceImpl implements IFileService {
 
     @SneakyThrows
     @Override
-    public void download(String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response) {
-        String path = new String(this.fileConfig.getAesCipher().decrypt(this.fileConfig.dataDecode(fingerprint)));
-        log.info("service download fingerprint:{}, path:{}", fingerprint, path);
+    public void download(String path, Map funcMap, HttpServletRequest request, HttpServletResponse response) {
+        log.info("service download path:{}", path);
         File file = new File(this.fileConfig.getFileMenu() + path);
         if(!file.exists()){
             throw new BusinessException("没有找到文件：" + file.getAbsoluteFile());
@@ -288,6 +283,7 @@ public class FileServiceImpl implements IFileService {
 
     @SneakyThrows
     private String getNavigationElement(String curPath, boolean disable){
+        curPath = curPath.replaceAll("\\\\", "/");
         StringBuilder sb = new StringBuilder();
         String url = "/file";
         url += "/info-tree-href/";
@@ -298,11 +294,8 @@ public class FileServiceImpl implements IFileService {
         if(ValueUtils.isBlank(curPath)){
             url = pathName = "/";
         }else{
-            url += this.fileConfig.dataEncode(this.fileConfig.getAesCipher().encrypt(
-                    curPath.getBytes()
-            ));
+            url += this.fileConfig.synPathInMap(curPath);
         }
-        url += "?1=1";
         if(disable){
             sb.append("<a style=\"pointer-events:none; color:#CCC;\" href='");
         }else{
@@ -320,13 +313,13 @@ public class FileServiceImpl implements IFileService {
         return sb.toString();
     }
 
-    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
-
-    public String getFingerprint(String md5FingerprintBase64Str){
-        byte[] md5FingerprintBytes = this.fileConfig.dataDecode(md5FingerprintBase64Str);
-        String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
-        return PATH_MAP.get(md5FingerprintHex);
-    }
+//    private final static Map<String, String> PATH_MAP = new ConcurrentHashMap<>();
+//
+//    public String getFingerprint(String md5FingerprintBase64Str){
+//        byte[] md5FingerprintBytes = this.fileConfig.dataDecode(md5FingerprintBase64Str);
+//        String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+//        return PATH_MAP.get(md5FingerprintHex);
+//    }
 
 
     @SneakyThrows
@@ -345,9 +338,6 @@ public class FileServiceImpl implements IFileService {
         if(ValueUtils.isNotBlank(fileInfo.getPath())){
             sb.append("<div><h1>");
             String iPath = fileInfo.getPath();
-            if(ValueUtils.isNotBlank(iPath)){
-                iPath = iPath.replaceAll("\\\\", "/");
-            }
             String kHeads = "";
             while (ValueUtils.isNotBlank(iPath)){
                 if(ValueUtils.isBlank(kHeads)){
@@ -373,17 +363,17 @@ public class FileServiceImpl implements IFileService {
                 if(fi.isDict()){
                     String urlDir = "/file";
                     urlDir += "/info-tree-href/";
-                    urlDir += fi.getFingerprint();
+                    urlDir += fi.getPathBuffer();
                     url = urlDir;
                 }else {
-                    byte[] md5FingerprintBytes = DataUtils.MD(fi.getFingerprint().getBytes(), DataUtils.KEY_MD5);
-                    String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
-                    String md5FingerprintBase64Str = this.fileConfig.dataEncode(md5FingerprintBytes);
-                    if(!PATH_MAP.containsKey(md5FingerprintHex)){
-                        PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getFingerprint());
-                    }
+//                    byte[] md5FingerprintBytes = DataUtils.MD(fi.getPathBuffer().getBytes(), DataUtils.KEY_MD5);
+//                    String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
+//                    String md5FingerprintBase64Str = this.fileConfig.dataEncode(md5FingerprintBytes);
+//                    if(!PATH_MAP.containsKey(md5FingerprintHex)){
+//                        PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getPathBuffer());
+//                    }
                     String urlFile = "/file";
-                    urlFile += "/download/" + md5FingerprintBase64Str;
+                    urlFile += "/download/" + fi.getPathBuffer();
                     urlFile += "/" + authKeyBase64Str;
                     urlFile += "/" + URLEncoder.encode( fi.getName(), "UTF-8" );
                     if(!fi.getName().contains(".")){

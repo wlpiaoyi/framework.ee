@@ -58,7 +58,7 @@ public interface IFileService {
      * <p><b>{@code @date:}</b>2024/3/11 23:34</p>
      * <p><b>{@code @author:}</b>wlpiaoyi</p>
      */
-    void download(String fingerprint, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(String path, Map funcMap, HttpServletRequest request, HttpServletResponse response);
 
     /**
      * <p><b>{@code @description:}</b>
@@ -85,7 +85,6 @@ public interface IFileService {
 
     void resHtml(FileInfo fileInfo, HttpServletResponse response);
 
-
-    String getFingerprint(String md5FingerprintHex);
+//    String getFingerprint(String md5FingerprintHex);
 
 }
