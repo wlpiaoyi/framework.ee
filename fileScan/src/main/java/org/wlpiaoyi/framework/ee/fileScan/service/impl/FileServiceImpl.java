@@ -189,7 +189,7 @@ public class FileServiceImpl implements IFileService {
     @Override
     public void download(String path, Map funcMap, HttpServletRequest request, HttpServletResponse response) {
         log.info("service download path:{}", path);
-        File file = new File(this.fileConfig.getFileMenu() + path);
+        File file = new File(this.fileConfig.absolutePath(path));
         if(!file.exists()){
             throw new BusinessException("没有找到文件：" + file.getAbsoluteFile());
         }
@@ -395,7 +395,7 @@ public class FileServiceImpl implements IFileService {
 
                 if(!fi.isDict()){
                     sb.append("&nbsp;&nbsp;<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
-                    File file = new File(this.fileConfig.getFileMenu() + fi.getPath());
+                    File file = new File(this.fileConfig.absolutePath(fi.getPath()));
                     BasicFileAttributes bAttributes = null;
                     try {
                         bAttributes = Files.readAttributes(file.toPath(),

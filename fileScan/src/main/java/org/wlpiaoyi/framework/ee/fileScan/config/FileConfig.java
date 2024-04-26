@@ -32,6 +32,20 @@ public class FileConfig {
     @Value("${fileScan.fileMenu}")
     private String fileMenu;
 
+
+    public String absolutePath(String relaPath){
+        String path = this.fileMenu.replaceAll("\\\\", "/");
+        relaPath = relaPath.replaceAll("\\\\", "/");
+        if(!path.endsWith("/")){
+            path += "/";
+        }
+        if(relaPath.startsWith("/")){
+            relaPath = relaPath.substring(1);
+        }
+        return path + relaPath;
+    }
+
+
     private final AesCipher aesCipher;
     {
         try {

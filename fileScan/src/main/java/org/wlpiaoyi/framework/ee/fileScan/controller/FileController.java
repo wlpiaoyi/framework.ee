@@ -65,7 +65,7 @@ public class FileController {
         if(ValueUtils.isNotBlank(pathBuffer)){
             basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
-        return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount));
+        return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount));
     }
 
 
@@ -80,7 +80,7 @@ public class FileController {
         if(ValueUtils.isNotBlank(pathBuffer)){
             basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
-        FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.getFileMenu() + basePath), deepCount);
+        FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount);
 
         this.fileService.resHtml(fileInfo, response);
     }
