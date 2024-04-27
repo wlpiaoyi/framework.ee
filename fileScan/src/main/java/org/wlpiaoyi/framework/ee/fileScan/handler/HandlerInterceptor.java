@@ -2,6 +2,7 @@ package org.wlpiaoyi.framework.ee.fileScan.handler;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -104,7 +105,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
      * <p><b>{@code @return:}</b>{@link boolean}</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+    public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler)
             throws Exception {
         printRequestLog(request);
         if(!this.authCheck(request)){
@@ -187,10 +188,7 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
         if(ValueUtils.isBlank(userName) || ValueUtils.isBlank(password)){
             return false;
         }
-        if(!userName.equals(DataUtils.MD(this.userName, DataUtils.KEY_MD5)) | !password.equals(DataUtils.MD(this.password, DataUtils.KEY_MD5))){
-            return false;
-        }
-        return true;
+        return !(!userName.equals(DataUtils.MD(this.userName, DataUtils.KEY_MD5)) | !password.equals(DataUtils.MD(this.password, DataUtils.KEY_MD5)));
     }
 
     /**
@@ -217,8 +215,8 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
      * <p><b>{@code @date:}</b>2024/4/17 16:16</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-                                 @Nullable Exception ex) throws Exception {
+    public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, Object handler,
+                                @Nullable Exception ex) throws Exception {
         printResponseLog(request, response);
     }
 

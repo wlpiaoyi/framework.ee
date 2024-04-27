@@ -94,7 +94,7 @@ public class FileConfig {
             absolutePath += ".dat";
             absoluteFile = new File(absolutePath);
             if(!absoluteFile.exists()){
-                WriterUtils.overwrite(absoluteFile, path, StandardCharsets.UTF_8);
+                WriterUtils.overwrite(absoluteFile, this.dataEncode(this.aesCipher.encrypt(path.getBytes())), StandardCharsets.UTF_8);
             }
         }
         return this.dataEncode(shaBytes);
@@ -115,10 +115,11 @@ public class FileConfig {
         String path = PATH_MAP.get(ValueUtils.bytesToHex(shaBytes));
         if(ValueUtils.isBlank(path)){
             String absolutePath = CACHE_BASE_PATH + this.getFingerprintPath(fingerprint) + ".dat";
-            path = ReaderUtils.loadString(absolutePath, StandardCharsets.UTF_8);
-            if(ValueUtils.isBlank(path)){
+            String dataEPath = ReaderUtils.loadString(absolutePath, StandardCharsets.UTF_8);
+            if(ValueUtils.isBlank(dataEPath)){
                 return null;
             }
+            path = new String(this.aesCipher.decrypt(this.dataDecode(dataEPath)));
             PATH_MAP.put(fingerprint, path);
         }
         return path;
