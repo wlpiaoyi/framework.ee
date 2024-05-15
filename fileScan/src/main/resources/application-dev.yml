@@ -1,6 +1,6 @@
 server:
   tomcat:
-    basedir: D:/upload/temp/
+    basedir: temp/
 #spring:
 #  datasource:
 #    url:
@@ -25,5 +25,6 @@ fileScan:
     password:
       123456
   fileMenu:
-    E:/Videos/
+    /Users
+#    E:/Videos/
 #    D:\wlpia\Documents\Temp\suffix\

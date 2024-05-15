@@ -93,6 +93,18 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
+        <profile>
+            <id>macosx-arm64</id>
+            <properties>
+                <system.env>macosx-arm64</system.env>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx-x86_64</id>
+            <properties>
+                <system.env>macosx-x86_64</system.env>
+            </properties>
+        </profile>
     </profiles>
 
 
