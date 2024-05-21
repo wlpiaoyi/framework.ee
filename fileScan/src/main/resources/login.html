@@ -5,9 +5,62 @@
         
         <meta charSet="utf-8"/>
         <style>
-            body {
-                text-align: center
+            ${common.css}
+            .form-colum{
+                /* border: solid 1px #730; */
+                margin-bottom: 40px;
             }
+            .form-colum div:nth-child(1) {
+                width: 80px;
+                color: #555;
+            }
+            .form-colum div:nth-child(2) {
+                width: calc(100% - 80px);
+            }
+            /* 自动填充背景颜色 */
+            input[type=text]:-webkit-autofill {
+                -webkit-box-shadow: 0 0 0 1000px white inset;
+                transition: background-color 5000s ease-in-out 0s !important;
+                border-bottom: solid 1px #ACA;
+                -webkit-text-fill-color: #669;
+            }
+            input[type=password]:-webkit-autofill {
+                -webkit-box-shadow: 0 0 0 1000px white inset;
+                transition: background-color 5000s ease-in-out 0s !important;
+                border-bottom: solid 1px #ACA;
+                -webkit-text-size-adjust: 16px;
+                -webkit-text-fill-color: #669;
+            }
+            input[type=text] {
+                font-size: 16px;
+                color: #444;
+                border-width: 0px;
+                border-bottom: solid 1px #CCC;
+                width: 100%;
+            }
+            input[type=text]:focus {
+                color: #34A;
+                font-size: 16px;
+                outline: none;
+                border-width: 0px;
+                border-bottom: solid 1px #56c;
+                width: 100%;
+            }
+            input[type=password] {
+                color: #444;
+                font-size: 16px;
+                border-width: 0px;
+                border-bottom: solid 1px #CCC;
+                width: 100%;
+            }
+            input[type=password]:focus {
+                outline: none;
+                font-size: 16px;
+                border-width: 0px;
+                border-bottom: solid 1px #F66;
+                width: 100%;
+            }
+
             input[type=submit] {
                 cursor: pointer;
                 border: none;
@@ -16,6 +69,7 @@
                 color: #FFF;
                 border-radius: 4px;
                 background-color: #222;
+                width: 100px;
             }
             input[type=submit]:hover {
                 color: #ccc;
@@ -33,6 +87,7 @@
                 color: #FFF;
                 border-radius: 4px;
                 background-color: #242;
+                width: 100px;
             }
             input[type=reset]:hover {
                 color: #ccc;
@@ -41,6 +96,10 @@
             input[type=reset]:active {
                 color: #ccc;
                 background-color: #474;
+            }
+            h4{
+                font-size: 12px;
+                color: #CCC;
             }
         </style>
         <script>
@@ -72,18 +131,27 @@
         </script>
     </head>
     <body>
-        <h1>Author: wlpiaoyi</h1>
-        <h2>欢迎登录本系统</h2>
-        <hr>
         <form name="auth" action="#" onsubmit="setAuthCookie()" method="post">
-            <h3>用户名:&emsp;<label>
-                <input type="text" name="auth_username">
-            </label></h3>
-            <h3>密<text style="color: white;">.</text>&nbsp;&nbsp;码:&emsp;<label>
-                <input type="password" name="auth_password">
-            </label></h3>
-            <input type="submit" value="登录">
-            <input type="reset" value="重置">
+        <div style="width: 100%; height: 1000px;" class="column-c">
+            <div style="width: 400px; height: 400px;">
+                <div style="text-align: center">
+                    <h1>欢迎登录系统</h1>
+                    <h4>Author: wlpiaoyi</h4>
+                </div>
+                <div class="clear row-se form-colum">
+                    <div>用户名:</div>
+                    <div><input type="text" name="auth_username" placeholder="请输入用户名"></div>
+                </div>
+                <div class="clear row-se form-colum">
+                    <div>密<text style="color: white;">.</text>&nbsp;&nbsp;码:</div>
+                    <div><input type="password" name="auth_password"  placeholder="请输入密码"></div>
+                </div>
+                <div class="row-se">
+                    <input type="submit" value="登录">
+                    <input type="reset" value="重置">
+                </div>
+            </div>
+        </div>
         </form>
     </body>
 </html>

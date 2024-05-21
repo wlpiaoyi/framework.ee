@@ -29,8 +29,10 @@ public class BaseController {
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public void infoTreeHref(@RequestParam(required = false, defaultValue = "1") Integer deepCount,
+                             @RequestParam(required = false, defaultValue = "") String fileName,
+                             @RequestParam(required = false, defaultValue = "0") Integer fileOrder,
                              HttpServletResponse response) {
-        FileInfo fileInfo = this.fileService.scanFileInfo(null, deepCount);
+        FileInfo fileInfo = this.fileService.scanFileInfo(null, deepCount, fileName, fileOrder);
         this.fileService.resHtml(fileInfo, response);
     }
 }

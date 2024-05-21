@@ -118,9 +118,13 @@ public class HandlerInterceptor implements org.springframework.web.servlet.Handl
             InputStream md5JsIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("md5.js");
             assert md5JsIo != null;
             String md5JsContent = ReaderUtils.loadString(md5JsIo, StandardCharsets.UTF_8);
+            InputStream commonCssIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("common.css");
+            assert commonCssIo != null;
+            String commonCssContent = ReaderUtils.loadString(commonCssIo, StandardCharsets.UTF_8);
             InputStream loginHtmlIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("login.html");
             assert loginHtmlIo != null;
             String loginHtmlContent = ReaderUtils.loadString(loginHtmlIo, StandardCharsets.UTF_8);
+            loginHtmlContent = loginHtmlContent.replace("${common.css}", commonCssContent);
             loginHtmlContent = loginHtmlContent.replace("${md5.js}", md5JsContent);
             ResponseUtils.writeResponseData(200, loginHtmlContent, response);
             return false;

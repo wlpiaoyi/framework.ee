@@ -1,5 +1,6 @@
 package org.wlpiaoyi.framework.ee.fileScan.service;
 
+import lombok.SneakyThrows;
 import org.wlpiaoyi.framework.ee.fileScan.domain.model.FileInfo;
 import org.wlpiaoyi.framework.utils.exception.SystemException;
 
@@ -18,7 +19,6 @@ import java.util.Map;
 
 public interface IFileService {
 
-
     /**
      * <p><b>{@code @description:}</b>
      * 扫描文件
@@ -32,11 +32,19 @@ public interface IFileService {
      * {@link int}
      * </p>
      *
+     * <p><b>@param</b> <b>fileName</b>
+     * {@link String}
+     * </p>
+     *
+     * <p><b>@param</b> <b>fileOrder</b>
+     * {@link int}
+     * </p>
+     *
      * <p><b>{@code @date:}</b>2024/3/11 23:01</p>
      * <p><b>{@code @return:}</b>{@link FileInfo}</p>
      * <p><b>{@code @author:}</b>wlpiaoyi</p>
      */
-    FileInfo scanFileInfo(File baseFile, int deepCount);
+    FileInfo scanFileInfo(File baseFile, int deepCount, String fileName, int fileOrder);
 
     /**
      * <p><b>{@code @description:}</b>

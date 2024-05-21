@@ -40,17 +40,21 @@ public class FileController {
     @RequestMapping("/info-tree")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
-    public R<FileInfo> infoTree(@RequestParam(required = false, defaultValue = "1") Integer deepCount) {
+    public R<FileInfo> infoTree(@RequestParam(required = false, defaultValue = "1") Integer deepCount,
+                                @RequestParam(required = false, defaultValue = "") String fileName,
+                                @RequestParam(required = false, defaultValue = "0") Integer fileOrder) {
         String basePath = "";
-        return R.success(this.fileService.scanFileInfo(null, deepCount));
+        return R.success(this.fileService.scanFileInfo(null, deepCount, fileName, fileOrder));
     }
     @SneakyThrows
     @RequestMapping("/info-tree-href")
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public void infoTreeHref(@RequestParam(required = false, defaultValue = "1") Integer deepCount,
-                                    HttpServletResponse response) {
-        FileInfo fileInfo = this.fileService.scanFileInfo(null, deepCount);
+                             @RequestParam(required = false, defaultValue = "") String fileName,
+                             @RequestParam(required = false, defaultValue = "0") Integer fileOrder,
+                             HttpServletResponse response) {
+        FileInfo fileInfo = this.fileService.scanFileInfo(null, deepCount, fileName, fileOrder);
         this.fileService.resHtml(fileInfo, response);
     }
 
@@ -60,12 +64,14 @@ public class FileController {
     @Operation(summary = "文件是否存在 请求", description = "文件是否存在")
     @ResponseBody
     public R<FileInfo> infoTree(@Validated @Parameter(description = "pathBuffer", required = false) @PathVariable String pathBuffer,
-                                @RequestParam(required = false, defaultValue = "1") Integer deepCount) {
+                                @RequestParam(required = false, defaultValue = "1") Integer deepCount,
+                                @RequestParam(required = false, defaultValue = "") String fileName,
+                                @RequestParam(required = false, defaultValue = "0") Integer fileOrder) {
         String basePath = "";
         if(ValueUtils.isNotBlank(pathBuffer)){
             basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
-        return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount));
+        return R.success(this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount, fileName, fileOrder));
     }
 
 
@@ -75,12 +81,14 @@ public class FileController {
     @ResponseBody
     public void infoTreeHref(@Validated @Parameter(description = "pathBuffer", required = false) @PathVariable String pathBuffer,
                              @RequestParam(required = false, defaultValue = "1") Integer deepCount,
+                             @RequestParam(required = false, defaultValue = "") String fileName,
+                             @RequestParam(required = false, defaultValue = "0") Integer fileOrder,
                              HttpServletResponse response) {
         String basePath = "";
         if(ValueUtils.isNotBlank(pathBuffer)){
             basePath = this.fileConfig.getPathByBuffer(pathBuffer);
         }
-        FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount);
+        FileInfo fileInfo = this.fileService.scanFileInfo(new File(this.fileConfig.absolutePath(basePath)), deepCount, fileName, fileOrder);
 
         this.fileService.resHtml(fileInfo, response);
     }

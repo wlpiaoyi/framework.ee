@@ -50,7 +50,6 @@
 <!--        <mybatis-spring-boot-starter.version>3.0.3</mybatis-spring-boot-starter.version>-->
 <!--        <com.baomidou.mybatis-plus.version>3.5.6</com.baomidou.mybatis-plus.version>-->
 <!--&gt;>>>>>> Stashed changes-->
-
         <skipTests>true</skipTests>
     </properties>
 
