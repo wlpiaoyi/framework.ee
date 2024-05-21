@@ -10,6 +10,7 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.data.ReaderUtils;
 import org.wlpiaoyi.framework.utils.data.WriterUtils;
+import org.wlpiaoyi.framework.utils.exception.BusinessException;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 
 import java.io.File;
@@ -90,11 +91,13 @@ public class FileConfig {
         if(ValueUtils.isBlank(res)){
             String absolutePath = CACHE_BASE_PATH + this.getFingerprintPath(fingerprint);
             File absoluteFile = new File(absolutePath);
-            absoluteFile.mkdirs();
+            if(!absoluteFile.exists() && !absoluteFile.mkdirs()){
+                throw new BusinessException("Create file failed for path:" + absolutePath);
+            }
             absolutePath += ".dat";
             absoluteFile = new File(absolutePath);
             if(!absoluteFile.exists()){
-                WriterUtils.overwrite(absoluteFile, this.dataEncode(this.aesCipher.encrypt(path.getBytes())), StandardCharsets.UTF_8);
+                WriterUtils.overwrite(absoluteFile, this.aesCipher.encrypt(path.getBytes()));
             }
         }
         return this.dataEncode(shaBytes);
@@ -115,11 +118,11 @@ public class FileConfig {
         String path = PATH_MAP.get(ValueUtils.bytesToHex(shaBytes));
         if(ValueUtils.isBlank(path)){
             String absolutePath = CACHE_BASE_PATH + this.getFingerprintPath(fingerprint) + ".dat";
-            String dataEPath = ReaderUtils.loadString(absolutePath, StandardCharsets.UTF_8);
-            if(ValueUtils.isBlank(dataEPath)){
+            byte[] datas = ReaderUtils.loadBytes(absolutePath);
+            if(ValueUtils.isBlank(datas)){
                 return null;
             }
-            path = new String(this.aesCipher.decrypt(this.dataDecode(dataEPath)));
+            path = new String(this.aesCipher.decrypt(datas));
             PATH_MAP.put(fingerprint, path);
         }
         return path;
@@ -137,8 +140,8 @@ public class FileConfig {
         cacheBasePath += "cache/fileScan/";
         CACHE_BASE_PATH = cacheBasePath;
         File cacheBaseFile = new File(CACHE_BASE_PATH);
-        if(!cacheBaseFile.exists()){
-            cacheBaseFile.mkdirs();
+        if(!cacheBaseFile.exists() && !cacheBaseFile.mkdirs()){
+            throw new BusinessException("Create file failed for path:" + CACHE_BASE_PATH);
         }
     }
 }
