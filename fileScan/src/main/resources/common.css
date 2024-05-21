@@ -1,0 +1,113 @@
+/**浮动 **/
+.fl {
+	float: left;
+}
+.fr {
+	float: right;
+}
+.ft {
+	float: top;
+}
+.fb {
+	float: bottom;
+}
+/*清除浮动*/
+.clear::after {
+  content: '';
+  display:block;
+  width:0;
+  height:0;
+  visibility: hidden;
+  clear:both;
+}
+
+/* 盒子内容居中 */
+.column {
+  display: flex;
+  flex-direction: column;
+}
+/* 内容纵向分布 每个元素周围分配相同的空间*/
+.column-sa {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+/* 内容纵向分布 首个元素放置于起点 末尾元素放置于终点*/
+.column-se {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.column-c {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.column-l {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: left;
+}
+.column-r {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+/* 内容横向不居中 */
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+/* 内容横向水平分布 每个元素周围分配相同的空间*/
+.row-sa {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+/* 内容横向水平分布 首个元素放置于起点 末尾元素放置于终点*/
+.row-se {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.row-l {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.row-r {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.row-c {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+};
+
+/** 均匀排列每个元素,每个元素周围分配相同的空间 **/
+.flex-a{
+	display: flex;
+	justify-content: space-around;
+}
+/** 均匀排列每个元素,首个元素放置于起点，末尾元素放置于终点 **/
+.flex-b{
+	display: flex;
+	justify-content: space-between;
+}
+

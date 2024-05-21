@@ -4,6 +4,7 @@
     <title></title>
     <meta charSet="utf-8"/>
     <style>
+        ${common.css}
         h1 {font-size: 24px;}
         h2 {font-size: 20px;}
         h4 {font-size: 12px; color: #AAA; font-weight: 200;}
@@ -15,15 +16,6 @@
         a:active {color: red; }
         a:visited {color:purple;text-decoration:none;}
         a:hover {color: red; text-decoration:underline;}
-        div:hover {
-            background-image: linear-gradient(to right, rgba(247, 237, 150, 0.2), rgba(247, 237, 150, 0.5), rgba(247, 237, 150, 0.2));
-        }
-        div {
-            width: calc(100% - 40px);
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-align: center;
-        }
         hr {
             padding: 0px;
             margin: 5px auto;
@@ -48,6 +40,15 @@
             color: #ccc;
             background-color: #007bffdb;
         }
+        .item:hover {
+            background-image: linear-gradient(to right, rgba(247, 237, 150, 0.2), rgba(247, 237, 150, 0.5), rgba(247, 237, 150, 0.2));
+        }
+        .item {
+            width: calc(100% - 40px);
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
         .empty_data {
             padding: 0px;
             margin: 0px;
@@ -60,6 +61,159 @@
             color: #AAA;
             padding-top: calc(25% - 70px);
             padding-bottom: calc(25% - 70px);
+        }
+        .navigation_bar{
+            background-color: white;
+            width: 100%;
+            position: fixed; 
+            top: 0px;
+            left: 0px; 
+            box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+        }
+        .search_bar {
+            width: 100%;
+            padding: 20px;
+            border-bottom: solid 1px #CCC;
+            display: flex;
+        }
+        .search_bar_split_tag{
+            width: 20px;
+        }
+        .search_bar_item {
+            display: flex;
+            padding: 5px 0px;
+        }
+        .search_bar_item div:nth-child(1) {
+            color: #555;
+            margin-right: 10px;
+            min-width: 60px;
+        }
+        label{
+            color: #777;
+            font-size: 15px;
+        }
+        input::-webkit-input-placeholder {
+            /* placeholder颜色 */
+            color: #aab2bd;
+            /* placeholder字体大小 */
+            font-size: 15px;
+        }
+        input{
+            /* placeholder颜色 */
+            color: #555;
+            /* placeholder字体大小 */
+            font-size: 15px;
+        }
+        /* 自动填充背景颜色 */
+        input[type=text]:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px white inset;
+            transition: background-color 5000s ease-in-out 0s !important;
+            border-bottom: solid 1px #ACA;
+            -webkit-text-fill-color: #669;
+        }
+        input[type=text] {
+            color: #444;
+            border-width: 0px;
+            border-bottom: solid 1px #CCC;
+            width: 100%;
+            min-width: 100px;
+        }
+        input[type=text]:focus {
+            color: #34A;
+            outline: none;
+            border-width: 0px;
+            border-bottom: solid 1px #56c;
+            width: 100%;
+        }
+        input[type=radio]{
+            width: 22px;
+            height: 22px;
+            appearance: none;
+            position: relative;
+            padding: 0px;
+            margin: 0px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        input[type=radio]:before{
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 1px solid #7d7d7d;
+            display: inline-block;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        input[type=radio]:checked:before{
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 1px solid #c59c5a;
+            background:#c59c5a;
+            display: inline-block;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        input[type=radio]:checked:after{
+            content: '';
+            width: 9px;
+            height: 5px;
+            border: 2px solid white;
+            border-top: transparent;
+            border-right: transparent;
+            text-align: center;
+            display: block;
+            position: absolute;
+            top: calc(20px/2 - 6px/2 - 1px);
+            left: calc(20px/2 - 10px/2);
+            transform: rotate(-45deg);
+        }
+        input[type=radio]:checked+label{
+            color: #c59c5a;
+        }
+        input[type=radio]+label{
+            min-width: 45px;
+            line-height: 22px;
+            display: inline-block;
+            margin-left: 2px;
+            margin-right:10px;
+        }
+        input[type=submit] {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            padding: 5px 10px;
+            color: #FFF;
+            border-radius: 4px;
+            background-color: #222;
+            width: 100px;
+            margin-right: 20px;
+        }
+        input[type=submit]:hover {
+            color: #ccc;
+            background-color: #666;
+        }
+        input[type=submit]:active {
+            color: #ccc;
+            background-color: #686;
+        }
+        input[type=reset] {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            padding: 5px 10px;
+            color: #FFF;
+            border-radius: 4px;
+            background-color: #242;
+            width: 100px;
+        }
+        input[type=reset]:hover {
+            color: #ccc;
+            background-color: #363;
+        }
+        input[type=reset]:active {
+            color: #ccc;
+            background-color: #474;
         }
     </style>
     <script>
@@ -105,14 +259,89 @@
             let url = window.location.protocol + '//' + window.location.host + uri;
             clipboard(url)
         }
+
+        function onSubmitSearch(){
+            let inputEls = document.getElementsByName("fileName");
+            let fileName = inputEls[0].value;
+            const encoder = new TextEncoder();
+            if(fileName != undefined && encoder.encode(fileName).length > 10){
+                alert("文件名查询长度不能超过10")
+                return false;
+            }
+            return true;
+        }
+        function getUrlParam(urlStr, urlKey) {
+            const url = new URL(urlStr)
+            var reg = new RegExp('[\?\&]' + urlKey + '=([^\&]*)(\&?)', 'i')
+            var r = url.search.match(reg)
+            return r ? r[1] : ''
+        }
+
+        function pageLoaded() {
+            let url = window.location.href + "";
+            if(url == undefined){
+                return
+            }
+            if(url == ''){
+                return
+            }
+            if(url == ""){
+                return
+            }
+            if(url === ''){
+                return
+            }
+            if(url === ""){
+                return
+            }
+            let fileName = getUrlParam(url, "fileName");
+            let fileOrder = getUrlParam(url, "fileOrder");
+            if(fileOrder == undefined){
+                fileOrder = 0;
+            }
+            fileOrder = fileOrder * 1;
+            if(fileOrder < 0 || fileOrder > 4){
+                fileOrder = 0;
+            }
+
+            let inputEls = document.getElementsByName("fileName");
+            inputEls[0].value = decodeURI(fileName);
+
+            inputEls = document.getElementsByName("fileOrder");
+            for (const i in inputEls) {
+                const inputEl = inputEls[i];
+                inputEl.checked = inputEl.value * 1 == fileOrder;
+            }
+        }
     </script>
 </head>
-<body>
+<body onload="pageLoaded()">
+    <div class="navigation_bar">
+        <form name="auth" action="#" onsubmit="return onSubmitSearch()" method="get">
+            <div class="search_bar">
+                <div class="search_bar_item">
+                    <div>文件名:</div>
+                    <div><input type="text" name="fileName" placeholder="请输入文件名"></div>
+                </div>
+                <div class="search_bar_split_tag"></div>
+                <div class="search_bar_item">
+                    <div>排序方式:</div>
+                    <div style="display: flex;">
+                        <input type="radio" id="file_defaul_order" name="fileOrder" value="0" checked><label style="min-width: 16px;" for="file_defaul_order">默认</label>
+                        <input type="radio" id="file_create_time_asc" name="fileOrder" value="1"><label for="file_create_time_asc">创建时间增序</label>
+                        <input type="radio" id="file_create_time_desc" name="fileOrder" value="2"><label for="file_create_time_desc">创建时间降序</label>
+                        <input type="radio" id="file_update_time_asc" name="fileOrder" value="3"><label for="file_update_time_asc">更新时间增序</label>
+                        <input type="radio" id="file_update_time_desc" name="fileOrder" value="4"><label for="file_update_time_desc">更新时间降序</label>
+                    </div>
+                </div>
+                <div class="search_bar_split_tag"></div>
+                <input type="submit" value="查询">
+                <input type="reset" value="重置">
+            </div>
+        </form>
+        ${navigation_bar}
+    </div>
+    <div style="width:100%; height: 65px;"></div>
     ${body}
-    <!-- <div><h1>
-        ^{head_root}<a href='${head_root_href_url}'>/&nbsp;<strong>▼</strong></a>&nbsp;${head_root}
-        ^{head_item_valid}<a href='${head_item_valid_href_url}'>${head_item_valid_name}&nbsp;<strong>▼</strong></a>&nbsp;${head_item_valid}
-        <a style="pointer-events:none; color:#CCC;" href='/file/info-tree-href/sQzS6f8KiZmQV1ePZrjUdA?1=1'>三体&nbsp;</a>&nbsp
-    </h1></div> <hr/>-->
 </body>
 </html>

@@ -31,6 +31,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.Collator;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,6 +69,80 @@ public class FileServiceImpl implements IFileService {
         put("default", "application/octet-stream");
     }};
 
+
+    private File[] filterFiles(File parentFile, String fileName, int fileOrder){
+        File[] fa = parentFile.listFiles();
+        if(ValueUtils.isBlank(fa)){
+            return null;
+        }
+        List<File> files = new ArrayList(){{ addAll(Arrays.asList(fa)); }};
+        if (ValueUtils.isBlank(files)){
+            return null;
+        }
+        List<File> removes = new ArrayList<>();
+        if(ValueUtils.isNotBlank(fileName)){
+            for (File file : files){
+                if(file.getName().contains(fileName)){
+                    continue;
+                }
+                removes.add(file);
+            }
+        }
+        if(ValueUtils.isNotBlank(removes)){
+            files.removeAll(removes);
+        }
+
+        if(fileOrder > 0) {
+            files.sort((f1, f2) -> {
+                BasicFileAttributes batt1 = null;
+                try {
+                    batt1 = Files.readAttributes(f1.toPath(),
+                            BasicFileAttributes.class);
+                } catch (IOException e) {
+                    log.warn("Get file attributes failed:{}", e.getMessage());
+                    return 0;
+                }
+                BasicFileAttributes batt2 = null;
+                try {
+                    batt2 = Files.readAttributes(f2.toPath(),
+                            BasicFileAttributes.class);
+                } catch (IOException e) {
+                    log.warn("Get file attributes failed:{}", e.getMessage());
+                    return 0;
+                }
+                long sv = 0;
+                if (fileOrder == 1) {
+                    sv = (batt1.creationTime().toMillis() - batt2.creationTime().toMillis());
+                }else if (fileOrder == 2) {
+                    sv = (batt2.creationTime().toMillis() - batt1.creationTime().toMillis());
+                }else if (fileOrder == 3) {
+                    sv = (batt1.lastAccessTime().toMillis() - batt2.lastAccessTime().toMillis());
+                }else if (fileOrder == 4) {
+                    sv = (batt2.lastAccessTime().toMillis() - batt1.lastAccessTime().toMillis());
+                }
+                if(sv < 0) {
+                    return -1;
+                }else if(sv > 0){
+                    return 1;
+                }
+                return 0;
+            });
+        }else{
+            Comparator<Object> compare = Collator.getInstance(java.util.Locale.CHINA);
+            files.sort((f1, f2) -> {
+                int d1 = f1.isDirectory() ? 0 : 1;
+                int d2 = f2.isDirectory() ? 0 : 1;
+                int v = d1 - d2;
+                if(v != 0){
+                    return v;
+                }
+                return compare.compare(f1.getName(),f2.getName());
+            });
+
+        }
+        return files.toArray(new File[0]);
+    }
+
     /**
      * <p><b>{@code @description:}</b>
      * TODO
@@ -85,12 +160,20 @@ public class FileServiceImpl implements IFileService {
      * {@link int}
      * </p>
      *
+     * <p><b>@param</b> <b>fileName</b>
+     * {@link String}
+     * </p>
+     *
+     * <p><b>@param</b> <b>fileOrder</b>
+     * {@link int}
+     * </p>
+     *
      * <p><b>{@code @date:}</b>2024/4/19 11:43</p>
      * <p><b>{@code @return:}</b>{@link FileInfo}</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
     @SneakyThrows
-    private FileInfo scan(File childFile, FileInfo parent, int deepCount){
+    private FileInfo scan(File childFile, FileInfo parent, int deepCount, String fileName, int fileOrder){
         if(parent == null){
             throw new BusinessException("上级目录不能为空");
         }
@@ -120,7 +203,7 @@ public class FileServiceImpl implements IFileService {
             fileInfo.setDict(false);
             return fileInfo;
         }
-        File[] files = childFile.listFiles();
+        File[] files = filterFiles(childFile, fileName, fileOrder);
         if (ValueUtils.isBlank(files)){
             fileInfo.setLeaf(true);
             fileInfo.setDict(true);
@@ -130,11 +213,10 @@ public class FileServiceImpl implements IFileService {
         fileInfo.setDict(true);
         fileInfo.setChildren(new ArrayList<>());
         for (File file : files){
-            scan(file, fileInfo, deepCount - 1);
+            scan(file, fileInfo, deepCount - 1, fileName, fileOrder);
         }
         return fileInfo;
     }
-
     /**
      * <p><b>{@code @description:}</b>
      * 文件扫描
@@ -148,12 +230,20 @@ public class FileServiceImpl implements IFileService {
      * {@link int}
      * </p>
      *
+     * <p><b>@param</b> <b>fileName</b>
+     * {@link String}
+     * </p>
+     *
+     * <p><b>@param</b> <b>fileOrder</b>
+     * {@link int}
+     * </p>
+     *
      * <p><b>{@code @date:}</b>2024/3/11 23:00</p>
      * <p><b>{@code @return:}</b>{@link FileInfo}</p>
      * <p><b>{@code @author:}</b>wlpiaoyi</p>
      */
     @SneakyThrows
-    public FileInfo scanFileInfo(File baseFile, int deepCount){
+    public FileInfo scanFileInfo(File baseFile, int deepCount, String fileName, int fileOrder){
         FileInfo fileInfo = new FileInfo();
         if(baseFile == null){
             baseFile = new File(this.fileConfig.getFileMenu());
@@ -170,7 +260,7 @@ public class FileServiceImpl implements IFileService {
             fileInfo.setDict(false);
             return fileInfo;
         }
-        File[] files = baseFile.listFiles();
+        File[] files = filterFiles(baseFile, fileName, fileOrder);
         if (ValueUtils.isBlank(files)){
             fileInfo.setLeaf(true);
             fileInfo.setDict(true);
@@ -180,7 +270,7 @@ public class FileServiceImpl implements IFileService {
         fileInfo.setLeaf(false);
         fileInfo.setChildren(new ArrayList<>());
         for (File file : files){
-            scan(file, fileInfo, deepCount);
+            scan(file, fileInfo, deepCount, fileName, fileOrder);
         }
         return fileInfo;
     }
@@ -237,8 +327,6 @@ public class FileServiceImpl implements IFileService {
     @SneakyThrows
     @Override
     public void resHtml(FileInfo fileInfo, HttpServletResponse response) {
-        Enumeration<NetworkInterface> nifs = NetworkInterface.getNetworkInterfaces();
-
         List<OutputStream> outputStreams = new ArrayList<>();
         try{
             response.setContentType("text/html");
@@ -321,14 +409,17 @@ public class FileServiceImpl implements IFileService {
 //        return PATH_MAP.get(md5FingerprintHex);
 //    }
 
-
     @SneakyThrows
     @NotNull
     private String createHtml(FileInfo fileInfo) {
 
+        InputStream commonCssIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("common.css");
+        assert commonCssIo != null;
+        String commonCssContent = ReaderUtils.loadString(commonCssIo, StandardCharsets.UTF_8);
         InputStream fileHtmlIo = HandlerInterceptor.class.getClassLoader().getResourceAsStream("file.html");
         assert fileHtmlIo != null;
         String fileHtml = ReaderUtils.loadString(fileHtmlIo, StandardCharsets.UTF_8);
+        fileHtml = fileHtml.replace("${common.css}", commonCssContent);
         byte[] authKeyBytes = DataUtils.MD(
                 (DataUtils.MD(this.userName, DataUtils.KEY_MD5)
                         + DataUtils.MD(this.password, DataUtils.KEY_MD5)).getBytes()
@@ -336,7 +427,7 @@ public class FileServiceImpl implements IFileService {
         String authKeyBase64Str = this.fileConfig.dataEncode(authKeyBytes);
         StringBuilder sb = new StringBuilder();
         if(ValueUtils.isNotBlank(fileInfo.getPath())){
-            sb.append("<div><h1>");
+            sb.append("<div class='item'><h1>");
             String iPath = fileInfo.getPath();
             String kHeads = "";
             while (ValueUtils.isNotBlank(iPath)){
@@ -354,9 +445,9 @@ public class FileServiceImpl implements IFileService {
                 iPath = iPath.substring(0, index);
             }
             sb.append(kHeads);
-            sb.append("</h1></div>");
-            sb.append("<hr/>\n");
+            sb.append("</h1></div>\n");
         }
+        fileHtml = fileHtml.replace("${navigation_bar}", sb.toString());
         if(ValueUtils.isNotBlank(fileInfo.getChildren())){
             for(FileInfo fi : fileInfo.getChildren()){
                 final String url;
@@ -366,12 +457,6 @@ public class FileServiceImpl implements IFileService {
                     urlDir += fi.getPathBuffer();
                     url = urlDir;
                 }else {
-//                    byte[] md5FingerprintBytes = DataUtils.MD(fi.getPathBuffer().getBytes(), DataUtils.KEY_MD5);
-//                    String md5FingerprintHex = ValueUtils.bytesToHex(md5FingerprintBytes);
-//                    String md5FingerprintBase64Str = this.fileConfig.dataEncode(md5FingerprintBytes);
-//                    if(!PATH_MAP.containsKey(md5FingerprintHex)){
-//                        PATH_MAP.putIfAbsent(md5FingerprintHex, fi.getPathBuffer());
-//                    }
                     String urlFile = "/file";
                     urlFile += "/download/" + fi.getPathBuffer();
                     urlFile += "/" + authKeyBase64Str;
@@ -381,7 +466,7 @@ public class FileServiceImpl implements IFileService {
                     }
                     url = urlFile;
                 }
-                sb.append("<div><a href='");
+                sb.append("<div class='item'><a href='");
                 sb.append(url);
                 sb.append("'>");
                 sb.append(fi.getName());
@@ -395,29 +480,29 @@ public class FileServiceImpl implements IFileService {
 
                 if(!fi.isDict()){
                     sb.append("&nbsp;&nbsp;<input type=\"button\" value=\"复制URL\" onclick=\"clipboardForUri('").append(url).append("')\" >");
-                    File file = new File(this.fileConfig.absolutePath(fi.getPath()));
-                    BasicFileAttributes bAttributes = null;
-                    try {
-                        bAttributes = Files.readAttributes(file.toPath(),
-                                BasicFileAttributes.class);
-                    } catch (IOException e) {
-                        log.warn("Get file attributes failed:{}", e.getMessage());
+                }
+                File file = new File(this.fileConfig.absolutePath(fi.getPath()));
+                BasicFileAttributes bAttributes = null;
+                try {
+                    bAttributes = Files.readAttributes(file.toPath(),
+                            BasicFileAttributes.class);
+                } catch (IOException e) {
+                    log.warn("Get file attributes failed:{}", e.getMessage());
+                }
+                if(bAttributes != null){
+                    sb.append("&nbsp;&nbsp;&nbsp;&nbsp;<h4>").append("<strong>创建时间:</strong>")
+                            .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.creationTime().toMillis())));
+                    if(bAttributes.lastAccessTime() != null){
+                        sb.append("&nbsp;<strong>上次访问时间:</strong>")
+                                .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.lastAccessTime().toMillis())));
                     }
-                    if(bAttributes != null){
-                        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;<h4>").append("<strong>创建时间:</strong>")
-                                .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.creationTime().toMillis())));
-                        if(bAttributes.lastAccessTime() != null){
-                            sb.append("&nbsp;<strong>上次访问时间:</strong>")
-                                    .append(DateUtils.friendCNLocalDateTime(DateUtils.parseToLocalDateTime(bAttributes.lastAccessTime().toMillis())));
-                        }
-                        sb.append("</h4>");
-                    }
+                    sb.append("</h4>");
                 }
                 sb.append("</div>");
                 sb.append("<hr/>\n");
             }
         }else{
-            sb.append("<div class=\"empty_data\">没有文件</div>");
+            sb.append("<div class='item' class=\"empty_data\">没有文件</div>");
         }
         return fileHtml.replace("${body}", sb.toString());
     }
