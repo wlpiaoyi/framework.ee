@@ -29,9 +29,14 @@
 
         <spring.boot.version>2.7.6</spring.boot.version>
         <spring.platform.version>Cairo-SR8</spring.platform.version>
+        <!-- <spring.platform.version>Cairo-SR8</spring.platform.version>-->
+        <jakarta.servlet-api.version>6.1.0-M2</jakarta.servlet-api.version>
+        <commons.io.version>2.16.1</commons.io.version>
+        <commons.fileupload.version>1.5</commons.fileupload.version>
         <!-- 微服务 -->
         <spring.cloud.version>2021.0.3</spring.cloud.version>
         <spring.cloud.alibaba.version>2021.0.5.0</spring.cloud.alibaba.version>
+        <spring.boot.starter.security.version>3.2.5</spring.boot.starter.security.version>
 
         <!-- Swagger.V3 -->
         <swagger.version>2.2.19</swagger.version>
@@ -39,17 +44,12 @@
         <knife4j.version>4.3.0</knife4j.version>
 
         <!-- 数据库 -->
-<!--<<<<<<< Updated upstream-->
         <mybatis-spring-boot-starter.version>2.3.2</mybatis-spring-boot-starter.version>
         <com.baomidou.mybatis-plus.version>3.5.4</com.baomidou.mybatis-plus.version>
         <sqlite-jdbc.version>3.45.3.0</sqlite-jdbc.version>
         <mybatis-spring.version>3.0.3</mybatis-spring.version>
-<!--=======-->
-<!--        <sqlite-jdbc.version>3.45.3.0</sqlite-jdbc.version>-->
-<!--        <mybatis-spring.version>3.0.3</mybatis-spring.version>-->
-<!--        <mybatis-spring-boot-starter.version>3.0.3</mybatis-spring-boot-starter.version>-->
-<!--        <com.baomidou.mybatis-plus.version>3.5.6</com.baomidou.mybatis-plus.version>-->
-<!--&gt;>>>>>> Stashed changes-->
+        <mybatis-spring-boot-starter.version>3.0.3</mybatis-spring-boot-starter.version>
+        <com.baomidou.mybatis-plus.version>3.5.6</com.baomidou.mybatis-plus.version>
         <skipTests>true</skipTests>
     </properties>
 
@@ -142,13 +142,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>io.spring.platform</groupId>
-                <artifactId>platform-bom</artifactId>
-                <version>${spring.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>io.spring.platform</groupId>-->
+<!--                <artifactId>platform-bom</artifactId>-->
+<!--                <version>${spring.platform.version}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
             <!-- spring-cloud-alibaba -->
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
@@ -161,6 +161,28 @@
                 <groupId>com.alibaba.nacos</groupId>
                 <artifactId>nacos-client</artifactId>
                 <version>${alibaba.nacos.version}</version>
+            </dependency>
+             <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-security</artifactId>
+                <version>${spring.boot.starter.security.version}</version>
+            </dependency>
+            <!--io常用工具类 -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <!--文件上传工具类 -->
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <version>${commons.fileupload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wlpiaoyi.framework.ee</groupId>
+                <artifactId>utils</artifactId>
+                <version>${ee.project.version}</version>
             </dependency>
             <!-- 数据库 -->
             <dependency>

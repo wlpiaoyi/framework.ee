@@ -1,3 +1,6 @@
+resource:
+  version:
+    1.0.0
 #tomcat config
 server :
   port : 8180

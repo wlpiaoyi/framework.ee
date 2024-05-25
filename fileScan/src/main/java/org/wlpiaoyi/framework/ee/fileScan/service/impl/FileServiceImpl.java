@@ -426,8 +426,10 @@ public class FileServiceImpl implements IFileService {
                 , DataUtils.KEY_MD5);
         String authKeyBase64Str = this.fileConfig.dataEncode(authKeyBytes);
         StringBuilder sb = new StringBuilder();
+        String svbtv = "style=\"visibility: visible;\"";
+        String svbth = "style=\"visibility: hidden;\"";
         if(ValueUtils.isNotBlank(fileInfo.getPath())){
-            sb.append("<div class='item'><h1>");
+            sb.append("<div class='item' ${svbt}><h1>");
             String iPath = fileInfo.getPath();
             String kHeads = "";
             while (ValueUtils.isNotBlank(iPath)){
@@ -447,7 +449,7 @@ public class FileServiceImpl implements IFileService {
             sb.append(kHeads);
             sb.append("</h1></div>\n");
         }
-        fileHtml = fileHtml.replace("${navigation_bar}", sb.toString());
+        fileHtml = fileHtml.replace("${navigation_bar}", sb.toString().replace("${svbt}", svbtv));
         if(ValueUtils.isNotBlank(fileInfo.getChildren())){
             for(FileInfo fi : fileInfo.getChildren()){
                 final String url;
@@ -504,7 +506,7 @@ public class FileServiceImpl implements IFileService {
         }else{
             sb.append("<div class='item' class=\"empty_data\">没有文件</div>");
         }
-        return fileHtml.replace("${body}", sb.toString());
+        return fileHtml.replace("${body}", sb.toString().replace("${svbt}", svbth));
     }
 
 
