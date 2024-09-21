@@ -40,7 +40,7 @@ public interface IFileService {
      * <p><b>{@code @return:}</b>{@link String}</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    String save(Object fileIo, FileInfo entity, Map funcMap);
+    void save(Object fileIo, FileInfo entity, Map funcMap);
 
 
     /**

@@ -67,7 +67,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
-    public String save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor){
+    public void save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor){
         if(funcMap == null) funcMap = new HashMap<>();
         List<InputStream> inputStreams = new ArrayList<>();
         List<String> removePaths = MapUtils.get(funcMap, "removePaths", new ArrayList<>());
@@ -144,10 +144,6 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             String fingerprintHex = FileUtils.getFingerprintHex(new File(tempFilePath));
             entity.setFingerprint(this.fileConfig.parseFingerprintHexTo(fingerprintHex));
             entity.setSize(DataUtils.getSize(tempFilePath));
-            String fileSign = null;
-            if(entity.getIsVerifySign() == 1){
-                fileSign = this.fileConfig.signFile(entity.getId(), entity.getFingerprint());
-            }
             unMoveMap.put(fingerprintHex, tempFilePath);
 
             if(!super.save(entity)){
@@ -165,7 +161,6 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                     log.info("file dataPath fileExists:{}, fingerprintHex: {}", fileExists, fingerprintHex);
                 }
             }
-            return fileSign;
         }finally {
             if(isRootDone){
                 removePaths.forEach(this::deleteFile);

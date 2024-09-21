@@ -57,8 +57,8 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
     @Override
-    public String save(Object fileIo, FileInfo entity, Map funcMap){
-        return this.fileInfoService.save(fileIo, entity, funcMap, this);
+    public void save(Object fileIo, FileInfo entity, Map funcMap){
+        this.fileInfoService.save(fileIo, entity, funcMap, this);
     }
 
     /**
@@ -144,19 +144,6 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
             entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
         }else if(this.fileVideoHandle.canDownloadByScreenshot(entity.getSuffix(), dataType)){
             entity = this.fileVideoHandle.getScreenshotFileInfo(this, entity);
-        }
-        if(entity.getIsVerifySign() == 1){
-            String fileSign = MapUtils.getString(funcMap, "fileSign");
-            if(ValueUtils.isBlank(fileSign)){
-                throw new BusinessException("无权访问文件");
-            }
-            try{
-                if(!this.fileConfig.verifyFile(entity.getId(), entity.getFingerprint(), fileSign)){
-                    throw new BusinessException("无权访问文件");
-                }
-            }catch (Exception e){
-                throw new BusinessException("无权访问文件", e);
-            }
         }
         String ft = entity.getSuffix();
         if(ValueUtils.isNotBlank(ft)){

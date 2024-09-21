@@ -73,7 +73,6 @@ public class FileController {
     @Operation(summary = "上传单个文件 请求", description = "上传单个文件")
     @ResponseBody
     public R<FileInfo> upload(@Parameter(description = "上传的文件") @RequestParam(value = "file") MultipartFile file,
-                              @Parameter(description = "是否需要签名验证") @RequestParam(value = "isVerifySign", required = false, defaultValue = "0") byte isVerifySign,
                               @Parameter(description = "图片缩略图比例,图片专用0.0~1.0") @RequestParam(value = "thumbnailSize", required = false, defaultValue = "-1") double thumbnailSize,
                               @Parameter(description = "视频截图位置,视频专用0.0~1.0") @RequestParam(value = "screenshotFloat", required = false, defaultValue = "-1") double screenshotFloat,
                               @Parameter(description = "文件名称") @RequestParam(value = "name", required = false) String name,
@@ -82,7 +81,6 @@ public class FileController {
                               @Parameter(description = "水印字体大小") @RequestParam(value = "waterFontSize", required = false) Integer waterFontSize,
                               HttpServletResponse response) {
         FileInfo fileInfo = new FileInfo();
-        fileInfo.setIsVerifySign(isVerifySign);
         if(ValueUtils.isNotBlank(name)){
             fileInfo.setName(name);
         }
@@ -92,13 +90,7 @@ public class FileController {
         if(ValueUtils.isBlank(fileInfo.getName())){
             fileInfo.setName(file.getOriginalFilename());
         }
-        if(ValueUtils.isBlank(fileInfo.getSuffix())){
-            if(ValueUtils.isNotBlank(file.getOriginalFilename()) && file.getOriginalFilename().contains(".")){
-                fileInfo.setSuffix(file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1));
-            }else if(ValueUtils.isNotBlank(fileInfo.getName()) && fileInfo.getName().contains(".")){
-                fileInfo.setSuffix(fileInfo.getName().substring(fileInfo.getName().lastIndexOf(".") + 1));
-            }
-        }
+        fileInfo.checkSuffix(file.getOriginalFilename());
         Map<String, Object> funcMap = new HashMap<>();
         if(ValueUtils.isNotBlank(thumbnailSize)){
             funcMap.put("thumbnailSize", thumbnailSize);
@@ -113,10 +105,7 @@ public class FileController {
             funcMap.put("waterFontSize", waterFontSize);
         }
 
-        String fileSign = this.fileService.save(file, fileInfo, funcMap);
-        if(ValueUtils.isNotBlank(fileSign)){
-            response.setHeader("file-sign", fileSign);
-        }
+        this.fileService.save(file, fileInfo, funcMap);
         FileInfoVo fileInfoVo = this.fileDataService.detail(fileInfo.getId());
         fileInfoVo.cleanKeyData();
         fileInfoVo.setToken(this.fileConfig.encodeToken(fileInfo.getId(), fileInfo.getFingerprint()));
@@ -130,7 +119,6 @@ public class FileController {
     @ResponseBody
     @PermitAll
     public void download(@Validated @Parameter(description = "token") @PathVariable String token,
-                         @RequestHeader(value = "file-sign", required = false, defaultValue = "") String fileSign,
                          @Parameter(description = "文件读取类型: attachment,inline")
                              @RequestParam(required = false, defaultValue = "attachment") String readType,
                          @Parameter(description = "数据类型: general,thumbnail,screenshot,original")
@@ -140,7 +128,6 @@ public class FileController {
         this.fileService.download(token, new HashMap(){{
             put("readType", readType);
             put("dataType", dataType);
-            put("fileSign", fileSign);
         }}, request, response);
     }
 

@@ -1,0 +1,2 @@
+nohup java -jar -Dfile.encoding=utf-8 resource.jar --spring.profiles.active=prod -spring.config.location=config/application-prod.yml>> ./file.scan.log &
+

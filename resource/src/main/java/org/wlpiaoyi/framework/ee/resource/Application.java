@@ -25,7 +25,13 @@ import java.util.TimeZone;
  * {@code @date:}           2023/9/14 17:40
  * {@code @version:}:       1.0
  */
-//Dspring.config.location=/data/config/application-sms.yml
+/*
+
+java -jar -Dfile.encoding=utf-8 resource-windows-x86_64.jar --spring.profiles.active=prod -spring.config.location=config/application-prod.yml
+
+
+ */
+
 @SpringBootApplication(scanBasePackages = {
         "org.wlpiaoyi.framework.ee.resource",
 })

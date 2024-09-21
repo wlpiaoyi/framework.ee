@@ -14,8 +14,6 @@
         <result column="size" property="size"/>
         <!-- 文件指纹 -->
         <result column="fingerprint" property="fingerprint"/>
-        <!-- 是否验证签名 0:否 1:是 -->
-        <result column="is_verify_sign" property="isVerifySign"/>
         <!-- 文件后缀 -->
         <result column="suffix" property="suffix"/>
         <!-- 状态 -->

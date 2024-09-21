@@ -110,13 +110,13 @@ public class FileConfig {
         return this.dataEncode(ValueUtils.hexToBytes(fingerprintHex.toUpperCase(Locale.ROOT)));
     }
 
-    @SneakyThrows
-    public String signFile(long id, String fingerprint){
-        byte[] idBytes = ValueUtils.toBytes(id);
-        String idEncode = this.dataEncode(idBytes);
-        String argStr = idEncode + ":" + fingerprint;
-        return this.dataEncode(FileConfig.getSignVerify().sign(argStr.getBytes()));
-    }
+//    @SneakyThrows
+//    public String signFile(long id, String fingerprint){
+//        byte[] idBytes = ValueUtils.toBytes(id);
+//        String idEncode = this.dataEncode(idBytes);
+//        String argStr = idEncode + ":" + fingerprint;
+//        return this.dataEncode(FileConfig.getSignVerify().sign(argStr.getBytes()));
+//    }
 
     @SneakyThrows
     public boolean verifyFile(long id, String fingerprint, String fileSign){

@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.validation.constraints.NotBlank;
-
+import org.wlpiaoyi.framework.utils.ValueUtils;
 
 
 /**
@@ -39,10 +39,6 @@ public class FileInfo extends BaseEntity implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long size;
 
-    /** 是否验证签名 0:否 1:是 **/
-    @Schema(description = "是否验证签名 0:否 1:是")
-    private byte isVerifySign = 0;
-
     /** 文件指纹 **/
     @Schema(description = "文件指纹")
     @NotBlank(message = "文件指纹不能为空")
@@ -56,5 +52,15 @@ public class FileInfo extends BaseEntity implements Serializable {
     public void cleanKeyData() {
         super.cleanKeyData();
         this.setFingerprint(null);
+    }
+
+    public void checkSuffix(String originalFilename){
+        if(ValueUtils.isBlank(this.getSuffix())){
+            if(ValueUtils.isNotBlank(originalFilename) && originalFilename.contains(".")){
+                this.setSuffix(originalFilename.substring(originalFilename.lastIndexOf(".") + 1));
+            }else if(ValueUtils.isNotBlank(this.getName()) && this.getName().contains(".")){
+                this.setSuffix(this.getName().substring(this.getName().lastIndexOf(".") + 1));
+            }
+        }
     }
 }

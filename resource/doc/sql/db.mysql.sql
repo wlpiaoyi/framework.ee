@@ -3,7 +3,6 @@ CREATE TABLE `res_file_info` (
   `name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '文件名称',
   `size` bigint NOT NULL DEFAULT '0' COMMENT '文件大小',
   `fingerprint` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '文件指纹',
-  `is_verify_sign` tinyint NOT NULL DEFAULT '0' COMMENT '是否验证签名 0:否 1:是',
   `suffix` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '文件后缀',
   `status` int DEFAULT '1' COMMENT '状态',
   `is_deleted` int DEFAULT '0' COMMENT '是否删除',

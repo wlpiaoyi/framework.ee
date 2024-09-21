@@ -49,7 +49,7 @@ public interface IFileInfoService extends IBaseService<FileInfo> {
      * @author: wlpia
      * @date: 2024/1/8 17:26
      */
-    String save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor);
+    void save(Object fileIo, FileInfo entity, Map funcMap, FileInfoSaveInterceptor interceptor);
 
 
     /**
