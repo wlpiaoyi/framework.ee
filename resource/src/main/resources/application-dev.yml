@@ -1,13 +1,13 @@
 server:
   tomcat:
-    basedir: D:/upload/temp/
+    basedir: C:/Home/Document/Temp/tomcat/
 #dev环境  mysql8.0
 resource:
   fontName: "微软雅黑"
   dataPath:
-    D:/upload/data/
+    C:/Home/Document/Temp/upload/data/
   tempPath:
-    D:/upload/temp/
+    C:/Home/Document/Temp/upload/temp/
 
 # mongodb 日志级别
 logging:
