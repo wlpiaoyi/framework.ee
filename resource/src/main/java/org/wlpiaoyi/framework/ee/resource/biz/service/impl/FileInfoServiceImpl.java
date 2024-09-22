@@ -64,6 +64,50 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
         }
         return fileInfoVo;
     }
+    /**
+     * <p><b>{@code @description:}</b>
+     * 文件格式校验
+     * </p>
+     *
+     * <p><b>@param</b> <b>entity</b>
+     * {@link FileInfo}
+     * </p>
+     *
+     * <p><b>@param</b> <b>tempFilePath</b>
+     * {@link String}
+     * </p>
+     *
+     * <p><b>{@code @date:}</b>2024/9/22 10:55</p>
+     * <p><b>{@code @author:}</b>wlpiaoyi</p>
+     */
+    private void checkFileSuffix(FileInfo entity, String tempFilePath) throws IOException {
+        if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("TXT")) {
+            return;
+        }
+        FileType realFileType = org.wlpiaoyi.framework.utils.data.FileUtils.getType(tempFilePath);
+        if(realFileType == null){
+            throw new BusinessException("不支持的文件格式");
+        }
+        if(!realFileType.checkType(entity.getSuffix())){
+            throw new BusinessException("文件显示格式和真实格式不一致");
+        }
+
+        if (realFileType == FileType.ZIP) {
+            if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("DOCX")) {
+                if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeDocx(tempFilePath)) {
+                    throw new BusinessException("文件显示格式和真实格式不一致");
+                }
+            } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("XLSX")) {
+                if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeXlsx(tempFilePath)) {
+                    throw new BusinessException("文件显示格式和真实格式不一致");
+                }
+            } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("APK")) {
+                if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeApk(tempFilePath)) {
+                    throw new BusinessException("文件显示格式和真实格式不一致");
+                }
+            }
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @SneakyThrows
@@ -103,36 +147,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
                     entity.setSuffix(entity.getName().substring(entity.getName().lastIndexOf(".") + 1));
                 }
             }
-
-
-
-            //文件格式校验
-
-            if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("TXT")) {
-                FileType realFileType = org.wlpiaoyi.framework.utils.data.FileUtils.getType(tempFilePath);
-                if(realFileType == null){
-                    throw new BusinessException("不支持的文件格式");
-                }
-                if(!realFileType.checkType(entity.getSuffix())){
-                    throw new BusinessException("文件显示格式和真实格式不一致");
-                }
-
-                if (realFileType == FileType.ZIP) {
-                    if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("DOCX")) {
-                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeDocx(tempFilePath)) {
-                            throw new BusinessException("文件显示格式和真实格式不一致");
-                        }
-                    } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("XLSX")) {
-                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeXlsx(tempFilePath)) {
-                            throw new BusinessException("文件显示格式和真实格式不一致");
-                        }
-                    } else if (entity.getSuffix().toLowerCase(Locale.ROOT).equalsIgnoreCase("APK")) {
-                        if (!org.wlpiaoyi.framework.utils.data.FileUtils.isTypeApk(tempFilePath)) {
-                            throw new BusinessException("文件显示格式和真实格式不一致");
-                        }
-                    }
-                }
-            }
+            this.checkFileSuffix(entity, tempFilePath);
             if(interceptor != null){
                 funcMap.put("tempFilePath", tempFilePath);
                 interceptor.beforeSave(funcMap, entity);

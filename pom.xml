@@ -31,8 +31,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <spring.boot.version>3.1.11</spring.boot.version>
-        <spring.platform.version>Cairo-SR8</spring.platform.version>
-
         <!-- <spring.platform.version>Cairo-SR8</spring.platform.version>-->
         <jakarta.servlet-api.version>6.1.0-M2</jakarta.servlet-api.version>
         <commons.io.version>2.16.1</commons.io.version>

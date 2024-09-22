@@ -12,7 +12,6 @@ import org.wlpiaoyi.framework.ee.resource.utils.SpringUtils;
 public class ApplicationListens implements CommandLineRunner, DisposableBean {
 
 
-
     //应用启动成功后的回调
     @Override
     public void run(String... args) throws Exception {
