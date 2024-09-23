@@ -136,17 +136,11 @@ public class FileResponse {
         return false;
     }
 
-    private boolean flushIO(Flushable flushIO){
+    private void flushIO(Flushable flushIO) throws IOException {
         if(flushIO == null){
             throw new BusinessException("Flush failed, outputStream is null");
         }
-        try {
-            flushIO.flush();
-        } catch (IOException e) {
-            log.warn("Flush alert failed:{}", e.getMessage());
-            return false;
-        }
-        return true;
+        flushIO.flush();
     }
 
     private boolean closeOutputStream(OutputStream outputStream){
@@ -262,25 +256,19 @@ public class FileResponse {
                     l = dataInput.read(bytes);
                     readLength += l;
                     dataOutput.write(bytes, 0, l);
-                    if(!flushIO(dataOutput)){
-                        throw new BusinessException("flush error");
-                    }
+                    flushIO(dataOutput);
                 }
                 clb = contentLength - readLength;
                 if (clb > 0) {
                     l = dataInput.read(bytes, 0, (int) clb);
                     dataOutput.write(bytes, 0, l);
-                    if(!flushIO(dataOutput)){
-                        throw new BusinessException("flush error");
-                    }
+                    flushIO(dataOutput);
                 }
             } else {
                 int l;
                 while ((l = dataInput.read(bytes)) != -1) {
                     dataOutput.write(bytes, 0, l);
-                    if(!flushIO(dataOutput)){
-                        throw new BusinessException("flush error");
-                    }
+                    flushIO(dataOutput);
                 }
             }
         }catch (Exception e){

@@ -118,7 +118,7 @@ public class FileController {
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "token") @PathVariable String token,
+    public void download(@Validated @Parameter(description = "token")@PathVariable String token,
                          @Parameter(description = "文件读取类型: attachment,inline")
                              @RequestParam(required = false, defaultValue = "attachment") String readType,
                          @Parameter(description = "数据类型: general,thumbnail,screenshot,original")

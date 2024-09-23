@@ -86,7 +86,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
         }
         FileType realFileType = org.wlpiaoyi.framework.utils.data.FileUtils.getType(tempFilePath);
         if(realFileType == null){
-            throw new BusinessException("不支持的文件格式");
+            return;
         }
         if(!realFileType.checkType(entity.getSuffix())){
             throw new BusinessException("文件显示格式和真实格式不一致");
@@ -221,6 +221,12 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
         while (relativePath.length() > 0 && relativePath.contains("/")){
             relativePath = relativePath.substring(0, relativePath.lastIndexOf("/"));
             String absolutePath = FileUtils.concatAbsolutePath(basePath, relativePath);
+            if(this.fileConfig.getTempPath().equals(absolutePath)){
+                continue;
+            }
+            if(this.fileConfig.getDataPath().equals(absolutePath)){
+                continue;
+            }
             removeFile = new File(absolutePath);
             if(ValueUtils.isNotBlank(removeFile.list())){
                 break;

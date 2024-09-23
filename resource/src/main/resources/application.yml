@@ -3,7 +3,6 @@ resource:
     1.0.0
 #tomcat config
 server :
-  port : 8180
   ##项目名字配置
   servlet :
     context-path : /

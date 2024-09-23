@@ -18,7 +18,7 @@ public class ModelWrapper {
 
     @SneakyThrows
     public static <T> T parseOne(Object orgObj, Class<T> resClazz) {
-        T resObj = resClazz.newInstance();
+        T resObj = resClazz.getDeclaredConstructor().newInstance();
         BeanUtils.copyProperties(orgObj, resObj);
         return resObj;
     }

@@ -163,8 +163,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
         try {
             this.fileResponse.download(new File(ogPath), funcMap, request, response);
         } catch (SystemException e) {
-            log.error("download file error", e);
-            throw new BusinessException(e.getMessage());
+            throw new BusinessException("download file error", e);
         }
     }
 
