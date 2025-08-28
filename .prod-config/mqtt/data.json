@@ -1,0 +1,124 @@
+{
+  "superTemplateId": "CDS-SD-YHZHSD-TDG",
+  "superDeviceId": "CDS-SD-YHZHSD-TDG",
+  "mqtt": {
+    "broker": "tcp://120.46.79.247:1883",
+    "clientId": "CDS-SD-YHZHSD-TDG",
+    "username": "CDS-SD-YHZHSD-TDG",
+    "password": "6dc5f646e6ff9384"
+  },
+  "devices": [
+    {
+      "nodeCode": "JHC1-212",
+      "deviceId": "FD-COV-1-1",
+      "models":[
+        {
+          "abilityCode": "covi",
+          "reportProperties": { "vi": 100.1,"no2":  101.2,"co":  103.1}
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC1-101",
+      "deviceId": "FD-ZSQ-1-3",
+      "models":[
+        {
+          "abilityCode": "laneIndicatorControl",
+          "reportProperties": {
+            "laneIndicator": 6,
+            "backGreenLight":  true,
+            "backRedLight":  false,
+            "frontGreenLight": true,
+            "frontRedLight": false
+          },
+          "reportEvents": [
+            {
+              "code": "laneIndicatorDisplayError",
+              "data": {
+                "faultStatus": 1,
+                "backGreenLight":  false,
+                "backRedLight":  false,
+                "frontGreenLight": false,
+                "frontRedLight": false,
+                "eventClassic": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC7-233",
+      "deviceId": "BDS-JFWSD-1-1",
+      "models":[
+        {
+          "abilityCode": "temperatureHumiditySensor",
+          "reportProperties": {
+            "humidity": 66.88,
+            "temperature":  59.1
+          }
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC1-402",
+      "deviceId": "CD1-KZX-1-1",
+      "models":[
+        {
+          "abilityCode": "deviceSwitch",
+          "reportProperties": {
+            "workStatus": true
+          }
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC4-520",
+      "deviceId": "BF-DRP-1-1",
+      "models":[
+        {
+          "abilityCode": "electricTracing",
+          "reportProperties": {
+            "electricTracingSwitch-1": true,
+            "electricTracingSwitch-2": false,
+            "electricTracingSwitch-3": true
+          }
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC3-4-3",
+      "deviceId": "DF-DRP-1-1",
+      "models":[
+        {
+          "abilityCode": "electricTracing",
+          "reportProperties": {
+            "electricTracingSwitch-1": true,
+            "electricTracingSwitch-2": true,
+            "electricTracingSwitch-3": true
+          }
+        },
+        {
+          "abilityCode": "operationMode",
+          "reportProperties": {
+            "operationMode": true
+          }
+        }
+      ]
+    },
+    {
+      "nodeCode": "JHC4-520",
+      "deviceId": "BF-DRP-1-1",
+      "models": [
+        {
+          "abilityCode": "electricTracing",
+          "reportProperties": {
+            "electricTracingSwitch-1": true,
+            "electricTracingSwitch-2": true,
+            "electricTracingSwitch-3": true
+          }
+        }
+      ]
+    }
+  ]
+}
