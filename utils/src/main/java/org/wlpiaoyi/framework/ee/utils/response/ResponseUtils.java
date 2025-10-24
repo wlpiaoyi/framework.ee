@@ -2,8 +2,7 @@ package org.wlpiaoyi.framework.ee.utils.response;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.connector.ClientAbortException;
-import org.apache.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.jetbrains.annotations.Nullable;
 import org.wlpiaoyi.framework.utils.MapUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
