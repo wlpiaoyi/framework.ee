@@ -1,10 +1,8 @@
 package org.wlpiaoyi.framework.ee.resource.biz.domain.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,5 +49,5 @@ public interface VideoInfoMapper extends BaseMapper<VideoInfo> {
      * @author: wlpia
      * @date: 2023/12/30 18:44
      */
-    int deletedByIds(@Param("ids") Collection<Long> ids);
+    int deleteBatchByIds(@Param("ids") Collection<Long> ids);
 }

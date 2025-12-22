@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
+package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
 import lombok.Builder;
 import lombok.Getter;

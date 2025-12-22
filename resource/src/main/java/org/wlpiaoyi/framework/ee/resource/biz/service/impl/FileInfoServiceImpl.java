@@ -11,8 +11,6 @@ import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
-import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileImageHandle;
-import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileVideoHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
@@ -255,7 +253,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             return null;
         }
         log.info("file select fingerprints size:{} values:{}", fingerprints.size(), ValueUtils.toStrings(fingerprints));
-        int delRes = this.baseMapper.deleteByIds(fileIds);
+        int delRes = this.baseMapper.deleteBatchByIds(fileIds);
         log.info("file deleted ids size:{} values:{}", delRes, fileIds);
 
         if(ValueUtils.isBlank(fingerprints)){

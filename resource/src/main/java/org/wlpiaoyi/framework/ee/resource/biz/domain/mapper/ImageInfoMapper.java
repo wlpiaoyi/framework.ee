@@ -48,5 +48,5 @@ public interface ImageInfoMapper extends BaseMapper<ImageInfo> {
      * @author: wlpia
      * @date: 2023/12/30 18:44
      */
-    int deletedByIds(@Param("ids") Collection<Long> ids);
+    int deleteBatchByIds(@Param("ids") Collection<Long> ids);
 }

@@ -23,11 +23,17 @@ import org.wlpiaoyi.framework.utils.ValueUtils;
 import jakarta.validation.Valid;
 
 
+
 /**
- * {@code @author:} 		##author##
- * {@code @description:} 	##tableComment## 控制器
- * {@code @date:} 			##createTime##
- * {@code @version:}: 		##version##
+ * <p><b>{@code @author:}</b>         ##author##</p>
+ * <p><b>{@code @description:}</b>
+ * <div style='padding: 5px; margin-left: 5px; margin-bottom: 5px;'>
+ * ##tableComment## 控制器
+ * </div>
+ * </p>
+ * <p><b>{@code @date:}</b>           ##createTime##</p>
+ * <p><b>{@code @version:}</b>       ##version##</p>
+ * <hr/>
  */
 @RestController
 @AllArgsConstructor

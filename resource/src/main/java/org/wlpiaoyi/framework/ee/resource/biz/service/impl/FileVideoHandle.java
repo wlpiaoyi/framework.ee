@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
+package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -26,8 +26,6 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static org.bytedeco.ffmpeg.global.avutil.AV_LOG_ERROR;
 
 /**
  * {@code @author:}         wlpia

@@ -17,4 +17,32 @@ public class MybatisPlusConfig {
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
+//    @Bean
+//    public ConfigurationCustomizer mybatisConfigurationCustomizer() {
+//        return configuration -> {
+//            TypeHandlerRegistry registry = configuration.getTypeHandlerRegistry();
+//            String basePackage = "org.wlpiaoyi.framework.ee.resource.biz.domain.enums";
+//            PackageUtils.iteratorClazz(basePackage, new PackageUtils.IteratorRun() {
+//                @Override
+//                public void run(Class<?> aClass) {
+//                    Class<BaseEnum> eClass = (Class<BaseEnum>) aClass;
+//                    registry.register(eClass, new EnumTypeHandler<>(eClass));
+//                }
+//            });
+//            // 注册所有你需要的枚举
+//        };
+//    }
+//    @Bean
+//    public void registerTypeHandlers(TypeHandlerRegistry registry) {
+//        // 为每个具体的枚举类型注册一个 handler 实例
+//
+//        String basePackage = "org.wlpiaoyi.framework.ee.resource.biz.domain.enums";
+//        PackageUtils.iteratorClazz(basePackage, new PackageUtils.IteratorRun() {
+//            @Override
+//            public void run(Class<?> aClass) {
+//                Class<BaseEnum> eClass = (Class<BaseEnum>) aClass;
+//                registry.register(eClass, new EnumTypeHandler<>(eClass));
+//            }
+//        });
+//    }
 }

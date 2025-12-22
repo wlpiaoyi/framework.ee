@@ -1,0 +1,1 @@
+package org.wlpiaoyi.framework.ee.resource.biz.domain;

@@ -38,6 +38,6 @@ public interface FileInfoMapper extends BaseMapper<FileInfo> {
      * @author: wlpia
      * @date: 2023/12/31 21:05
      */
-    int deleteByIds(@Param("ids") List<Long> ids);
+    int deleteBatchByIds(@Param("ids") List<Long> ids);
 
 }

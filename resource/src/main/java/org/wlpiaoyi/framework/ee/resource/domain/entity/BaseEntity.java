@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -25,6 +26,7 @@ import java.util.Date;
  * {@code @version:}:       1.0
  */
 @Data
+@Accessors(chain=true)
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseEntity implements Serializable {
@@ -71,7 +73,7 @@ public class BaseEntity implements Serializable {
     @Schema(description = "业务状态")
     private int status = 1;
 
-    @TableLogic(value = "0", delval = "1")
+    @TableLogic(value = "0", delval = "id")
     @Schema(description = "是否已删除")
     private int isDeleted = 0;
 
@@ -83,11 +85,11 @@ public class BaseEntity implements Serializable {
      * @date: 2024/1/11 16:37
      */
     public void cleanKeyData(){
-        this.setId(null);
-        this.setCreateTime(null);
-        this.setCreateUser(null);
-        this.setUpdateTime(null);
-        this.setUpdateUser(null);
+        this.setId(null)
+            .setCreateTime(null)
+            .setCreateUser(null)
+            .setUpdateTime(null)
+            .setUpdateUser(null);
     }
 
 

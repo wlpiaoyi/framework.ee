@@ -1,4 +1,4 @@
-package org.wlpiaoyi.framework.ee.resource.biz.service.impl.file;
+package org.wlpiaoyi.framework.ee.resource.biz.service.impl;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +23,6 @@ import org.wlpiaoyi.framework.utils.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 
@@ -60,22 +57,22 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     }
 
     /**
-     * <p><b>{@code @description:}</b> 
+     * <p><b>{@code @description:}</b>
      * 根据token下载文件
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>token</b>
      * {@link String}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>funcMap</b>
      * {@link Map}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>request</b>
      * {@link HttpServletRequest}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>response</b>
      * {@link HttpServletResponse}
      * </p>
@@ -112,22 +109,22 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
     ));
 
     /**
-     * <p><b>{@code @description:}</b> 
+     * <p><b>{@code @description:}</b>
      * 根据文件信息对象下载文件
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>entity</b>
      * {@link FileInfo}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>funcMap</b>
      * {@link Map}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>request</b>
      * {@link HttpServletRequest}
      * </p>
-     * 
+     *
      * <p><b>@param</b> <b>response</b>
      * {@link HttpServletResponse}
      * </p>

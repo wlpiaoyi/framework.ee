@@ -121,6 +121,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
         if(ValueUtils.isBlank(entity.getId())){
             this.resolveEntityForSave(entity);
         }else{
+            entity.setCreateTime(null);
             if(entity.getUpdateTime() == null){
                 entity.setUpdateTime(new Date());
             }

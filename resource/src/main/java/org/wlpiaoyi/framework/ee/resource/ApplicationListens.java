@@ -5,6 +5,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IFileService;
+import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.utils.SpringUtils;
 
 @Slf4j
@@ -18,6 +19,13 @@ public class ApplicationListens implements CommandLineRunner, DisposableBean {
         log.info("应用启动成功，预相关加载数据");
         IFileService fileService = SpringUtils.getBean(IFileService.class);
         fileService.cleanFile();
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
     //应用启动关闭前的回调

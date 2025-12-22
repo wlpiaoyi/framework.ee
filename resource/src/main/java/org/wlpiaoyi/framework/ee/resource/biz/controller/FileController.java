@@ -113,21 +113,31 @@ public class FileController {
     }
 
     @SneakyThrows
-    @GetMapping("/download/{token}")
+    @GetMapping("/download/{token}/{readType}/{dataType}")
     @ApiOperationSupport(order = 2)
     @Operation(summary = "下载单个文件 请求", description = "加载文件")
     @ResponseBody
     @PermitAll
-    public void download(@Validated @Parameter(description = "token")@PathVariable String token,
-                         @Parameter(description = "文件读取类型: attachment,inline")
-                             @RequestParam(required = false, defaultValue = "attachment") String readType,
-                         @Parameter(description = "数据类型: general,thumbnail,screenshot,original")
-                             @RequestParam(required = false, defaultValue = "general") String dataType,
+    public void download(@Validated @Parameter(description = "token") @PathVariable String token,
+                         @Validated @Parameter(
+                                 description = "文件读取类型: attachment【直接下载】,inline【浏览器内部浏览】"
+                         ) @PathVariable String readType,
+                         @Validated @Parameter(
+                                 description = "数据类型: general【默认】,thumbnail【缩略图】,screenshot【视频截图】"
+                         ) @PathVariable String dataType,
                          HttpServletRequest request,
                          HttpServletResponse response) {
+        if(ValueUtils.isBlank(readType)){
+            readType = "attachment";
+        }
+        if(ValueUtils.isBlank(dataType)){
+            dataType = "general";
+        }
+        String finalReadType = readType;
+        String finalDataType = dataType;
         this.fileService.download(token, new HashMap(){{
-            put("readType", readType);
-            put("dataType", dataType);
+            put("readType", finalReadType);
+            put("dataType", finalDataType);
         }}, request, response);
     }
 

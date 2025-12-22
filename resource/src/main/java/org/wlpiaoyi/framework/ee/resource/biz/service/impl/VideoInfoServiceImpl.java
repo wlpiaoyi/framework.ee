@@ -11,7 +11,6 @@ import org.wlpiaoyi.framework.ee.resource.biz.service.IVideoInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.VideoInfoMapper;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.VideoInfoVo;
-import org.wlpiaoyi.framework.ee.resource.biz.service.impl.file.FileVideoHandle;
 import org.wlpiaoyi.framework.ee.resource.config.FileConfig;
 import org.wlpiaoyi.framework.ee.resource.service.impl.BaseServiceImpl;
 import org.springframework.context.annotation.Primary;
@@ -114,7 +113,7 @@ public class VideoInfoServiceImpl extends BaseServiceImpl<VideoInfoMapper, Video
         }
         List<Long> screenshotFileIds = this.baseMapper.selectScreenshotFileIdByIds(deletedIds);
         log.info("video delete by screenshotFileIds size:{}, ids:{}", screenshotFileIds.size(), ValueUtils.toStrings(screenshotFileIds));
-        int delAll = this.baseMapper.deletedByIds(deletedIds);
+        int delAll = this.baseMapper.deleteBatchByIds(deletedIds);
         log.info("video deleted allIds size:{}, ids:{}", delAll, ValueUtils.toStrings(deletedIds));
         return screenshotFileIds;
     }

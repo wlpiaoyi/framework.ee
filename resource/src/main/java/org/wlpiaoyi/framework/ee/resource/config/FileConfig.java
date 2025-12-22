@@ -1,20 +1,26 @@
 package org.wlpiaoyi.framework.ee.resource.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.wlpiaoyi.framework.ee.resource.utils.FileUtils;
+import org.wlpiaoyi.framework.ee.resource.utils.SpringUtils;
 import org.wlpiaoyi.framework.utils.StringUtils;
 import org.wlpiaoyi.framework.utils.ValueUtils;
 import org.wlpiaoyi.framework.utils.data.DataUtils;
 import org.wlpiaoyi.framework.utils.security.AesCipher;
 import org.wlpiaoyi.framework.utils.security.SignVerify;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * {@code @author:}         wlpia
@@ -22,10 +28,10 @@ import java.util.Locale;
  * {@code @date:}           2023-12-27 16:40:59
  * {@code @version:}:       1.0
  */
+@Slf4j
 @Component
 @Scope("singleton")
 public class FileConfig {
-
 
     @Getter
     @Value("${resource.tempPath}")
@@ -39,10 +45,13 @@ public class FileConfig {
     private AesCipher aesCipher;
     {
         try {
+            Environment env = SpringUtils.getBean(Environment.class);
+            String aesKey = env.getProperty("resource.aes.key");
+            String aesIV = env.getProperty("resource.aes.iv");
             aesCipher = AesCipher.build().setKey(
-                            "104ed7522903443d8b905223907eebbb2fa0978db6dd47d8b7d2c9cbef3b41eb"
+                            aesKey
                             ,128)
-                    .setIV("a1cd567E90123456")
+                    .setIV(aesIV)
                     .loadConfig();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -50,25 +59,17 @@ public class FileConfig {
     }
 
     @Getter
-    private static SignVerify signVerify;
-
-    static {
+    private SignVerify signVerify;
+    {
         try {
-            String publicKey = "MIIBuDCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2USZp\n" +
-                    "RV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4O1fn\n" +
-                    "xqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmCouuE\n" +
-                    "C/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCBgLRJ\n" +
-                    "FnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhRkImo\n" +
-                    "g9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoDgYUAAoGBAMyDBLj55PknyzfXRfzByz3MDmt5FPwMN0HO\n" +
-                    "00v6c3tV0l4E0oZuW/IOdXSF0TdTaa2jHQMarkPP5v8Mc83oZ50splFBJ6F0y+Jk7lvOh8bHTl46\n" +
-                    "on5W0T7w8Qy8/LR8BZNVgcj9Mizcxd1eVKQAXIMgb6u2MZ8ryZEA+lWALOSd";
-            String privateKey = "MIIBSwIBADCCASwGByqGSM44BAEwggEfAoGBAP1/U4EddRIpUt9KnC7s5Of2EbdSPO9EAMMeP4C2\n" +
-                    "USZpRV1AIlH7WT2NWPq/xfW6MPbLm1Vs14E7gB00b/JmYLdrmVClpJ+f6AR7ECLCT7up1/63xhv4\n" +
-                    "O1fnxqimFQ8E+4P208UewwI1VBNaFpEy9nXzrith1yrv8iIDGZ3RSAHHAhUAl2BQjxUjC8yykrmC\n" +
-                    "ouuEC/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCB\n" +
-                    "gLRJFnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhR\n" +
-                    "kImog9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoEFgIULqGv+4HdEYM5CqUFM48ksAmDFko==";
-            signVerify = SignVerify.build().setPublicKey(publicKey).setPrivateKey(privateKey).loadConfig();
+            try {
+                Environment env = SpringUtils.getBean(Environment.class);
+                String publicKey = env.getProperty("resource.sign.publicKey");
+                String privateKey = env.getProperty("resource.sign.privateKey");
+                signVerify = SignVerify.build().setPublicKey(publicKey).setPrivateKey(privateKey).loadConfig();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -123,7 +124,7 @@ public class FileConfig {
         byte[] idBytes = ValueUtils.toBytes(id);
         String idEncode = this.dataEncode(idBytes);
         String argStr = idEncode + ":" + fingerprint;
-        return FileConfig.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
+        return this.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
     }
 
     @SneakyThrows

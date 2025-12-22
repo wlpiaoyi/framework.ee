@@ -8,7 +8,7 @@
 <!--    j.akarta.annotation-->
     <groupId>org.wlpiaoyi</groupId>
     <artifactId>framework.ee</artifactId>
-    <version>1.0.2-BATA-JDK21</version>
+    <version>1.0.2-JDK21</version>
     <packaging>pom</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -18,8 +18,8 @@
     </parent>
 
     <properties>
-        <ee.project.version>1.0.2-BATA-JDK21</ee.project.version>
-        <fw.project.version>1.0.2-BATA-JDK21</fw.project.version>
+        <ee.project.version>1.0.2-JDK21</ee.project.version>
+        <fw.project.version>1.0.2-JDK21</fw.project.version>
         <java.version>21</java.version>
 
         <lombok-maven-plugin.version>1.18.20.0</lombok-maven-plugin.version>

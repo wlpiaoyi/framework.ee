@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--@author admin:DESKTOP-RLUL55B-->
+<!--@since 2025-12-22 18:05:02-->
+<!--@desc 文件权限-->
+<mapper namespace="org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileRoleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fileRoleResultMap" type="org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileRole">
+        <id column="id" property="id"/>
+        <!-- name -->
+        <result column="name" property="name"/>
+        <!-- 对外数据权限,二进制:DataIndex(0b1:查看-View, 0b10:下载-Download, 0b100:修改/删除-Edit) -->
+        <result column="permission_value" property="permissionValue" typeHandler="org.wlpiaoyi.framework.ee.resource.biz.handler.DataIndexHandler"/>
+        <!-- 文件权限类型:FileRoleType(0:默认-Default, 1 :向下继承-DownInherit,  2:被动向下继承-PassiveDownInherit) -->
+        <result column="permission_type" property="permissionType" typeHandler="org.wlpiaoyi.framework.ee.resource.biz.handler.FileRoleTypeHandler"/>
+        <!-- 状态:Status(0 无效, 1 有效) -->
+        <result column="status" property="status"/>
+        <!-- 是否删除 -->
+        <result column="is_deleted" property="isDeleted"/>
+        <!-- 创建人 -->
+        <result column="create_user" property="createUser"/>
+        <!-- 创建时间 -->
+        <result column="create_time" property="createTime"/>
+        <!-- 创建部门 -->
+        <result column="create_dept" property="createDept"/>
+        <!-- 修改人 -->
+        <result column="update_user" property="updateUser"/>
+        <!-- 修改时间 -->
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 单次插入所有字段 -->
+    <insert id="insertAll">
+        INSERT INTO `res_file_role`
+        (
+        `id`,
+        `name`,
+        `permission_value`,
+        `permission_type`,
+        `status`,
+        `is_deleted`,
+        `create_user`,
+        `create_time`,
+        `create_dept`,
+        `update_user`,
+        `update_time`
+        )
+        VALUES (
+        #{item.id},
+        #{item.name},
+        #{item.permissionValue typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.DataIndexHandler},
+        #{item.permissionType typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.FileRoleTypeHandler},
+        #{item.status},
+        #{item.isDeleted},
+        #{item.createUser},
+        #{item.createTime},
+        #{item.createDept},
+        #{item.updateUser},
+        #{item.updateTime}
+        )
+    </insert>
+
+    <!-- 批量插入所有字段 -->
+    <insert id="insertAllBatch" parameterType="java.util.List">
+        <foreach collection="items" item="item" index="index" open="" close="" separator=";">
+            INSERT INTO `res_file_role`
+            (
+            `id`,
+            `name`,
+            `permission_value`,
+            `permission_type`,
+            `status`,
+            `is_deleted`,
+            `create_user`,
+            `create_time`,
+            `create_dept`,
+            `update_user`,
+            `update_time`
+            )
+            VALUES (
+            #{item.id},
+            #{item.name},
+            #{item.permissionValue typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.DataIndexHandler},
+            #{item.permissionType typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.FileRoleTypeHandler},
+            #{item.status},
+            #{item.isDeleted},
+            #{item.createUser},
+            #{item.createTime},
+            #{item.createDept},
+            #{item.updateUser},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 单次更新所有字段 -->
+    <update id="updateAll">
+        UPDATE `res_file_role`
+        SET
+        `name` = #{item.name},
+        `permission_value` = #{item.permissionValue typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.DataIndexHandler},
+        `permission_type` = #{item.permissionType typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.FileRoleTypeHandler},
+        `status` = #{item.status},
+        `is_deleted` = #{item.isDeleted},
+        `create_user` = #{item.createUser},
+        `create_time` = #{item.createTime},
+        `create_dept` = #{item.createDept},
+        `update_user` = #{item.updateUser},
+        `update_time` = #{item.updateTime}
+        WHERE (`id` = '${item.id}')
+    </update>
+
+    <!-- 批量更新所有字段 -->
+    <update id="updateAllBatch" parameterType="java.util.List">
+        <foreach collection="items" item="item" index="index" open="" close="" separator=";">
+            UPDATE `res_file_role`
+            SET
+            `name` = #{item.name},
+            `permission_value` = #{item.permissionValue typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.DataIndexHandler},
+            `permission_type` = #{item.permissionType typeHandler=org.wlpiaoyi.framework.ee.resource.biz.handler.FileRoleTypeHandler},
+            `status` = #{item.status},
+            `is_deleted` = #{item.isDeleted},
+            `create_user` = #{item.createUser},
+            `create_time` = #{item.createTime},
+            `create_dept` = #{item.createDept},
+            `update_user` = #{item.updateUser},
+            `update_time` = #{item.updateTime}
+            WHERE (`id` = 'item.id')
+        </foreach>
+    </update>
+
+    <!-- 批量物理删除 -->
+    <delete id="deleteAllBatch" parameterType="java.util.List">
+        <foreach collection="items" item="item" separator=";">
+            DELETE FROM `res_file_role` WHERE (`id` = '${item}')
+        </foreach>
+    </delete>
+
+
+</mapper>

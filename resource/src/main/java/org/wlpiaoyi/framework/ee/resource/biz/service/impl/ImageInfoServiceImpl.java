@@ -6,9 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.FileInfo;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.VideoInfo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.mapper.FileInfoMapper;
-import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.FileInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.vo.ImageInfoVo;
 import org.wlpiaoyi.framework.ee.resource.biz.service.IImageInfoService;
 import org.wlpiaoyi.framework.ee.resource.biz.domain.entity.ImageInfo;
@@ -153,7 +151,7 @@ public class ImageInfoServiceImpl extends BaseServiceImpl<ImageInfoMapper, Image
         }
         List<Long> fileIds = this.baseMapper.selectFileIdByIds(deletedIds);
         log.info("image delete by fileIds size:{}, ids:{}", fileIds.size(), ValueUtils.toStrings(fileIds));
-        int delAll = this.baseMapper.deletedByIds(deletedIds);
+        int delAll = this.baseMapper.deleteBatchByIds(deletedIds);
         log.info("image deleted allIds size:{}, ids:{}", delAll, ValueUtils.toStrings(deletedIds));
         return fileIds;
     }
