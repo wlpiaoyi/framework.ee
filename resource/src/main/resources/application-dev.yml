@@ -1,12 +1,12 @@
 server:
   port: 8180
   tomcat:
-    basedir: C:/Home/Document/Temp/tomcat
+    basedir: C:/Home/Document/Temp/tomcat/
 #dev环境  mysql8.0
 resource:
   fontName: "微软雅黑"
   dataPath:
-    C:/Home/Document/Temp/upload/data
+    C:/Home/Document/Temp/upload/data/
   tempPath:
     C:/Home/Document/Temp/upload/temp
   aes:
@@ -31,7 +31,6 @@ resource:
       ouuEC/BYHPUCgYEA9+GghdabPd7LvKtcNrhXuXmUr7v6OuqC+VdMCz0HgmdRWVeOutRZT+ZxBxCB
       gLRJFnEj6EwoFhO3zwkyjMim4TwWeotUfI0o4KOuHiuzpnWRbqN/C/ohNWLx+2J6ASQ7zKTxvqhR
       kImog9/hWuWfBpKLZl6Ae1UlZAFMO/7PSSoEFgIULqGv+4HdEYM5CqUFM48ksAmDFko==
-
 # mongodb 日志级别
 logging:
   level:

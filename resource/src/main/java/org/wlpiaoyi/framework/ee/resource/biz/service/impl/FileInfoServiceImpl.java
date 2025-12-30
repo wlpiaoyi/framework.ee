@@ -87,7 +87,7 @@ public class FileInfoServiceImpl extends BaseServiceImpl<FileInfoMapper, FileInf
             return;
         }
         if(!realFileType.checkType(entity.getSuffix())){
-            throw new BusinessException("文件显示格式和真实格式不一致");
+            throw new BusinessException("文件显示格式和真实格式不一致, 数据格式[" + realFileType.name() + "], 显示格式:[" + entity.getSuffix() + "]");
         }
 
         if (realFileType == FileType.ZIP) {

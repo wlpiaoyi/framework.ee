@@ -67,7 +67,7 @@ public interface IFileService {
      * <p><b>{@code @date:}</b>2023/12/30 15:51</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(String token, Map<String, String> funcMap, HttpServletRequest request, HttpServletResponse response);
 
     /**
      * <p><b>{@code @description:}</b>
@@ -93,7 +93,7 @@ public interface IFileService {
      * <p><b>{@code @date:}</b>2023/12/30 15:51</p>
      * <p><b>{@code @author:}</b>wlpia</p>
      */
-    void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response);
+    void download(FileInfo entity, Map<String, String> funcMap, HttpServletRequest request, HttpServletResponse response);
 
 
     /**

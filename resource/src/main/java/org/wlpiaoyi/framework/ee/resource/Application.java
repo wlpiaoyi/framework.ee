@@ -27,10 +27,7 @@ import java.util.TimeZone;
  * {@code @version:}:       1.0
  */
 /*
-
 java -jar -Dfile.encoding=utf-8 resource-windows-x86_64.jar --spring.profiles.active=prod -spring.config.location=config/application-prod.yml
-
-
  */
 
 @SpringBootApplication(scanBasePackages = {

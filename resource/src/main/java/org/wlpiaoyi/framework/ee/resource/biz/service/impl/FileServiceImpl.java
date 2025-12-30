@@ -82,7 +82,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
      */
     @SneakyThrows
     @Override
-    public void download(String token, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(String token, Map<String, String> funcMap, HttpServletRequest request, HttpServletResponse response){
         Object[] eToken = this.fileConfig.decodeToken(token);
         Long id = (Long) eToken[0];
         String fingerprint = (String) eToken[1];
@@ -133,7 +133,7 @@ public class FileServiceImpl implements IFileService, IFileInfoService.FileInfoS
      * <p><b>{@code @author:}</b>wlpia</p>
      */
     @Override
-    public void download(FileInfo entity, Map funcMap, HttpServletRequest request, HttpServletResponse response){
+    public void download(FileInfo entity, Map<String, String> funcMap, HttpServletRequest request, HttpServletResponse response){
         String dataType = MapUtils.getString(funcMap, "dataType", "general");
         if(this.fileImageHandle.canDownloadByThumbnail(entity.getSuffix(), dataType)){
             entity = this.fileImageHandle.getThumbnailFileInfo(this, entity);
