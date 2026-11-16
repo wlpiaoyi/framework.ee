@@ -75,7 +75,7 @@ public class BaseEntity implements Serializable {
 
     @TableLogic(value = "0", delval = "id")
     @Schema(description = "是否已删除")
-    private int isDeleted = 0;
+    private Long isDeleted = 0L;
 
 
     /**

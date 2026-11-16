@@ -80,7 +80,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
-            entity.setIsDeleted(1);
+            entity.setIsDeleted(1L);
             entity.setUpdateTime(new Date());
             entity.setId(id);
             list.add(entity);
