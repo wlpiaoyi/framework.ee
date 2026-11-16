@@ -121,7 +121,7 @@ public class FileConfig {
 
     @SneakyThrows
     public boolean verifyFile(long id, String fingerprint, String fileSign){
-        byte[] idBytes = ValueUtils.toBytes(id);
+        byte[] idBytes = ValueUtils.longToBytes(id);
         String idEncode = this.dataEncode(idBytes);
         String argStr = idEncode + ":" + fingerprint;
         return this.getSignVerify().verify(argStr.getBytes(), this.dataDecode(fileSign));
@@ -129,7 +129,7 @@ public class FileConfig {
 
     @SneakyThrows
     public String encodeToken(long id, String fingerprint){
-        byte[] idBytes = ValueUtils.toBytes(id);
+        byte[] idBytes = ValueUtils.longToBytes(id);
         byte[] fpBytes = fingerprint.getBytes();
         int idL = idBytes.length;
         int fpL = fpBytes.length;
@@ -154,14 +154,14 @@ public class FileConfig {
         int vi = 0;
         byte[] lbs = new byte[1];
         lbs[0] = valueBytes[vi ++];
-        int idL = (int) ValueUtils.toLong(lbs);
+        int idL = (int) ValueUtils.byteToLong(lbs);
         byte[] idBytes = new byte[idL];
         int vti = 0;
         while (vti < idL){
             idBytes[vti ++] = valueBytes[vi ++];
         }
         lbs[0] = valueBytes[vi ++];
-        int fL = (int) ValueUtils.toLong(lbs);
+        int fL = (int) ValueUtils.byteToLong(lbs);
         byte[] fBytes = new byte[fL];
         vti = 0;
         while (vti < fL){

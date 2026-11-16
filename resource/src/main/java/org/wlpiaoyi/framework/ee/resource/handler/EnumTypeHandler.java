@@ -12,16 +12,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * MyBatis枚举类型处理器
+ * MyBatis 枚举类型处理器基类，仅供具体枚举 Handler 继承。
  * <p>
- * 用于将实现了{@link BaseEnum}接口的枚举类型与数据库中的整型字段进行映射转换
+ * 用于将实现了{@link BaseEnum}接口的枚举类型与数据库中的整型字段进行映射转换。
+ * 必须为 abstract，否则 type-handlers-package 扫描时 MyBatis 会尝试无参实例化本类并失败。
  *
  * @param <T> 枚举类型，必须实现BaseEnum接口
  * @author wlpiaoyi
  * @version 2.0
  * @date 2025/12/19 11:02
  */
-public class EnumTypeHandler<T extends BaseEnum> extends BaseTypeHandler<T> {
+public abstract class EnumTypeHandler<T extends BaseEnum> extends BaseTypeHandler<T> {
 
     /**
      * 枚举类型缓存，避免重复反射获取
@@ -39,19 +40,13 @@ public class EnumTypeHandler<T extends BaseEnum> extends BaseTypeHandler<T> {
      */
     private final Map<String, T> nameCache = new ConcurrentHashMap<>();
 
-    // 私有无参构造（防止 MyBatis 报错，但不会被真正使用）
-    @SuppressWarnings("unused")
-//    public EnumTypeHandler() {
-//        this.enumType = null;
-//    }
-
     /**
      * 构造方法
      *
      * @param enumType 枚举类型Class对象，不能为null
      * @throws IllegalArgumentException 当enumType为null时抛出
      */
-    public EnumTypeHandler(Class<T> enumType) {
+    protected EnumTypeHandler(Class<T> enumType) {
         if (enumType == null) {
             throw new IllegalArgumentException("枚举类型参数不能为null");
         }

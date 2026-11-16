@@ -34,7 +34,7 @@ mybatis-plus:
   # 配置mapper的扫描，找到所有的mapper.xml映射文件
   mapperLocations: classpath:**/mapper/**/*Mapper.xml
   #（路径）
-  type-handlers-package: org.wlpiaoyi.framework.ee.resource
+  type-handlers-package: org.wlpiaoyi.framework.ee.resource.biz.handler
   # 加载全局的配置文件
 #  configLocation: classpath:mybatis/mybatis-config.xml
   #实体扫描，多个package用逗号或者分号分隔
